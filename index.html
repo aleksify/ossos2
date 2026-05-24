@@ -177,9 +177,9 @@ const THEMES = {
     ground: 'ground_tile', plat: 'counter', bigplat: 'counter_big',
     tree: 'coat_rack', bush: 'flour_sack', rock: 'coffee_tub',
     enemy: 'customer', spike: 'fork_hazard', mountain: 'shop_bldg',
-    skyTop: 0xf3d6a4, skyBot: 0xffe9c2,
+    skyTop: 0xf5dfb4, skyBot: 0xe8c690,
     hillColor: 0xb98456, bgTreeTint: 0xffffff,
-    showMountains: true, showHills: false, showBgTrees: false
+    showMountains: false, showHills: false, showBgTrees: false
   }
 };
 
@@ -205,21 +205,27 @@ const LEVELS = [
       [3050, 300, 'platform'], [3170, 240, 'platform'], [3290, 180, 'bigplatform']
     ],
     spikes: [
-      // sidewalk grates / curb puddles
-      380, 420, 720, 760,
-      // shop hot-coffee spills near pass-through
-      1430, 1470, 1510,
-      // kitchen oven flames
-      2360, 2400, 2440, 2710, 2750, 2790, 3060, 3100, 3140
+      // gap [380,460] — inset 20 from edges
+      400, 440,
+      // gap [720,800]
+      740, 780,
+      // gap [1400,1520]
+      1420, 1452, 1484, 1508,
+      // gap [2350,2450]
+      2370, 2400, 2430,
+      // gap [2700,2820]
+      2720, 2752, 2784, 2808,
+      // gap [3050,3170]
+      3070, 3102, 3134, 3158
     ],
     coins: [
       // sidewalk loose change
-      [180, 380], [340, 280], [500, 340], [620, 280], [820, 340], [940, 280], [1020, 380],
-      // counter tips
-      [1100, 320], [1280, 240], [1400, 180], [1600, 240], [1740, 180], [1880, 240], [2020, 180], [2160, 240],
-      // kitchen shelves
-      [2280, 280], [2400, 200], [2520, 140], [2640, 200], [2780, 140], [2920, 200],
-      [3050, 260], [3170, 200], [3290, 140], [3360, 380]
+      [120, 380], [340, 280], [500, 340], [620, 280], [820, 340], [940, 280], [1020, 380],
+      // counter tips (skip [1400, 180] — bagel pickup occupies that spot)
+      [1100, 320], [1280, 240], [1340, 180], [1600, 240], [1740, 180], [1880, 240], [2020, 180], [2160, 240],
+      // kitchen shelves (skip [2780, 140] & [3290, 140] — bagel pickups there)
+      [2280, 280], [2400, 200], [2520, 140], [2640, 200], [2740, 140], [2920, 200],
+      [3050, 260], [3170, 200], [3260, 140], [3360, 380]
     ],
     enemies: [
       // sidewalk: impatient line
@@ -382,8 +388,9 @@ function resizeGame() {
   const fs = document.fullscreenElement || document.webkitFullscreenElement;
   const w = fs ? window.innerWidth : WIDTH;
   const h = fs ? window.innerHeight : HEIGHT;
-  // FIT scale: fit canvas inside w×h while keeping WIDTH:HEIGHT aspect
-  const scale = Math.min(w / WIDTH, h / HEIGHT);
+  // FIT scale with INTEGER multiplier — avoids fractional CSS scaling that
+  // causes subpixel blur and sprites visually bleeding past their texture bounds.
+  const scale = Math.max(1, Math.floor(Math.min(w / WIDTH, h / HEIGHT)));
   const cw = Math.floor(WIDTH * scale);
   const ch = Math.floor(HEIGHT * scale);
   const canvas = game.canvas;
@@ -490,11 +497,14 @@ function preload() {
   g.generateTexture('coin', 16, 16);
   g.clear();
 
-  // spike (24x16 triangle)
+  // spike (16x16 triangle) — shrunk so sprite always fits inside any hole
   g.fillStyle(0xcc3333, 1);
   g.beginPath();
-  g.moveTo(0, 16); g.lineTo(12, 0); g.lineTo(24, 16); g.closePath(); g.fillPath();
-  g.generateTexture('spike', 24, 16);
+  g.moveTo(0, 16); g.lineTo(8, 0); g.lineTo(16, 16); g.closePath(); g.fillPath();
+  g.fillStyle(0x882020, 1);
+  g.beginPath();
+  g.moveTo(0, 16); g.lineTo(8, 0); g.lineTo(4, 16); g.closePath(); g.fillPath();
+  g.generateTexture('spike', 16, 16);
   g.clear();
 
   // goal flag (16x48)
@@ -669,29 +679,23 @@ function preload() {
   g.generateTexture('customer', 32, 24);
   g.clear();
 
-  // fork hazard (24x16) — upturned silver tines (replaces spike)
-  g.fillStyle(0x6a6a73, 1).fillRect(1, 13, 22, 3);                 // base handle
-  g.fillStyle(0x8a8a93, 1).fillRect(1, 13, 22, 1);                 // base highlight
-  g.fillStyle(0x3a3a44, 1).fillRect(1, 15, 22, 1);                 // base shadow
-  // 4 tines, sharp triangles
+  // fork hazard (16x16) — 3 sharp tines (shrunk to always fit inside any hole)
+  g.fillStyle(0x6a6a73, 1).fillRect(1, 13, 14, 3);                 // base handle
+  g.fillStyle(0x8a8a93, 1).fillRect(1, 13, 14, 1);                 // base highlight
+  g.fillStyle(0x3a3a44, 1).fillRect(1, 15, 14, 1);                 // base shadow
   g.fillStyle(0xc8c8d0, 1);
   g.fillTriangle(2, 13, 4, 1, 6, 13);
-  g.fillTriangle(7, 13, 9, 0, 11, 13);
-  g.fillTriangle(12, 13, 14, 0, 16, 13);
-  g.fillTriangle(17, 13, 19, 1, 21, 13);
-  // shine highlights
+  g.fillTriangle(7, 13, 8, 0, 9, 13);
+  g.fillTriangle(11, 13, 12, 0, 13, 13);
   g.fillStyle(0xffffff, 0.9);
   g.fillRect(4, 4, 1, 8);
-  g.fillRect(9, 3, 1, 9);
-  g.fillRect(14, 3, 1, 9);
-  g.fillRect(19, 4, 1, 8);
-  // tine tips darker for definition
+  g.fillRect(8, 3, 1, 9);
+  g.fillRect(12, 3, 1, 9);
   g.fillStyle(0x9a9aa3, 1);
   g.fillRect(3, 11, 3, 2);
-  g.fillRect(8, 11, 3, 2);
-  g.fillRect(13, 11, 3, 2);
-  g.fillRect(18, 11, 3, 2);
-  g.generateTexture('fork_hazard', 24, 16);
+  g.fillRect(7, 11, 2, 2);
+  g.fillRect(11, 11, 2, 2);
+  g.generateTexture('fork_hazard', 16, 16);
   g.clear();
 
   // shop facade backdrop (240x140) — replaces 'mountain'
@@ -880,66 +884,85 @@ function create() {
     }
   }
 
-  // bagel theme: shelves of bagels parallax + warm wall tint
+  // bagel theme: clean uniform wall + sparse far-back shelves
   if (level.theme === 'bagel') {
-    // warm interior wall wash
+    // solid lower-wall band (clearly background, not platform)
     const wall = this.add.graphics();
-    wall.fillStyle(0xc8965a, 0.35).fillRect(0, HEIGHT - 240, WIDTH, 240);
-    wall.setScrollFactor(0).setDepth(-85);
-    // shelves mid-layer
-    for (let x = -40; x < worldWidth; x += 200) {
-      this.add.image(x, HEIGHT - 200, 'bagel_shelf').setOrigin(0, 0).setScrollFactor(0.55).setDepth(-65).setAlpha(0.95);
-    }
-    // chalkboard menu accents (rare)
-    for (let x = 240; x < worldWidth; x += 720) {
-      const board = this.add.graphics();
-      board.fillStyle(0x2a3a2a, 1).fillRect(0, 0, 60, 40);
-      board.fillStyle(0x6a3a18, 1).fillRect(-3, -3, 66, 4).fillRect(-3, 39, 66, 4).fillRect(-3, -3, 4, 46).fillRect(59, -3, 4, 46);
-      board.fillStyle(0xeeeeee, 0.8);
-      [6, 14, 22, 30].forEach(y => board.fillRect(6, y, 48, 2));
-      board.fillStyle(0xeec050, 1).fillRect(6, 6, 14, 2);
-      board.x = x; board.y = HEIGHT - 280;
-      board.setScrollFactor(0.5).setDepth(-66);
+    wall.fillStyle(0xd9b896, 1).fillRect(0, HEIGHT - 180, WIDTH, 180);
+    wall.fillStyle(0xc89866, 1).fillRect(0, HEIGHT - 180, WIDTH, 3);  // top trim line
+    wall.fillStyle(0xa87648, 0.25);                                    // faint wainscoting verticals
+    for (let vx = 0; vx < WIDTH; vx += 40) wall.fillRect(vx, HEIGHT - 175, 1, 175);
+    wall.setScrollFactor(0).setDepth(-90);
+    // sparse high shelves (far parallax, dim)
+    for (let x = -40; x < worldWidth; x += 480) {
+      this.add.image(x, 80, 'bagel_shelf').setOrigin(0, 0).setScrollFactor(0.3).setDepth(-75).setAlpha(0.55);
     }
   }
 
   // --- LEVEL GEOMETRY ---
   platforms = this.physics.add.staticGroup();
 
-  // ground with per-level gaps
+  // ===== SINGLE SOURCE OF TRUTH: tile-snapped hole boundaries =====
+  // Ground tiles snap to 32px grid; the loop iterates x as tile LEFT EDGE
+  // (0, 32, 64, ...) and skips when `x in [a, b)`. The real hole in pixels is
+  // therefore [ceil(a/32)*32, ceil(b/32)*32), i.e., the union of skipped tiles'
+  // pixel spans. Every gap-aware system (ground placement, spike clamping,
+  // decor culling, coin culling, enemy patrol clamping) derives from `holes`
+  // so they cannot drift apart from the actual visible pit.
+  const holes = level.groundGaps.map(([a, b]) => {
+    const left  = Math.ceil(a / 32) * 32;
+    const right = Math.ceil(b / 32) * 32;
+    if (left >= right) return null;
+    return { left, right };
+  }).filter(Boolean);
+  const inHole = (x) => holes.some(h => x >= h.left && x < h.right);
+  const overHole = (x, halfW) => holes.some(h => (x + halfW) > h.left && (x - halfW) < h.right);
+
+  // ground tiles — single skip predicate by tile left edge
   for (let x = 0; x < worldWidth; x += 32) {
-    const inGap = level.groundGaps.some(([a, b]) => x >= a && x < b);
-    if (!inGap) {
-      platforms.create(x + 16, HEIGHT - 16, theme.ground).refreshBody();
-    }
+    if (inHole(x)) continue;
+    platforms.create(x + 16, HEIGHT - 16, theme.ground).refreshBody();
   }
 
   // floating platforms — remap generic keys via theme
   const platKey = (k) => k === 'bigplatform' ? theme.bigplat : theme.plat;
   level.floats.forEach(([x, y, key]) => platforms.create(x, y, platKey(key)).refreshBody());
 
-  // spikes
+  // spikes — clamp each x to its hole's safe range; drop if no hole/no room.
+  // Sprite is 16x16 so it can always sit inside any 32-px-wide hole with buffer.
   spikes = this.physics.add.staticGroup();
-  level.spikes.forEach(x => {
+  const SPIKE_HALF = 8;
+  const SPIKE_BUFFER = 6;
+  level.spikes.forEach(rawX => {
+    const h = holes.find(h => rawX >= h.left - SPIKE_HALF && rawX < h.right + SPIKE_HALF);
+    if (!h) return;
+    const minX = h.left + SPIKE_HALF + SPIKE_BUFFER;
+    const maxX = h.right - SPIKE_HALF - SPIKE_BUFFER;
+    if (minX > maxX) return;
+    const x = Math.max(minX, Math.min(maxX, rawX));
     const s = spikes.create(x, HEIGHT - 8, theme.spike);
-    s.body.setSize(20, 12).setOffset(2, 4);
+    s.body.setSize(12, 12).setOffset(2, 4);
   });
 
-  // coins
+  // coins (cull any whose y is at ground level and x is inside a hole)
   coins = this.physics.add.group({ allowGravity: false, immovable: true });
   level.coins.forEach(([x, y]) => {
+    if (y > HEIGHT - 60 && inHole(x)) return; // floating-coin-over-pit avoided
     const c = coins.create(x, y, 'coin');
     this.tweens.add({ targets: c, y: y - 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   });
 
   // --- FOREGROUND DECORATIONS (no physics) ---
   level.trees.forEach(x => {
+    if (overHole(x, 32)) return;
     this.add.image(x, HEIGHT - 32, theme.tree).setOrigin(0.5, 1).setDepth(-10);
   });
   level.bushes.forEach(x => {
+    if (overHole(x, 24)) return;
     this.add.image(x, HEIGHT - 32, theme.bush).setOrigin(0.5, 1).setDepth(-5);
   });
   level.rocks.forEach(x => {
+    if (overHole(x, 14)) return;
     this.add.image(x, HEIGHT - 32, theme.rock).setOrigin(0.5, 1).setDepth(-5);
   });
 
@@ -947,13 +970,22 @@ function create() {
   const customerLines = ["WHERE'S MY BAGEL?!", "EXTRA SCHMEAR!", "TOO SLOW!", "MANAGER!", "DECAF, NOT REGULAR!", "I WANT A REFUND!", "IT'S COLD!"];
   enemies = this.physics.add.group();
   level.enemies.forEach(d => {
+    // clamp ground-level patrol bounds out of any hole so enemy never falls in
+    let minX = d.min, maxX = d.max;
+    if (d.y > HEIGHT - 100) {
+      holes.forEach(h => {
+        if (minX >= h.left && minX < h.right) minX = h.right;
+        if (maxX > h.left && maxX <= h.right) maxX = h.left;
+      });
+      if (minX > maxX) return; // patrol fully inside hole → drop enemy
+    }
     const e = enemies.create(d.x, d.y, theme.enemy);
     e.body.setSize(28, 20).setOffset(2, 4);
     e.setVelocityX(60);
     e.setBounce(0, 0);
     e.setCollideWorldBounds(true);
-    e.minX = d.min;
-    e.maxX = d.max;
+    e.minX = minX;
+    e.maxX = maxX;
     this.tweens.add({ targets: e, scaleY: 0.85, duration: 350, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
     // bagel-shop customers shout occasionally
