@@ -124,7 +124,7 @@ const config = {
   ]
 };
 
-let player, cursors, platforms, coins, spikes, enemies, scoreText, score = 0, gameOver = false, goal, winText;
+let player, cursors, platforms, coins, spikes, enemies, healthPickups, scoreText, score = 0, gameOver = false, goal, winText;
 const MAX_HP = 10;
 let hp = MAX_HP;
 let invulnUntil = 0;
@@ -495,6 +495,19 @@ function create() {
   });
   this.physics.add.collider(enemies, platforms);
 
+  // --- HEALTH PICKUPS (restore full HP) ---
+  healthPickups = this.physics.add.group({ allowGravity: false, immovable: true });
+  const heartSpots = [
+    [1340, 230],   // top of z3 climb
+    [2200, 180],   // top of z5 zigzag
+    [3020, 240]    // final platform reward
+  ];
+  heartSpots.forEach(([x, y]) => {
+    const h = healthPickups.create(x, y, 'heart_full').setScale(1.8);
+    this.tweens.add({ targets: h, y: y - 6, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: h, scale: 2.1, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  });
+
   // goal flag at end
   goal = this.physics.add.staticSprite(3160, HEIGHT - 56, 'goal');
 
@@ -565,6 +578,7 @@ function create() {
   this.physics.add.overlap(player, spikes, hitSpike, null, this);
   this.physics.add.overlap(player, goal, reachGoal, null, this);
   this.physics.add.overlap(player, enemies, hitEnemy, null, this);
+  this.physics.add.overlap(player, healthPickups, collectHealth, null, this);
 
   // camera follow
   this.cameras.main.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
@@ -689,6 +703,21 @@ function update() {
 
   // fell off world
   if (player.y > HEIGHT + 50) hitSpike.call(this);
+}
+
+function collectHealth(_p, heart) {
+  if (hp >= MAX_HP) return; // skip if already full
+  this.sparkles.emitParticleAt(heart.x, heart.y, 16);
+  hp = MAX_HP;
+  updateHearts();
+  sfx.coin();
+  // brief green-tinted floating text
+  const txt = this.add.text(heart.x, heart.y - 10, '+FULL', {
+    fontSize: '14px', color: '#7bff7b', fontFamily: 'monospace',
+    stroke: '#000', strokeThickness: 3
+  }).setOrigin(0.5);
+  this.tweens.add({ targets: txt, y: txt.y - 30, alpha: 0, duration: 700, onComplete: () => txt.destroy() });
+  heart.destroy();
 }
 
 function collectCoin(_p, coin) {
