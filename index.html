@@ -16,7 +16,7 @@
 </head>
 <body>
 <div id="game"></div>
-<div class="hint">Arrows to move &middot; Up/Space to jump &middot; Collect coins, avoid spikes</div>
+<div class="hint">Arrows or WASD to move &middot; Up/W/Space to jump &middot; Collect coins, avoid spikes</div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script>
@@ -306,6 +306,12 @@ function create() {
   this.cameras.main.startFollow(player, true, 0.1, 0.1);
 
   cursors = this.input.keyboard.createCursorKeys();
+  this.wasd = this.input.keyboard.addKeys({
+    up: Phaser.Input.Keyboard.KeyCodes.W,
+    left: Phaser.Input.Keyboard.KeyCodes.A,
+    down: Phaser.Input.Keyboard.KeyCodes.S,
+    right: Phaser.Input.Keyboard.KeyCodes.D
+  });
   this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
   this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
@@ -327,10 +333,14 @@ function update() {
 
   const onGround = player.body.blocked.down || player.body.touching.down;
 
-  if (cursors.left.isDown) {
+  const leftDown  = cursors.left.isDown  || this.wasd.left.isDown;
+  const rightDown = cursors.right.isDown || this.wasd.right.isDown;
+  const upDown    = cursors.up.isDown    || this.wasd.up.isDown || this.spaceKey.isDown;
+
+  if (leftDown) {
     player.setAccelerationX(-800);
     player.setFlipX(true);
-  } else if (cursors.right.isDown) {
+  } else if (rightDown) {
     player.setAccelerationX(800);
     player.setFlipX(false);
   } else {
@@ -339,7 +349,7 @@ function update() {
   }
 
   let justJumped = false;
-  if ((cursors.up.isDown || this.spaceKey.isDown) && onGround) {
+  if (upDown && onGround) {
     player.setVelocityY(-470);
     sfx.jump();
     player.anims.play('jump', true);
