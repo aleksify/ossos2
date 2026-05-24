@@ -383,18 +383,28 @@ document.getElementById('fs').addEventListener('click', (e) => {
   e.currentTarget.blur(); // prevent button re-triggering on Space/Enter
 });
 
-// Recompute Phaser size whenever viewport changes
+// Recompute Phaser size whenever viewport changes.
+// In fullscreen, expand the internal game width to match the viewport aspect
+// so the canvas fills both dimensions; the extra width simply shows more of
+// the world horizontally (camera viewport widens, ground/sprites keep their
+// native pixel size). HUD elements reposition via a 'viewport-resize' event.
 function resizeGame() {
   const fs = document.fullscreenElement || document.webkitFullscreenElement;
-  const w = fs ? window.innerWidth : WIDTH;
-  const h = fs ? window.innerHeight : HEIGHT;
-  // FIT scale: fit canvas inside w×h while keeping WIDTH:HEIGHT aspect
-  const scale = Math.min(w / WIDTH, h / HEIGHT);
-  const cw = Math.floor(WIDTH * scale);
-  const ch = Math.floor(HEIGHT * scale);
   const canvas = game.canvas;
-  canvas.style.width = cw + 'px';
-  canvas.style.height = ch + 'px';
+  if (fs) {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const scale = vh / HEIGHT;
+    const gameW = Math.max(WIDTH, Math.round(vw / scale));
+    game.scale.resize(gameW, HEIGHT);
+    canvas.style.width = vw + 'px';
+    canvas.style.height = vh + 'px';
+    game.events.emit('viewport-resize', gameW, HEIGHT);
+  } else {
+    game.scale.resize(WIDTH, HEIGHT);
+    canvas.style.width = WIDTH + 'px';
+    canvas.style.height = HEIGHT + 'px';
+    game.events.emit('viewport-resize', WIDTH, HEIGHT);
+  }
 }
 document.addEventListener('fullscreenchange', () => setTimeout(resizeGame, 50));
 document.addEventListener('webkitfullscreenchange', () => setTimeout(resizeGame, 50));
@@ -806,16 +816,16 @@ function titleCreate() {
     });
   }
 
-  const hero = this.add.sprite(WIDTH / 2, HEIGHT / 2 - 20, 'player_spin');
+  const hero = this.add.sprite(this.scale.width / 2, HEIGHT / 2 - 20, 'player_spin');
   hero.setScale(2);
   hero.play('spin');
 
-  this.add.text(WIDTH / 2, HEIGHT - 80, 'World of Sosso', {
+  this.add.text(this.scale.width / 2, HEIGHT - 80, 'World of Sosso', {
     fontSize: '40px', color: '#ffffff', fontFamily: 'monospace',
     stroke: '#444', strokeThickness: 2
   }).setOrigin(0.5);
 
-  const prompt = this.add.text(WIDTH / 2, HEIGHT - 36, 'Press any key to start', {
+  const prompt = this.add.text(this.scale.width / 2, HEIGHT - 36, 'Press any key to start', {
     fontSize: '16px', color: '#aaaaaa', fontFamily: 'monospace'
   }).setOrigin(0.5);
   this.tweens.add({ targets: prompt, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
@@ -842,8 +852,12 @@ function create() {
   // --- LAYERED PARALLAX BACKGROUND ---
   // sky gradient (locked to camera)
   const sky = this.add.graphics();
-  sky.fillGradientStyle(theme.skyTop, theme.skyTop, theme.skyBot, theme.skyBot, 1);
-  sky.fillRect(0, 0, WIDTH, HEIGHT);
+  const drawSky = () => {
+    sky.clear();
+    sky.fillGradientStyle(theme.skyTop, theme.skyTop, theme.skyBot, theme.skyBot, 1);
+    sky.fillRect(0, 0, this.scale.width, this.scale.height);
+  };
+  drawSky();
   sky.setScrollFactor(0).setDepth(-100);
 
   // distant backdrop (mountains / shop buildings)
@@ -884,13 +898,19 @@ function create() {
   }
 
   // bagel theme: clean uniform wall + sparse far-back shelves
+  let wall = null;
+  const drawWall = () => {
+    if (!wall) return;
+    const vw = this.scale.width;
+    wall.clear();
+    wall.fillStyle(0xd9b896, 1).fillRect(0, HEIGHT - 180, vw, 180);
+    wall.fillStyle(0xc89866, 1).fillRect(0, HEIGHT - 180, vw, 3);
+    wall.fillStyle(0xa87648, 0.25);
+    for (let vx = 0; vx < vw; vx += 40) wall.fillRect(vx, HEIGHT - 175, 1, 175);
+  };
   if (level.theme === 'bagel') {
-    // solid lower-wall band (clearly background, not platform)
-    const wall = this.add.graphics();
-    wall.fillStyle(0xd9b896, 1).fillRect(0, HEIGHT - 180, WIDTH, 180);
-    wall.fillStyle(0xc89866, 1).fillRect(0, HEIGHT - 180, WIDTH, 3);  // top trim line
-    wall.fillStyle(0xa87648, 0.25);                                    // faint wainscoting verticals
-    for (let vx = 0; vx < WIDTH; vx += 40) wall.fillRect(vx, HEIGHT - 175, 1, 175);
+    wall = this.add.graphics();
+    drawWall();
     wall.setScrollFactor(0).setDepth(-90);
     // sparse high shelves (far parallax, dim)
     for (let x = -40; x < worldWidth; x += 480) {
@@ -1151,10 +1171,19 @@ function create() {
   }).setScrollFactor(0);
 
   const levelLabel = 'Level ' + (currentLevel + 1) + '/' + LEVELS.length + (level.name ? ' — ' + level.name : '');
-  levelText = this.add.text(WIDTH - 16, 16, levelLabel, {
+  levelText = this.add.text(this.scale.width - 16, 16, levelLabel, {
     fontSize: '18px', color: '#fff', fontFamily: 'monospace',
     stroke: '#000', strokeThickness: 3
   }).setOrigin(1, 0).setScrollFactor(0);
+
+  // viewport-resize: redraw screen-space bg + reposition right-anchored HUD
+  const onViewportResize = () => {
+    drawSky();
+    drawWall();
+    levelText.setPosition(this.scale.width - 16, 16);
+  };
+  game.events.on('viewport-resize', onViewportResize);
+  this.events.once('shutdown', () => game.events.off('viewport-resize', onViewportResize));
 
   // hearts HUD
   heartIcons = [];
@@ -1363,13 +1392,13 @@ function reachGoal() {
   sfx.win();
   const nextLevel = currentLevel + 1;
   if (nextLevel >= LEVELS.length) {
-    this.add.text(WIDTH / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + score + '\nPress R to restart', {
+    this.add.text(this.scale.width / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + score + '\nPress R to restart', {
       fontSize: '32px', color: '#fff700', fontFamily: 'monospace',
       align: 'center', stroke: '#000', strokeThickness: 4
     }).setOrigin(0.5).setScrollFactor(0);
     return;
   }
-  this.add.text(WIDTH / 2, HEIGHT / 2, 'Level ' + (currentLevel + 1) + ' clear!', {
+  this.add.text(this.scale.width / 2, HEIGHT / 2, 'Level ' + (currentLevel + 1) + ' clear!', {
     fontSize: '28px', color: '#fff700', fontFamily: 'monospace',
     align: 'center', stroke: '#000', strokeThickness: 4
   }).setOrigin(0.5).setScrollFactor(0);
