@@ -1546,6 +1546,11 @@ class GameScene extends Phaser.Scene {
   reachGoal() {
     if (this.gameOver) return;
     this.gameOver = true;
+    // freeze player + world so no other overlaps (coins, hearts) can trigger
+    // SFX during the 700ms fadeOut and stack on top of the win chime
+    this.physics.world.pause();
+    this.player.sprite.setVelocity(0, 0);
+    this.player.sprite.setAcceleration(0, 0);
     sfx.win();
     const currentLevel = this.registry.get('currentLevel');
     const nextLevel = currentLevel + 1;
