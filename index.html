@@ -20,6 +20,55 @@
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script>
+// procedural SFX via WebAudio — no assets
+let actx = null;
+function ensureAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function beep({ freq = 440, freqEnd = null, dur = 0.1, type = 'square', vol = 0.15, attack = 0.005, release = 0.05 }) {
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (freqEnd !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(1, freqEnd), t0 + dur);
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(vol, t0 + attack);
+  gain.gain.linearRampToValueAtTime(0, t0 + dur + release);
+  osc.connect(gain).connect(actx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + release + 0.02);
+}
+function noise({ dur = 0.1, vol = 0.15, filterFreq = 2000 }) {
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  const bufSize = Math.floor(actx.sampleRate * dur);
+  const buf = actx.createBuffer(1, bufSize, actx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+  const src = actx.createBufferSource();
+  src.buffer = buf;
+  const filt = actx.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.frequency.value = filterFreq;
+  const gain = actx.createGain();
+  gain.gain.value = vol;
+  src.connect(filt).connect(gain).connect(actx.destination);
+  src.start(t0);
+}
+const sfx = {
+  jump:  () => beep({ freq: 300, freqEnd: 480, dur: 0.08, type: 'sine', vol: 0.07, attack: 0.005, release: 0.03 }),
+  land:  () => noise({ dur: 0.08, vol: 0.18, filterFreq: 900 }),
+  coin:  () => { beep({ freq: 880, dur: 0.06, type: 'triangle', vol: 0.15 });
+                 setTimeout(() => beep({ freq: 1320, dur: 0.09, type: 'triangle', vol: 0.15 }), 60); },
+  hit:   () => { beep({ freq: 220, freqEnd: 55, dur: 0.35, type: 'sawtooth', vol: 0.2 });
+                 noise({ dur: 0.25, vol: 0.15, filterFreq: 600 }); },
+  win:   () => { [523, 659, 784, 1047].forEach((f, i) =>
+                   setTimeout(() => beep({ freq: f, dur: 0.15, type: 'triangle', vol: 0.18 }), i * 110)); }
+};
+
 const WIDTH = 800;
 const HEIGHT = 480;
 const WORLD_WIDTH = 3200;
@@ -215,6 +264,10 @@ function create() {
   this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
   this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
+  // unlock WebAudio on first key (autoplay policy)
+  this.input.keyboard.once('keydown', ensureAudio);
+  this.input.once('pointerdown', ensureAudio);
+
   scoreText = this.add.text(16, 16, 'Score: 0', {
     fontSize: '20px', color: '#fff', fontFamily: 'monospace',
     stroke: '#000', strokeThickness: 3
@@ -242,6 +295,7 @@ function update() {
 
   if ((cursors.up.isDown || this.spaceKey.isDown) && onGround) {
     player.setVelocityY(-470);
+    sfx.jump();
   }
 
   // animation state
@@ -262,6 +316,7 @@ function update() {
     const vy = Math.min(800, Math.abs(player.body.velocity.y) + 200);
     const count = Phaser.Math.Clamp(Math.floor(vy / 120), 4, 10);
     this.dust.emitParticleAt(feetX, feetY, count);
+    sfx.land();
   }
 
   // run trail — small puffs behind feet while moving on ground
@@ -280,6 +335,7 @@ function update() {
 
 function collectCoin(_p, coin) {
   this.sparkles.emitParticleAt(coin.x, coin.y, 12);
+  sfx.coin();
   coin.destroy();
   score += 10;
   scoreText.setText('Score: ' + score);
@@ -288,6 +344,7 @@ function collectCoin(_p, coin) {
 function hitSpike() {
   if (gameOver) return;
   gameOver = true;
+  sfx.hit();
   player.setTint(0xff0000);
   player.setVelocity(0, -300);
   player.body.checkCollision.none = true;
@@ -300,6 +357,7 @@ function hitSpike() {
 function reachGoal() {
   if (gameOver) return;
   gameOver = true;
+  sfx.win();
   this.add.text(WIDTH / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + score + '\nPress R to restart', {
     fontSize: '32px', color: '#fff700', fontFamily: 'monospace',
     align: 'center', stroke: '#000', strokeThickness: 4
