@@ -39,7 +39,7 @@
 <body>
 <div id="game"></div>
 <button id="fs">Fullscreen (F)</button>
-<div class="hint">WASD/Arrows = move &middot; W/Up/Space = jump &middot; X/J = attack &middot; F = fullscreen &middot; Stomp or slash slimes!</div>
+<div class="hint">WASD/Arrows = move &middot; W/Up/Space = jump &middot; X/J = attack &middot; F = fullscreen &middot; R = restart &middot; touch flag = checkpoint</div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script>
@@ -92,12 +92,137 @@ const sfx = {
                    setTimeout(() => beep({ freq: f, dur: 0.15, type: 'triangle', vol: 0.18 }), i * 110)); },
   stomp: () => { beep({ freq: 180, freqEnd: 80, dur: 0.12, type: 'square', vol: 0.15 });
                  noise({ dur: 0.08, vol: 0.12, filterFreq: 500 }); },
-  slash: () => noise({ dur: 0.12, vol: 0.14, filterFreq: 3200 })
+  slash: () => noise({ dur: 0.12, vol: 0.14, filterFreq: 3200 }),
+  checkpoint: () => { beep({ freq: 660, dur: 0.08, type: 'triangle', vol: 0.16 });
+                      setTimeout(() => beep({ freq: 990, dur: 0.1, type: 'triangle', vol: 0.16 }), 70);
+                      setTimeout(() => beep({ freq: 1320, dur: 0.12, type: 'triangle', vol: 0.16 }), 150); }
 };
 
 const WIDTH = 800;
 const HEIGHT = 480;
-const WORLD_WIDTH = 3200;
+
+// --- LEVELS ---
+const LEVELS = [
+  { // L1 — intro
+    worldWidth: 3200,
+    playerStart: [60, HEIGHT - 100],
+    groundGaps: [[640, 820], [1480, 1660], [2400, 2580]],
+    floats: [
+      [240, 380, 'platform'], [400, 320, 'platform'], [560, 260, 'platform'],
+      [680, 320, 'platform'], [780, 260, 'platform'],
+      [920, 340, 'platform'], [1060, 270, 'platform'], [1200, 210, 'platform'], [1340, 270, 'bigplatform'],
+      [1500, 360, 'platform'], [1580, 300, 'platform'], [1660, 360, 'platform'],
+      [1780, 280, 'platform'], [1920, 220, 'platform'], [2060, 280, 'platform'], [2200, 220, 'bigplatform'],
+      [2370, 320, 'platform'], [2490, 250, 'bigplatform'], [2630, 320, 'platform'],
+      [2780, 280, 'platform'], [2900, 220, 'platform'], [3020, 280, 'bigplatform']
+    ],
+    spikes: [660, 700, 740, 780, 1500, 1540, 1580, 1620, 2420, 2460, 2500, 2540],
+    coins: [
+      [180, 380], [240, 340], [320, 360], [400, 280], [480, 290], [560, 220],
+      [680, 280], [780, 220],
+      [920, 300], [1060, 230], [1200, 170], [1340, 230], [1340, 200],
+      [1500, 320], [1580, 260], [1660, 320],
+      [1780, 240], [1920, 180], [2060, 240], [2200, 180], [2200, 150],
+      [2370, 280], [2490, 210], [2630, 280],
+      [2780, 240], [2900, 180], [3020, 240], [3120, 380]
+    ],
+    enemies: [
+      { x: 320, y: 400, min: 100, max: 580 },
+      { x: 1100, y: 200, min: 1010, max: 1180 },
+      { x: 1900, y: 400, min: 1720, max: 2080 },
+      { x: 2900, y: 400, min: 2700, max: 3080 }
+    ],
+    hearts: [[1340, 230], [2200, 180], [3020, 240]],
+    checkpoints: [[1380, HEIGHT - 32], [2240, HEIGHT - 32]],
+    trees: [80, 200, 920, 1100, 1280, 1740, 1880, 2120, 2680, 2840, 3000],
+    bushes: [150, 360, 540, 900, 1300, 1700, 1900, 2200, 2700, 2900, 3100],
+    rocks: [120, 380, 580, 880, 1280, 1780, 2080, 2680, 2960, 3140],
+    goal: [3160, HEIGHT - 32]
+  },
+  { // L2 — climb focus, narrower platforms
+    worldWidth: 2800,
+    playerStart: [60, HEIGHT - 100],
+    groundGaps: [[400, 560], [900, 1120], [1500, 1700], [2100, 2300]],
+    floats: [
+      [200, 360, 'platform'], [340, 290, 'platform'], [480, 220, 'platform'],
+      [620, 280, 'platform'], [760, 220, 'platform'], [880, 160, 'platform'],
+      [1020, 220, 'platform'], [1160, 280, 'bigplatform'],
+      [1280, 240, 'platform'], [1420, 180, 'platform'], [1560, 240, 'platform'],
+      [1700, 180, 'bigplatform'], [1860, 240, 'platform'], [2000, 180, 'platform'],
+      [2150, 300, 'platform'], [2290, 240, 'platform'], [2430, 180, 'bigplatform'],
+      [2600, 240, 'platform']
+    ],
+    spikes: [410, 450, 490, 530, 1510, 1550, 1590, 1630, 1670, 2110, 2150, 2190, 2230, 2270],
+    coins: [
+      [200, 320], [340, 250], [480, 180],
+      [620, 240], [760, 180], [880, 120],
+      [1020, 180], [1160, 240],
+      [1280, 200], [1420, 140], [1560, 200], [1700, 140],
+      [1860, 200], [2000, 140],
+      [2150, 260], [2290, 200], [2430, 140], [2600, 200]
+    ],
+    enemies: [
+      { x: 250, y: 400, min: 100, max: 380 },
+      { x: 700, y: 200, min: 620, max: 880 },
+      { x: 1300, y: 400, min: 1120, max: 1480 },
+      { x: 1850, y: 400, min: 1720, max: 2080 },
+      { x: 2500, y: 160, min: 2430, max: 2580 }
+    ],
+    hearts: [[880, 120], [1700, 140], [2430, 140]],
+    checkpoints: [[1180, HEIGHT - 32], [1880, HEIGHT - 32]],
+    trees: [80, 700, 1300, 1820, 2400, 2700],
+    bushes: [150, 660, 1340, 1880, 2360, 2680],
+    rocks: [120, 720, 1320, 1860, 2440, 2720],
+    goal: [2740, HEIGHT - 32]
+  },
+  { // L3 — gauntlet, many spike pits
+    worldWidth: 3600,
+    playerStart: [60, HEIGHT - 100],
+    groundGaps: [[300, 480], [720, 920], [1240, 1440], [1820, 2020], [2400, 2620], [3000, 3200]],
+    floats: [
+      [220, 320, 'platform'], [360, 260, 'platform'],
+      [520, 320, 'platform'], [640, 260, 'platform'], [780, 320, 'platform'], [880, 260, 'platform'],
+      [960, 220, 'platform'], [1100, 280, 'bigplatform'], [1280, 220, 'platform'], [1420, 280, 'platform'],
+      [1500, 220, 'platform'], [1620, 260, 'platform'], [1760, 200, 'platform'],
+      [1880, 260, 'platform'], [1980, 320, 'platform'],
+      [2080, 200, 'platform'], [2220, 260, 'bigplatform'], [2380, 200, 'platform'],
+      [2520, 280, 'platform'], [2660, 220, 'platform'], [2800, 280, 'bigplatform'],
+      [2940, 220, 'platform'], [3060, 280, 'platform'], [3220, 220, 'platform'],
+      [3340, 280, 'platform'], [3460, 220, 'bigplatform']
+    ],
+    spikes: [
+      320, 360, 400, 440,
+      740, 780, 820, 860, 900,
+      1260, 1300, 1340, 1380, 1420,
+      1840, 1880, 1920, 1960, 2000,
+      2420, 2460, 2500, 2540, 2580,
+      3020, 3060, 3100, 3140, 3180
+    ],
+    coins: [
+      [220, 280], [360, 220],
+      [520, 280], [640, 220], [780, 280], [880, 220],
+      [960, 180], [1100, 240], [1280, 180], [1420, 240],
+      [1620, 220], [1760, 160],
+      [2080, 160], [2220, 220], [2380, 160],
+      [2660, 180], [2800, 240],
+      [2940, 180], [3220, 180], [3460, 180]
+    ],
+    enemies: [
+      { x: 150, y: 400, min: 50, max: 280 },
+      { x: 1000, y: 180, min: 940, max: 1120 },
+      { x: 1700, y: 400, min: 1620, max: 1800 },
+      { x: 2200, y: 220, min: 2080, max: 2380 },
+      { x: 2700, y: 400, min: 2620, max: 2780 },
+      { x: 3400, y: 180, min: 3340, max: 3480 }
+    ],
+    hearts: [[1100, 240], [2220, 220], [3460, 180]],
+    checkpoints: [[1140, 272], [2260, 252]],
+    trees: [80, 600, 1100, 1600, 2200, 2800, 3300],
+    bushes: [120, 580, 1050, 1640, 2240, 2820, 3340],
+    rocks: [160, 560, 1080, 1620, 2300, 2840, 3380],
+    goal: [3520, 212]
+  }
+];
 
 const config = {
   type: Phaser.AUTO,
@@ -124,11 +249,13 @@ const config = {
   ]
 };
 
-let player, cursors, platforms, coins, spikes, enemies, healthPickups, scoreText, score = 0, gameOver = false, goal, winText;
+let player, cursors, platforms, coins, spikes, enemies, healthPickups, checkpointFlags, scoreText, levelText, score = 0, gameOver = false, goal, winText;
 const MAX_HP = 10;
 let hp = MAX_HP;
 let invulnUntil = 0;
 let heartIcons = [];
+let currentLevel = 0;
+let checkpoint = null; // { x, y } of activated checkpoint flag (bottom-anchored)
 
 const game = new Phaser.Game(config);
 
@@ -269,6 +396,12 @@ function preload() {
   g.generateTexture('goal', 16, 48);
   g.clear();
 
+  // checkpoint flag (16x48) — cyan, gray when inactive (via tint)
+  g.fillStyle(0x222222, 1).fillRect(0, 0, 3, 48);
+  g.fillStyle(0x44ddff, 1).fillTriangle(3, 4, 16, 12, 3, 20);
+  g.generateTexture('checkpoint', 16, 48);
+  g.clear();
+
   // dust puff (8x8 soft circle, tan)
   g.fillStyle(0xd9c9a3, 1).fillCircle(4, 4, 4);
   g.fillStyle(0xffffff, 0.5).fillCircle(4, 4, 2);
@@ -360,7 +493,9 @@ function titleCreate() {
 }
 
 function create() {
-  this.physics.world.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
+  const level = LEVELS[currentLevel];
+  const worldWidth = level.worldWidth;
+  this.physics.world.setBounds(0, 0, worldWidth, HEIGHT);
 
   // --- LAYERED PARALLAX BACKGROUND ---
   // sky gradient (locked to camera)
@@ -370,7 +505,7 @@ function create() {
   sky.setScrollFactor(0).setDepth(-100);
 
   // distant mountains (slowest)
-  for (let x = -100; x < WORLD_WIDTH; x += 220) {
+  for (let x = -100; x < worldWidth; x += 220) {
     const m = this.add.image(x, HEIGHT - 60, 'mountain').setOrigin(0, 1);
     m.setScrollFactor(0.2).setDepth(-90).setAlpha(0.6);
   }
@@ -388,13 +523,13 @@ function create() {
   // green hills mid-layer
   const hills = this.add.graphics();
   hills.fillStyle(0x3d7028, 0.7);
-  for (let x = 0; x < WORLD_WIDTH; x += 180) {
+  for (let x = 0; x < worldWidth; x += 180) {
     hills.fillCircle(x, HEIGHT - 50, 110);
   }
   hills.setScrollFactor(0.4).setDepth(-70);
 
-  // background tree line (between hills and game)
-  for (let x = 30; x < WORLD_WIDTH; x += 110) {
+  // background tree line
+  for (let x = 30; x < worldWidth; x += 110) {
     const t = this.add.image(x + Phaser.Math.Between(-20, 20), HEIGHT - 32, 'tree')
       .setOrigin(0.5, 1).setScale(0.6).setTint(0x7a9a6a).setAlpha(0.7);
     t.setScrollFactor(0.55).setDepth(-60);
@@ -403,87 +538,45 @@ function create() {
   // --- LEVEL GEOMETRY ---
   platforms = this.physics.add.staticGroup();
 
-  // ground with intentional gaps per zone
-  const gaps = [[640, 820], [1480, 1660], [2400, 2580]];
-  for (let x = 0; x < WORLD_WIDTH; x += 32) {
-    const inGap = gaps.some(([a, b]) => x >= a && x < b);
+  // ground with per-level gaps
+  for (let x = 0; x < worldWidth; x += 32) {
+    const inGap = level.groundGaps.some(([a, b]) => x >= a && x < b);
     if (!inGap) {
       platforms.create(x + 16, HEIGHT - 16, 'ground').refreshBody();
     }
   }
 
-  // floating platforms — designed paths per zone
-  const floats = [
-    // Z1 tutorial steps
-    [240, 380, 'platform'], [400, 320, 'platform'], [560, 260, 'platform'],
-    // Z2 spike-pit crossing
-    [680, 320, 'platform'], [780, 260, 'platform'],
-    // Z3 ascending climb
-    [920, 340, 'platform'], [1060, 270, 'platform'], [1200, 210, 'platform'], [1340, 270, 'bigplatform'],
-    // Z4 chasm stepping stones
-    [1500, 360, 'platform'], [1580, 300, 'platform'], [1660, 360, 'platform'],
-    // Z5 zigzag
-    [1780, 280, 'platform'], [1920, 220, 'platform'], [2060, 280, 'platform'], [2200, 220, 'bigplatform'],
-    // Z6 big jumps over pit
-    [2370, 320, 'platform'], [2490, 250, 'bigplatform'], [2630, 320, 'platform'],
-    // Z7 final ascent
-    [2780, 280, 'platform'], [2900, 220, 'platform'], [3020, 280, 'bigplatform']
-  ];
-  floats.forEach(([x, y, key]) => platforms.create(x, y, key).refreshBody());
+  // floating platforms
+  level.floats.forEach(([x, y, key]) => platforms.create(x, y, key).refreshBody());
 
-  // spikes inside pit gaps
+  // spikes
   spikes = this.physics.add.staticGroup();
-  [660, 700, 740, 780, 1500, 1540, 1580, 1620, 2420, 2460, 2500, 2540].forEach(x => {
+  level.spikes.forEach(x => {
     const s = spikes.create(x, HEIGHT - 8, 'spike');
     s.body.setSize(20, 12).setOffset(2, 4);
   });
 
-  // coins — guide player along intended path
+  // coins
   coins = this.physics.add.group({ allowGravity: false, immovable: true });
-  const coinPositions = [
-    // Z1 arc
-    [180, 380], [240, 340], [320, 360], [400, 280], [480, 290], [560, 220],
-    // Z2 pit crossing
-    [680, 280], [780, 220],
-    // Z3 climb rewards
-    [920, 300], [1060, 230], [1200, 170], [1340, 230], [1340, 200],
-    // Z4 chasm
-    [1500, 320], [1580, 260], [1660, 320],
-    // Z5 zigzag
-    [1780, 240], [1920, 180], [2060, 240], [2200, 180], [2200, 150],
-    // Z6 big jumps
-    [2370, 280], [2490, 210], [2630, 280],
-    // Z7 final
-    [2780, 240], [2900, 180], [3020, 240], [3120, 380]
-  ];
-  coinPositions.forEach(([x, y]) => {
+  level.coins.forEach(([x, y]) => {
     const c = coins.create(x, y, 'coin');
     this.tweens.add({ targets: c, y: y - 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   });
 
   // --- FOREGROUND DECORATIONS (no physics) ---
-  // trees on ground sections
-  [80, 200, 920, 1100, 1280, 1740, 1880, 2120, 2680, 2840, 3000].forEach(x => {
+  level.trees.forEach(x => {
     this.add.image(x, HEIGHT - 32, 'tree').setOrigin(0.5, 1).setDepth(-10);
   });
-  // bushes
-  [150, 360, 540, 900, 1300, 1700, 1900, 2200, 2700, 2900, 3100].forEach(x => {
+  level.bushes.forEach(x => {
     this.add.image(x, HEIGHT - 32, 'bush').setOrigin(0.5, 1).setDepth(-5);
   });
-  // rocks scattered
-  [120, 380, 580, 880, 1280, 1780, 2080, 2680, 2960, 3140].forEach(x => {
+  level.rocks.forEach(x => {
     this.add.image(x, HEIGHT - 32, 'rock').setOrigin(0.5, 1).setDepth(-5);
   });
 
-  // --- ENEMIES (patrolling slimes) — created here, overlaps wired after player exists
+  // --- ENEMIES (patrolling slimes)
   enemies = this.physics.add.group();
-  const enemyData = [
-    { x: 320, y: 400, min: 100, max: 580 },
-    { x: 1100, y: 200, min: 1010, max: 1180 },
-    { x: 1900, y: 400, min: 1720, max: 2080 },
-    { x: 2900, y: 400, min: 2700, max: 3080 }
-  ];
-  enemyData.forEach(d => {
+  level.enemies.forEach(d => {
     const e = enemies.create(d.x, d.y, 'enemy');
     e.body.setSize(28, 20).setOffset(2, 4);
     e.setVelocityX(60);
@@ -495,27 +588,45 @@ function create() {
   });
   this.physics.add.collider(enemies, platforms);
 
-  // --- HEALTH PICKUPS (restore full HP) ---
+  // --- HEALTH PICKUPS ---
   healthPickups = this.physics.add.group({ allowGravity: false, immovable: true });
-  const heartSpots = [
-    [1340, 230],   // top of z3 climb
-    [2200, 180],   // top of z5 zigzag
-    [3020, 240]    // final platform reward
-  ];
-  heartSpots.forEach(([x, y]) => {
+  level.hearts.forEach(([x, y]) => {
     const h = healthPickups.create(x, y, 'heart_full').setScale(1.8);
     this.tweens.add({ targets: h, y: y - 6, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     this.tweens.add({ targets: h, scale: 2.1, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   });
 
-  // goal flag at end
-  goal = this.physics.add.staticSprite(3160, HEIGHT - 56, 'goal');
+  // --- CHECKPOINTS (bottom-anchored cyan flags, tinted gray until activated) ---
+  checkpointFlags = this.physics.add.staticGroup();
+  (level.checkpoints || []).forEach(([x, y]) => {
+    const f = checkpointFlags.create(x, y, 'checkpoint').setOrigin(0.5, 1);
+    f.body.setSize(14, 44).setOffset(1, 4);
+    f.refreshBody();
+    f.cpX = x;
+    f.cpY = y;
+    f.activated = false;
+    if (checkpoint && checkpoint.x === x && checkpoint.y === y) {
+      f.activated = true;
+    } else {
+      f.setTint(0x666666);
+    }
+  });
 
-  // player
-  player = this.physics.add.sprite(60, HEIGHT - 100, 'player');
+  // goal flag at end
+  goal = this.physics.add.staticSprite(level.goal[0], level.goal[1], 'goal').setOrigin(0.5, 1);
+  goal.refreshBody();
+
+  // --- PLAYER spawn at checkpoint or level start ---
+  let spawnX, spawnY;
+  if (checkpoint) {
+    spawnX = checkpoint.x;
+    spawnY = checkpoint.y - 60;
+  } else {
+    [spawnX, spawnY] = level.playerStart;
+  }
+  player = this.physics.add.sprite(spawnX, spawnY, 'player');
   player.setCollideWorldBounds(true);
   player.setMaxVelocity(220, 800);
-  // char pixels span x=35-56, y=24-69 inside 92x92 frame (rest = transparent padding)
   player.body.setSize(21, 45).setOffset(35, 24);
 
   this.anims.create({
@@ -542,7 +653,6 @@ function create() {
     repeat: 0
   });
 
-  // dust emitter — manual emit for landing burst + run trail puffs
   this.dust = this.add.particles(0, 0, 'dust', {
     speed: { min: 20, max: 70 },
     angle: { min: 200, max: 340 },
@@ -554,7 +664,6 @@ function create() {
   });
   this.dust.setDepth(5);
 
-  // coin sparkle emitter — burst on collect, radial outward
   this.sparkles = this.add.particles(0, 0, 'spark', {
     speed: { min: 60, max: 160 },
     angle: { min: 0, max: 360 },
@@ -581,9 +690,10 @@ function create() {
   this.physics.add.overlap(player, goal, reachGoal, null, this);
   this.physics.add.overlap(player, enemies, hitEnemy, null, this);
   this.physics.add.overlap(player, healthPickups, collectHealth, null, this);
+  this.physics.add.overlap(player, checkpointFlags, hitCheckpoint, null, this);
 
-  // camera follow
-  this.cameras.main.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
+  // camera
+  this.cameras.main.setBounds(0, 0, worldWidth, HEIGHT);
   this.cameras.main.startFollow(player, true, 0.1, 0.1);
 
   cursors = this.input.keyboard.createCursorKeys();
@@ -604,22 +714,29 @@ function create() {
   this.input.keyboard.once('keydown', ensureAudio);
   this.input.once('pointerdown', ensureAudio);
 
-  scoreText = this.add.text(16, 16, 'Score: 0', {
+  scoreText = this.add.text(16, 16, 'Score: ' + score, {
     fontSize: '20px', color: '#fff', fontFamily: 'monospace',
     stroke: '#000', strokeThickness: 3
   }).setScrollFactor(0);
 
-  // hearts HUD (5 hearts, scale 2x = 32px each)
+  levelText = this.add.text(WIDTH - 16, 16, 'Level ' + (currentLevel + 1) + '/' + LEVELS.length, {
+    fontSize: '20px', color: '#fff', fontFamily: 'monospace',
+    stroke: '#000', strokeThickness: 3
+  }).setOrigin(1, 0).setScrollFactor(0);
+
+  // hearts HUD
   heartIcons = [];
   for (let i = 0; i < 5; i++) {
     const h = this.add.image(20 + i * 36, 56, 'heart_full').setOrigin(0, 0).setScale(2).setScrollFactor(0);
     heartIcons.push(h);
   }
   updateHearts();
+
+  // brief fade-in on respawn / level start
+  this.cameras.main.fadeIn(250, 0, 0, 0);
 }
 
 function updateHearts() {
-  // hp 10 = 5 full, hp 9 = 4 full + 1 half, hp 0 = 5 empty
   for (let i = 0; i < 5; i++) {
     const left = hp - i * 2;
     const key = left >= 2 ? 'heart_full' : left === 1 ? 'heart_half' : 'heart_empty';
@@ -658,7 +775,6 @@ function update() {
     justJumped = true;
   }
 
-  // animation state — don't override jump anim this frame, airborne anims, or active punch
   if (onGround && !justJumped && !this.isPunching) {
     if (Math.abs(player.body.velocity.x) > 10) {
       player.anims.play('run', true);
@@ -667,11 +783,9 @@ function update() {
     }
   }
 
-  // feet world position (frame is 92x92 origin centered; feet pixel at y=69 → +23 from center)
   const feetX = player.x;
   const feetY = player.y + 23;
 
-  // landing burst — was airborne, now grounded
   if (!this.wasOnGround && onGround) {
     const vy = Math.min(800, Math.abs(player.body.velocity.y) + 200);
     const count = Phaser.Math.Clamp(Math.floor(vy / 120), 4, 10);
@@ -679,7 +793,6 @@ function update() {
     sfx.land();
   }
 
-  // run trail — small puffs behind feet while moving on ground
   const vx = player.body.velocity.x;
   if (onGround && Math.abs(vx) > 60 && this.time.now - this.lastRunDustAt > 90) {
     const behind = feetX + (vx > 0 ? -10 : 10);
@@ -689,31 +802,27 @@ function update() {
 
   this.wasOnGround = onGround;
 
-  // patrol enemies — flip at range bounds
   enemies.children.iterate(e => {
     if (!e || !e.active) return;
     if (e.x <= e.minX && e.body.velocity.x <= 0) { e.setVelocityX(60);  e.setFlipX(false); }
     if (e.x >= e.maxX && e.body.velocity.x >= 0) { e.setVelocityX(-60); e.setFlipX(true);  }
   });
 
-  // attack (X or J), 350ms cooldown
   if ((Phaser.Input.Keyboard.JustDown(this.attackKey) || Phaser.Input.Keyboard.JustDown(this.jKey))
       && this.time.now - this.lastAttackAt > 350) {
     this.lastAttackAt = this.time.now;
     doAttack.call(this);
   }
 
-  // fell off world
-  if (player.y > HEIGHT + 50) hitSpike.call(this);
+  if (player.y > HEIGHT + 50) die.call(this);
 }
 
 function collectHealth(_p, heart) {
-  if (hp >= MAX_HP) return; // skip if already full
+  if (hp >= MAX_HP) return;
   this.sparkles.emitParticleAt(heart.x, heart.y, 16);
   hp = MAX_HP;
   updateHearts();
   sfx.coin();
-  // brief green-tinted floating text
   const txt = this.add.text(heart.x, heart.y - 10, '+FULL', {
     fontSize: '14px', color: '#7bff7b', fontFamily: 'monospace',
     stroke: '#000', strokeThickness: 3
@@ -730,15 +839,27 @@ function collectCoin(_p, coin) {
   scoreText.setText('Score: ' + score);
 }
 
+function hitCheckpoint(_p, flag) {
+  if (flag.activated) return;
+  flag.activated = true;
+  flag.clearTint();
+  checkpoint = { x: flag.cpX, y: flag.cpY };
+  this.sparkles.emitParticleAt(flag.x, flag.y - 36, 16);
+  sfx.checkpoint();
+  const txt = this.add.text(flag.x, flag.y - 60, 'CHECKPOINT', {
+    fontSize: '14px', color: '#7bf0ff', fontFamily: 'monospace',
+    stroke: '#000', strokeThickness: 3
+  }).setOrigin(0.5);
+  this.tweens.add({ targets: txt, y: txt.y - 30, alpha: 0, duration: 900, onComplete: () => txt.destroy() });
+}
+
 function hitEnemy(_p, enemy) {
   if (gameOver || !enemy.active) return;
-  // stomp: player falling AND clearly above enemy
   if (player.body.velocity.y > 50 && (player.y + 23) < enemy.y + 4) {
     killEnemy.call(this, enemy);
     player.setVelocityY(-380);
     return;
   }
-  // side/below hit — take 1 dmg if not invuln
   if (this.time.now < invulnUntil) return;
   damagePlayer.call(this, 1, enemy.x);
 }
@@ -747,17 +868,15 @@ function damagePlayer(amount, sourceX) {
   hp = Math.max(0, hp - amount);
   updateHearts();
   invulnUntil = this.time.now + 900;
-  // knockback away from source (default: opposite of facing)
   const src = (typeof sourceX === 'number') ? sourceX : (player.flipX ? player.x + 1 : player.x - 1);
   const dir = player.x < src ? -1 : 1;
   player.setVelocity(dir * 220, -260);
   sfx.hit();
-  // invuln blink
   this.tweens.add({
     targets: player, alpha: 0.3, duration: 90, yoyo: true, repeat: 4,
     onComplete: () => player.setAlpha(1)
   });
-  if (hp <= 0) hitSpike.call(this);
+  if (hp <= 0) die.call(this);
 }
 
 function killEnemy(enemy) {
@@ -774,8 +893,6 @@ function doAttack() {
   this.isPunching = true;
   player.anims.play('punch', true);
   sfx.slash();
-
-  // hit any enemy in punch arc — slight delay so hit registers on extended frame
   this.time.delayedCall(80, () => {
     enemies.children.iterate(e => {
       if (!e || !e.active) return;
@@ -788,27 +905,51 @@ function doAttack() {
   });
 }
 
-function hitSpike() {
+function hitSpike() { die.call(this); }
+
+// death → respawn at checkpoint or level start; score preserved, HP refilled
+function die() {
   if (gameOver) return;
   gameOver = true;
   sfx.hit();
   player.setTint(0xff0000);
-  player.setVelocity(0, -300);
   player.body.checkCollision.none = true;
-  this.add.text(WIDTH / 2, HEIGHT / 2, 'GAME OVER\nPress R to restart', {
-    fontSize: '32px', color: '#fff', fontFamily: 'monospace',
-    align: 'center', stroke: '#000', strokeThickness: 4
-  }).setOrigin(0.5).setScrollFactor(0);
+  player.setVelocity(0, -300);
+  this.cameras.main.flash(250, 200, 0, 0);
+  this.cameras.main.fadeOut(500, 0, 0, 0);
+  this.cameras.main.once('camerafadeoutcomplete', () => {
+    hp = MAX_HP;
+    invulnUntil = 0;
+    gameOver = false;
+    this.scene.restart();
+  });
 }
 
 function reachGoal() {
   if (gameOver) return;
   gameOver = true;
   sfx.win();
-  this.add.text(WIDTH / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + score + '\nPress R to restart', {
-    fontSize: '32px', color: '#fff700', fontFamily: 'monospace',
+  const nextLevel = currentLevel + 1;
+  if (nextLevel >= LEVELS.length) {
+    this.add.text(WIDTH / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + score + '\nPress R to restart', {
+      fontSize: '32px', color: '#fff700', fontFamily: 'monospace',
+      align: 'center', stroke: '#000', strokeThickness: 4
+    }).setOrigin(0.5).setScrollFactor(0);
+    return;
+  }
+  this.add.text(WIDTH / 2, HEIGHT / 2, 'Level ' + (currentLevel + 1) + ' clear!', {
+    fontSize: '28px', color: '#fff700', fontFamily: 'monospace',
     align: 'center', stroke: '#000', strokeThickness: 4
   }).setOrigin(0.5).setScrollFactor(0);
+  this.cameras.main.fadeOut(700, 0, 0, 0);
+  this.cameras.main.once('camerafadeoutcomplete', () => {
+    currentLevel = nextLevel;
+    checkpoint = null;
+    hp = MAX_HP;
+    invulnUntil = 0;
+    gameOver = false;
+    this.scene.restart();
+  });
 }
 
 function resetState() {
@@ -816,6 +957,8 @@ function resetState() {
   gameOver = false;
   hp = MAX_HP;
   invulnUntil = 0;
+  currentLevel = 0;
+  checkpoint = null;
 }
 </script>
 </body>
