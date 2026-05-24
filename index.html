@@ -39,7 +39,7 @@
 <body>
 <div id="game"></div>
 <button id="fs">Fullscreen (F)</button>
-<div class="hint">Arrows or WASD to move &middot; Up/W/Space to jump &middot; F = fullscreen &middot; Collect coins, avoid spikes</div>
+<div class="hint">WASD/Arrows = move &middot; W/Up/Space = jump &middot; X/J = attack &middot; F = fullscreen &middot; Stomp or slash slimes!</div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script>
@@ -89,7 +89,10 @@ const sfx = {
   hit:   () => { beep({ freq: 220, freqEnd: 55, dur: 0.35, type: 'sawtooth', vol: 0.2 });
                  noise({ dur: 0.25, vol: 0.15, filterFreq: 600 }); },
   win:   () => { [523, 659, 784, 1047].forEach((f, i) =>
-                   setTimeout(() => beep({ freq: f, dur: 0.15, type: 'triangle', vol: 0.18 }), i * 110)); }
+                   setTimeout(() => beep({ freq: f, dur: 0.15, type: 'triangle', vol: 0.18 }), i * 110)); },
+  stomp: () => { beep({ freq: 180, freqEnd: 80, dur: 0.12, type: 'square', vol: 0.15 });
+                 noise({ dur: 0.08, vol: 0.12, filterFreq: 500 }); },
+  slash: () => noise({ dur: 0.12, vol: 0.14, filterFreq: 3200 })
 };
 
 const WIDTH = 800;
@@ -121,7 +124,7 @@ const config = {
   ]
 };
 
-let player, cursors, platforms, coins, spikes, scoreText, score = 0, gameOver = false, goal, winText;
+let player, cursors, platforms, coins, spikes, enemies, scoreText, score = 0, gameOver = false, goal, winText;
 
 const game = new Phaser.Game(config);
 
@@ -133,7 +136,10 @@ function toggleFs() {
     (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
   }
 }
-document.getElementById('fs').addEventListener('click', toggleFs);
+document.getElementById('fs').addEventListener('click', (e) => {
+  toggleFs();
+  e.currentTarget.blur(); // prevent button re-triggering on Space/Enter
+});
 
 // Recompute Phaser size whenever viewport changes
 function resizeGame() {
@@ -267,6 +273,23 @@ function preload() {
   g.fillStyle(0xffd700, 1).fillCircle(3, 3, 3);
   g.fillStyle(0xffffff, 1).fillCircle(3, 3, 1);
   g.generateTexture('spark', 6, 6);
+  g.clear();
+
+  // enemy slime (32x24, purple w/ eyes)
+  g.fillStyle(0x6a2a8a, 1).fillCircle(16, 16, 14);
+  g.fillStyle(0x4a1a6a, 1).fillEllipse(16, 22, 26, 6);
+  g.fillStyle(0xffffff, 1).fillCircle(11, 12, 3).fillCircle(21, 12, 3);
+  g.fillStyle(0x000000, 1).fillCircle(11, 13, 1.5).fillCircle(21, 13, 1.5);
+  g.fillStyle(0x000000, 1).fillRect(12, 17, 8, 1);
+  g.generateTexture('enemy', 32, 24);
+  g.clear();
+
+  // slash arc (40x32 white crescent)
+  g.fillStyle(0xffffff, 0.9);
+  g.beginPath(); g.arc(0, 16, 30, -1.2, 1.2, false); g.closePath(); g.fillPath();
+  g.fillStyle(0xffeeaa, 0.7);
+  g.beginPath(); g.arc(0, 16, 24, -1.0, 1.0, false); g.closePath(); g.fillPath();
+  g.generateTexture('slash', 40, 32);
   g.destroy();
 }
 
@@ -423,6 +446,26 @@ function create() {
     this.add.image(x, HEIGHT - 32, 'rock').setOrigin(0.5, 1).setDepth(-5);
   });
 
+  // --- ENEMIES (patrolling slimes) — created here, overlaps wired after player exists
+  enemies = this.physics.add.group();
+  const enemyData = [
+    { x: 320, y: 400, min: 100, max: 580 },
+    { x: 1100, y: 200, min: 1010, max: 1180 },
+    { x: 1900, y: 400, min: 1720, max: 2080 },
+    { x: 2900, y: 400, min: 2700, max: 3080 }
+  ];
+  enemyData.forEach(d => {
+    const e = enemies.create(d.x, d.y, 'enemy');
+    e.body.setSize(28, 20).setOffset(2, 4);
+    e.setVelocityX(60);
+    e.setBounce(0, 0);
+    e.setCollideWorldBounds(true);
+    e.minX = d.min;
+    e.maxX = d.max;
+    this.tweens.add({ targets: e, scaleY: 0.85, duration: 350, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  });
+  this.physics.add.collider(enemies, platforms);
+
   // goal flag at end
   goal = this.physics.add.staticSprite(3160, HEIGHT - 56, 'goal');
 
@@ -484,6 +527,7 @@ function create() {
   this.physics.add.overlap(player, coins, collectCoin, null, this);
   this.physics.add.overlap(player, spikes, hitSpike, null, this);
   this.physics.add.overlap(player, goal, reachGoal, null, this);
+  this.physics.add.overlap(player, enemies, hitEnemy, null, this);
 
   // camera follow
   this.cameras.main.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
@@ -498,6 +542,9 @@ function create() {
   });
   this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
   this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+  this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+  this.jKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J);
+  this.lastAttackAt = 0;
   this.input.keyboard.on('keydown-F', toggleFs);
 
   // unlock WebAudio on first key (autoplay policy)
@@ -572,6 +619,20 @@ function update() {
 
   this.wasOnGround = onGround;
 
+  // patrol enemies — flip at range bounds
+  enemies.children.iterate(e => {
+    if (!e || !e.active) return;
+    if (e.x <= e.minX && e.body.velocity.x <= 0) { e.setVelocityX(60);  e.setFlipX(false); }
+    if (e.x >= e.maxX && e.body.velocity.x >= 0) { e.setVelocityX(-60); e.setFlipX(true);  }
+  });
+
+  // attack (X or J), 350ms cooldown
+  if ((Phaser.Input.Keyboard.JustDown(this.attackKey) || Phaser.Input.Keyboard.JustDown(this.jKey))
+      && this.time.now - this.lastAttackAt > 350) {
+    this.lastAttackAt = this.time.now;
+    doAttack.call(this);
+  }
+
   // fell off world
   if (player.y > HEIGHT + 50) hitSpike.call(this);
 }
@@ -582,6 +643,48 @@ function collectCoin(_p, coin) {
   coin.destroy();
   score += 10;
   scoreText.setText('Score: ' + score);
+}
+
+function hitEnemy(_p, enemy) {
+  if (gameOver || !enemy.active) return;
+  // stomp: player falling AND clearly above enemy
+  if (player.body.velocity.y > 50 && (player.y + 23) < enemy.y + 4) {
+    killEnemy.call(this, enemy);
+    player.setVelocityY(-380);
+  } else {
+    hitSpike.call(this);
+  }
+}
+
+function killEnemy(enemy) {
+  this.sparkles.emitParticleAt(enemy.x, enemy.y, 8);
+  this.dust.emitParticleAt(enemy.x, enemy.y + 8, 6);
+  enemy.disableBody(true, true);
+  sfx.stomp();
+  score += 20;
+  scoreText.setText('Score: ' + score);
+}
+
+function doAttack() {
+  const dir = player.flipX ? -1 : 1;
+  const sx = player.x + dir * 28;
+  const sy = player.y + 4;
+  const slash = this.add.image(sx, sy, 'slash').setDepth(8);
+  slash.setFlipX(dir < 0);
+  slash.setAlpha(0.9);
+  slash.setScale(0.6);
+  this.tweens.add({ targets: slash, scale: 1.1, alpha: 0, duration: 160, onComplete: () => slash.destroy() });
+  sfx.slash();
+
+  // hit any enemy in arc range
+  enemies.children.iterate(e => {
+    if (!e || !e.active) return;
+    const dx = e.x - player.x;
+    const dy = e.y - player.y;
+    if (Math.sign(dx) === dir && Math.abs(dx) < 50 && Math.abs(dy) < 35) {
+      killEnemy.call(this, e);
+    }
+  });
 }
 
 function hitSpike() {
