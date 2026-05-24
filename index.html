@@ -125,6 +125,10 @@ const config = {
 };
 
 let player, cursors, platforms, coins, spikes, enemies, scoreText, score = 0, gameOver = false, goal, winText;
+const MAX_HP = 10;
+let hp = MAX_HP;
+let invulnUntil = 0;
+let heartIcons = [];
 
 const game = new Phaser.Game(config);
 
@@ -292,6 +296,29 @@ function preload() {
   g.fillStyle(0xffeeaa, 0.7);
   g.beginPath(); g.arc(0, 16, 24, -1.0, 1.0, false); g.closePath(); g.fillPath();
   g.generateTexture('slash', 40, 32);
+  g.clear();
+
+  // hearts: full, half, empty (16x16)
+  const drawHeart = (color) => {
+    g.fillStyle(color, 1);
+    g.fillCircle(5, 5, 4);
+    g.fillCircle(11, 5, 4);
+    g.fillTriangle(1, 6, 15, 6, 8, 14);
+  };
+  drawHeart(0xe63946);
+  g.generateTexture('heart_full', 16, 16);
+  g.clear();
+  // half: full red left, gray right
+  g.fillStyle(0x4a4a4a, 1);
+  g.fillCircle(11, 5, 4);
+  g.fillTriangle(8, 6, 15, 6, 8, 14);
+  g.fillStyle(0xe63946, 1);
+  g.fillCircle(5, 5, 4);
+  g.fillTriangle(1, 6, 8, 6, 8, 14);
+  g.generateTexture('heart_half', 16, 16);
+  g.clear();
+  drawHeart(0x4a4a4a);
+  g.generateTexture('heart_empty', 16, 16);
   g.destroy();
 }
 
@@ -565,6 +592,23 @@ function create() {
     fontSize: '20px', color: '#fff', fontFamily: 'monospace',
     stroke: '#000', strokeThickness: 3
   }).setScrollFactor(0);
+
+  // hearts HUD (5 hearts, scale 2x = 32px each)
+  heartIcons = [];
+  for (let i = 0; i < 5; i++) {
+    const h = this.add.image(20 + i * 36, 56, 'heart_full').setOrigin(0, 0).setScale(2).setScrollFactor(0);
+    heartIcons.push(h);
+  }
+  updateHearts();
+}
+
+function updateHearts() {
+  // hp 10 = 5 full, hp 9 = 4 full + 1 half, hp 0 = 5 empty
+  for (let i = 0; i < 5; i++) {
+    const left = hp - i * 2;
+    const key = left >= 2 ? 'heart_full' : left === 1 ? 'heart_half' : 'heart_empty';
+    heartIcons[i].setTexture(key);
+  }
 }
 
 function update() {
@@ -661,9 +705,27 @@ function hitEnemy(_p, enemy) {
   if (player.body.velocity.y > 50 && (player.y + 23) < enemy.y + 4) {
     killEnemy.call(this, enemy);
     player.setVelocityY(-380);
-  } else {
-    hitSpike.call(this);
+    return;
   }
+  // side/below hit — take 1 dmg if not invuln
+  if (this.time.now < invulnUntil) return;
+  damagePlayer.call(this, 1, enemy.x);
+}
+
+function damagePlayer(amount, sourceX) {
+  hp = Math.max(0, hp - amount);
+  updateHearts();
+  invulnUntil = this.time.now + 900;
+  // knockback away from source
+  const dir = player.x < sourceX ? -1 : 1;
+  player.setVelocity(dir * 220, -260);
+  sfx.hit();
+  // invuln blink
+  this.tweens.add({
+    targets: player, alpha: 0.3, duration: 90, yoyo: true, repeat: 4,
+    onComplete: () => player.setAlpha(1)
+  });
+  if (hp <= 0) hitSpike.call(this);
 }
 
 function killEnemy(enemy) {
@@ -720,6 +782,8 @@ function reachGoal() {
 function resetState() {
   score = 0;
   gameOver = false;
+  hp = MAX_HP;
+  invulnUntil = 0;
 }
 </script>
 </body>
