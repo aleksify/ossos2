@@ -298,6 +298,8 @@ function preload() {
   this.load.spritesheet('player_spin', 'sprite3.png', { frameWidth: 92, frameHeight: 92 });
   // player punch spritesheet (276x92, 3 frames @ 92x92)
   this.load.spritesheet('player_punch', 'sprite4.png', { frameWidth: 92, frameHeight: 92 });
+  // bagel pickup (64x64) — full heal
+  this.load.image('bagel', 'bagel.png');
 
   // generate other textures procedurally — no external assets
   const g = this.add.graphics();
@@ -591,9 +593,10 @@ function create() {
   // --- HEALTH PICKUPS ---
   healthPickups = this.physics.add.group({ allowGravity: false, immovable: true });
   level.hearts.forEach(([x, y]) => {
-    const h = healthPickups.create(x, y, 'heart_full').setScale(1.8);
+    const h = healthPickups.create(x, y, 'bagel').setScale(0.55);
+    h.body.setSize(56, 56).setOffset(4, 4);
     this.tweens.add({ targets: h, y: y - 6, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    this.tweens.add({ targets: h, scale: 2.1, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: h, scale: 0.65, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   });
 
   // --- CHECKPOINTS (bottom-anchored cyan flags, tinted gray until activated) ---
