@@ -95,8 +95,10 @@ let player, cursors, platforms, coins, spikes, scoreText, score = 0, gameOver = 
 new Phaser.Game(config);
 
 function preload() {
-  // player spritesheet from Piskel (552x92, 6 frames @ 92x92)
+  // player run spritesheet (552x92, 6 frames @ 92x92)
   this.load.spritesheet('player', 'sprite.png', { frameWidth: 92, frameHeight: 92 });
+  // player jump spritesheet (828x92, 9 frames @ 92x92)
+  this.load.spritesheet('player_jump', 'sprite2.png', { frameWidth: 92, frameHeight: 92 });
 
   // generate other textures procedurally — no external assets
   const g = this.add.graphics();
@@ -218,8 +220,9 @@ function create() {
   });
   this.anims.create({
     key: 'jump',
-    frames: [{ key: 'player', frame: 3 }],
-    frameRate: 1
+    frames: this.anims.generateFrameNumbers('player_jump', { start: 0, end: 8 }),
+    frameRate: 14,
+    repeat: 0
   });
 
   // dust emitter — manual emit for landing burst + run trail puffs
@@ -293,18 +296,21 @@ function update() {
     player.setVelocityX(player.body.velocity.x * 0.8);
   }
 
+  let justJumped = false;
   if ((cursors.up.isDown || this.spaceKey.isDown) && onGround) {
     player.setVelocityY(-470);
     sfx.jump();
+    player.anims.play('jump', true);
+    justJumped = true;
   }
 
-  // animation state
-  if (!onGround) {
-    player.anims.play('jump', true);
-  } else if (Math.abs(player.body.velocity.x) > 10) {
-    player.anims.play('run', true);
-  } else {
-    player.anims.play('idle', true);
+  // animation state — don't override jump anim this frame or while airborne
+  if (onGround && !justJumped) {
+    if (Math.abs(player.body.velocity.x) > 10) {
+      player.anims.play('run', true);
+    } else {
+      player.anims.play('idle', true);
+    }
   }
 
   // feet world position (frame is 92x92 origin centered; feet pixel at y=69 → +23 from center)
