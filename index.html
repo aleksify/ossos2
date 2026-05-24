@@ -571,7 +571,9 @@ function create() {
   this.wasOnGround = true;
   this.lastRunDustAt = 0;
   this.isPunching = false;
-  player.on('animationcomplete-punch', () => { this.isPunching = false; });
+  const onPunchEnd = () => { this.isPunching = false; };
+  player.on('animationcomplete-punch', onPunchEnd);
+  this.events.once('shutdown', () => player.off('animationcomplete-punch', onPunchEnd));
 
   this.physics.add.collider(player, platforms);
   this.physics.add.overlap(player, coins, collectCoin, null, this);
@@ -627,7 +629,7 @@ function updateHearts() {
 
 function update() {
   if (gameOver) {
-    if (Phaser.Input.Keyboard.JustDown(this.rKey)) this.scene.restart(), resetState();
+    if (Phaser.Input.Keyboard.JustDown(this.rKey)) { resetState(); this.scene.restart(); }
     return;
   }
 
@@ -745,8 +747,9 @@ function damagePlayer(amount, sourceX) {
   hp = Math.max(0, hp - amount);
   updateHearts();
   invulnUntil = this.time.now + 900;
-  // knockback away from source
-  const dir = player.x < sourceX ? -1 : 1;
+  // knockback away from source (default: opposite of facing)
+  const src = (typeof sourceX === 'number') ? sourceX : (player.flipX ? player.x + 1 : player.x - 1);
+  const dir = player.x < src ? -1 : 1;
   player.setVelocity(dir * 220, -260);
   sfx.hit();
   // invuln blink
