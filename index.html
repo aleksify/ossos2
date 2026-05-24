@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Phaser Platformer Demo</title>
+<style>
+  body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: monospace; color: #fff; flex-direction: column; }
+  #game { border: 2px solid #444; }
+  .hint { margin-top: 10px; opacity: 0.7; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div class="hint">Arrows to move &middot; Up/Space to jump &middot; Collect coins, avoid spikes</div>
+
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+<script>
+const WIDTH = 800;
+const HEIGHT = 480;
+const WORLD_WIDTH = 3200;
+
+const config = {
+  type: Phaser.AUTO,
+  width: WIDTH,
+  height: HEIGHT,
+  parent: 'game',
+  backgroundColor: '#5dade2',
+  pixelArt: true,
+  roundPixels: true,
+  physics: {
+    default: 'arcade',
+    arcade: { gravity: { y: 900 }, debug: false }
+  },
+  scene: { preload, create, update }
+};
+
+let player, cursors, platforms, coins, spikes, scoreText, score = 0, gameOver = false, goal, winText;
+
+new Phaser.Game(config);
+
+function preload() {
+  // player spritesheet from Piskel (552x92, 6 frames @ 92x92)
+  this.load.spritesheet('player', 'sprite.png', { frameWidth: 92, frameHeight: 92 });
+
+  // generate other textures procedurally — no external assets
+  const g = this.add.graphics();
+
+  // ground tile (32x32 brown w/ green top)
+  g.fillStyle(0x8b5a2b, 1).fillRect(0, 0, 32, 32);
+  g.fillStyle(0x4caf50, 1).fillRect(0, 0, 32, 6);
+  g.generateTexture('ground', 32, 32);
+  g.clear();
+
+  // platform (96x16 wood)
+  g.fillStyle(0x6d4c2b, 1).fillRect(0, 0, 96, 16);
+  g.fillStyle(0x4caf50, 1).fillRect(0, 0, 96, 4);
+  g.generateTexture('platform', 96, 16);
+  g.clear();
+
+  // coin (16x16 gold)
+  g.fillStyle(0xffd700, 1).fillCircle(8, 8, 7);
+  g.fillStyle(0xffae00, 1).fillCircle(8, 8, 4);
+  g.generateTexture('coin', 16, 16);
+  g.clear();
+
+  // spike (24x16 triangle)
+  g.fillStyle(0xcc3333, 1);
+  g.beginPath();
+  g.moveTo(0, 16); g.lineTo(12, 0); g.lineTo(24, 16); g.closePath(); g.fillPath();
+  g.generateTexture('spike', 24, 16);
+  g.clear();
+
+  // goal flag (16x48)
+  g.fillStyle(0x222222, 1).fillRect(0, 0, 3, 48);
+  g.fillStyle(0xff2222, 1).fillTriangle(3, 4, 16, 12, 3, 20);
+  g.generateTexture('goal', 16, 48);
+  g.destroy();
+}
+
+function create() {
+  this.physics.world.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
+
+  // parallax background — distant hills
+  const hills = this.add.graphics();
+  hills.fillStyle(0x2e8b57, 0.6);
+  for (let x = 0; x < WORLD_WIDTH; x += 200) {
+    hills.fillCircle(x, HEIGHT - 60, 120);
+  }
+  hills.setScrollFactor(0.3);
+
+  platforms = this.physics.add.staticGroup();
+
+  // continuous ground with gaps
+  const gaps = [[600, 740], [1300, 1440], [2100, 2240], [2700, 2820]];
+  for (let x = 0; x < WORLD_WIDTH; x += 32) {
+    const inGap = gaps.some(([a, b]) => x >= a && x < b);
+    if (!inGap) {
+      platforms.create(x + 16, HEIGHT - 16, 'ground').refreshBody();
+    }
+  }
+
+  // floating platforms
+  const floats = [
+    [300, 340], [450, 270], [820, 340], [950, 260], [1080, 200],
+    [1500, 340], [1640, 270], [1800, 200], [2300, 320], [2450, 250],
+    [2600, 180], [2880, 280], [3020, 200]
+  ];
+  floats.forEach(([x, y]) => platforms.create(x, y, 'platform').refreshBody());
+
+  // spikes in some gaps
+  spikes = this.physics.add.staticGroup();
+  [650, 700, 1350, 1390, 2150, 2200, 2750, 2790].forEach(x => {
+    const s = spikes.create(x, HEIGHT - 8, 'spike');
+    s.body.setSize(20, 12).setOffset(2, 4);
+  });
+
+  // coins
+  coins = this.physics.add.group({ allowGravity: false, immovable: true });
+  const coinPositions = [
+    [300, 300], [450, 230], [820, 300], [950, 220], [1080, 160],
+    [1200, 380], [1500, 300], [1640, 230], [1800, 160], [1950, 380],
+    [2300, 280], [2450, 210], [2600, 140], [2880, 240], [3020, 160],
+    [3100, 380]
+  ];
+  coinPositions.forEach(([x, y]) => {
+    const c = coins.create(x, y, 'coin');
+    this.tweens.add({ targets: c, y: y - 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  });
+
+  // goal flag at end
+  goal = this.physics.add.staticSprite(3160, HEIGHT - 56, 'goal');
+
+  // player
+  player = this.physics.add.sprite(60, HEIGHT - 100, 'player');
+  player.setCollideWorldBounds(true);
+  player.setMaxVelocity(220, 800);
+  // char pixels span x=35-56, y=24-69 inside 92x92 frame (rest = transparent padding)
+  player.body.setSize(21, 45).setOffset(35, 24);
+
+  this.anims.create({
+    key: 'idle',
+    frames: [{ key: 'player', frame: 0 }],
+    frameRate: 1
+  });
+  this.anims.create({
+    key: 'run',
+    frames: this.anims.generateFrameNumbers('player', { start: 0, end: 5 }),
+    frameRate: 12,
+    repeat: -1
+  });
+  this.anims.create({
+    key: 'jump',
+    frames: [{ key: 'player', frame: 3 }],
+    frameRate: 1
+  });
+
+  this.physics.add.collider(player, platforms);
+  this.physics.add.overlap(player, coins, collectCoin, null, this);
+  this.physics.add.overlap(player, spikes, hitSpike, null, this);
+  this.physics.add.overlap(player, goal, reachGoal, null, this);
+
+  // camera follow
+  this.cameras.main.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
+  this.cameras.main.startFollow(player, true, 0.1, 0.1);
+
+  cursors = this.input.keyboard.createCursorKeys();
+  this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+  this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+
+  scoreText = this.add.text(16, 16, 'Score: 0', {
+    fontSize: '20px', color: '#fff', fontFamily: 'monospace',
+    stroke: '#000', strokeThickness: 3
+  }).setScrollFactor(0);
+}
+
+function update() {
+  if (gameOver) {
+    if (Phaser.Input.Keyboard.JustDown(this.rKey)) this.scene.restart(), resetState();
+    return;
+  }
+
+  const onGround = player.body.blocked.down || player.body.touching.down;
+
+  if (cursors.left.isDown) {
+    player.setAccelerationX(-800);
+    player.setFlipX(true);
+  } else if (cursors.right.isDown) {
+    player.setAccelerationX(800);
+    player.setFlipX(false);
+  } else {
+    player.setAccelerationX(0);
+    player.setVelocityX(player.body.velocity.x * 0.8);
+  }
+
+  if ((cursors.up.isDown || this.spaceKey.isDown) && onGround) {
+    player.setVelocityY(-470);
+  }
+
+  // animation state
+  if (!onGround) {
+    player.anims.play('jump', true);
+  } else if (Math.abs(player.body.velocity.x) > 10) {
+    player.anims.play('run', true);
+  } else {
+    player.anims.play('idle', true);
+  }
+
+  // fell off world
+  if (player.y > HEIGHT + 50) hitSpike.call(this);
+}
+
+function collectCoin(_p, coin) {
+  coin.destroy();
+  score += 10;
+  scoreText.setText('Score: ' + score);
+}
+
+function hitSpike() {
+  if (gameOver) return;
+  gameOver = true;
+  player.setTint(0xff0000);
+  player.setVelocity(0, -300);
+  player.body.checkCollision.none = true;
+  this.add.text(WIDTH / 2, HEIGHT / 2, 'GAME OVER\nPress R to restart', {
+    fontSize: '32px', color: '#fff', fontFamily: 'monospace',
+    align: 'center', stroke: '#000', strokeThickness: 4
+  }).setOrigin(0.5).setScrollFactor(0);
+}
+
+function reachGoal() {
+  if (gameOver) return;
+  gameOver = true;
+  this.add.text(WIDTH / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + score + '\nPress R to restart', {
+    fontSize: '32px', color: '#fff700', fontFamily: 'monospace',
+    align: 'center', stroke: '#000', strokeThickness: 4
+  }).setOrigin(0.5).setScrollFactor(0);
+}
+
+function resetState() {
+  score = 0;
+  gameOver = false;
+}
+</script>
+</body>
+</html>
