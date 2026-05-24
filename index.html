@@ -165,6 +165,8 @@ function preload() {
   this.load.spritesheet('player_jump', 'sprite2.png', { frameWidth: 92, frameHeight: 92 });
   // player spin spritesheet (736x92, 8 frames @ 92x92) — title screen
   this.load.spritesheet('player_spin', 'sprite3.png', { frameWidth: 92, frameHeight: 92 });
+  // player punch spritesheet (276x92, 3 frames @ 92x92)
+  this.load.spritesheet('player_punch', 'sprite4.png', { frameWidth: 92, frameHeight: 92 });
 
   // generate other textures procedurally — no external assets
   const g = this.add.graphics();
@@ -493,6 +495,12 @@ function create() {
     frameRate: 14,
     repeat: 0
   });
+  this.anims.create({
+    key: 'punch',
+    frames: this.anims.generateFrameNumbers('player_punch', { start: 0, end: 2 }),
+    frameRate: 18,
+    repeat: 0
+  });
 
   // dust emitter — manual emit for landing burst + run trail puffs
   this.dust = this.add.particles(0, 0, 'dust', {
@@ -522,6 +530,8 @@ function create() {
 
   this.wasOnGround = true;
   this.lastRunDustAt = 0;
+  this.isPunching = false;
+  player.on('animationcomplete-punch', () => { this.isPunching = false; });
 
   this.physics.add.collider(player, platforms);
   this.physics.add.overlap(player, coins, collectCoin, null, this);
@@ -588,8 +598,8 @@ function update() {
     justJumped = true;
   }
 
-  // animation state — don't override jump anim this frame or while airborne
-  if (onGround && !justJumped) {
+  // animation state — don't override jump anim this frame, airborne anims, or active punch
+  if (onGround && !justJumped && !this.isPunching) {
     if (Math.abs(player.body.velocity.x) > 10) {
       player.anims.play('run', true);
     } else {
@@ -667,23 +677,20 @@ function killEnemy(enemy) {
 
 function doAttack() {
   const dir = player.flipX ? -1 : 1;
-  const sx = player.x + dir * 28;
-  const sy = player.y + 4;
-  const slash = this.add.image(sx, sy, 'slash').setDepth(8);
-  slash.setFlipX(dir < 0);
-  slash.setAlpha(0.9);
-  slash.setScale(0.6);
-  this.tweens.add({ targets: slash, scale: 1.1, alpha: 0, duration: 160, onComplete: () => slash.destroy() });
+  this.isPunching = true;
+  player.anims.play('punch', true);
   sfx.slash();
 
-  // hit any enemy in arc range
-  enemies.children.iterate(e => {
-    if (!e || !e.active) return;
-    const dx = e.x - player.x;
-    const dy = e.y - player.y;
-    if (Math.sign(dx) === dir && Math.abs(dx) < 50 && Math.abs(dy) < 35) {
-      killEnemy.call(this, e);
-    }
+  // hit any enemy in punch arc — slight delay so hit registers on extended frame
+  this.time.delayedCall(80, () => {
+    enemies.children.iterate(e => {
+      if (!e || !e.active) return;
+      const dx = e.x - player.x;
+      const dy = e.y - player.y;
+      if (Math.sign(dx) === dir && Math.abs(dx) < 50 && Math.abs(dy) < 35) {
+        killEnemy.call(this, e);
+      }
+    });
   });
 }
 
