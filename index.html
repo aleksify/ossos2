@@ -74,6 +74,12 @@ function preload() {
   g.fillStyle(0x222222, 1).fillRect(0, 0, 3, 48);
   g.fillStyle(0xff2222, 1).fillTriangle(3, 4, 16, 12, 3, 20);
   g.generateTexture('goal', 16, 48);
+  g.clear();
+
+  // dust puff (8x8 soft circle, tan)
+  g.fillStyle(0xd9c9a3, 1).fillCircle(4, 4, 4);
+  g.fillStyle(0xffffff, 0.5).fillCircle(4, 4, 2);
+  g.generateTexture('dust', 8, 8);
   g.destroy();
 }
 
@@ -154,6 +160,21 @@ function create() {
     frameRate: 1
   });
 
+  // dust emitter — manual emit for landing burst + run trail puffs
+  this.dust = this.add.particles(0, 0, 'dust', {
+    speed: { min: 20, max: 70 },
+    angle: { min: 200, max: 340 },
+    scale: { start: 0.9, end: 0 },
+    alpha: { start: 0.8, end: 0 },
+    lifespan: 450,
+    gravityY: 200,
+    emitting: false
+  });
+  this.dust.setDepth(5);
+
+  this.wasOnGround = true;
+  this.lastRunDustAt = 0;
+
   this.physics.add.collider(player, platforms);
   this.physics.add.overlap(player, coins, collectCoin, null, this);
   this.physics.add.overlap(player, spikes, hitSpike, null, this);
@@ -204,6 +225,27 @@ function update() {
   } else {
     player.anims.play('idle', true);
   }
+
+  // feet world position (frame is 92x92 origin centered; feet pixel at y=69 → +23 from center)
+  const feetX = player.x;
+  const feetY = player.y + 23;
+
+  // landing burst — was airborne, now grounded
+  if (!this.wasOnGround && onGround) {
+    const vy = Math.min(800, Math.abs(player.body.velocity.y) + 200);
+    const count = Phaser.Math.Clamp(Math.floor(vy / 120), 4, 10);
+    this.dust.emitParticleAt(feetX, feetY, count);
+  }
+
+  // run trail — small puffs behind feet while moving on ground
+  const vx = player.body.velocity.x;
+  if (onGround && Math.abs(vx) > 60 && this.time.now - this.lastRunDustAt > 90) {
+    const behind = feetX + (vx > 0 ? -10 : 10);
+    this.dust.emitParticleAt(behind, feetY, 1);
+    this.lastRunDustAt = this.time.now;
+  }
+
+  this.wasOnGround = onGround;
 
   // fell off world
   if (player.y > HEIGHT + 50) hitSpike.call(this);
