@@ -5,18 +5,41 @@
 <title>Phaser Platformer Demo</title>
 <style>
   body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: monospace; color: #fff; flex-direction: column; }
-  #game { border: 2px solid #444; }
+  #game {
+    border: 2px solid #444;
+    width: 800px;
+    height: 480px;
+    overflow: hidden;
+  }
+  #game:fullscreen,
+  #game:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   #game canvas {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
   }
+  #fs {
+    position: absolute; top: 12px; right: 12px;
+    background: #222; color: #fff; border: 1px solid #555;
+    font-family: monospace; font-size: 13px; padding: 6px 10px;
+    cursor: pointer; border-radius: 3px;
+  }
+  #fs:hover { background: #333; }
   .hint { margin-top: 10px; opacity: 0.7; font-size: 13px; }
 </style>
 </head>
 <body>
 <div id="game"></div>
-<div class="hint">Arrows or WASD to move &middot; Up/W/Space to jump &middot; Collect coins, avoid spikes</div>
+<button id="fs">Fullscreen (F)</button>
+<div class="hint">Arrows or WASD to move &middot; Up/W/Space to jump &middot; F = fullscreen &middot; Collect coins, avoid spikes</div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script>
@@ -87,6 +110,11 @@ const config = {
     default: 'arcade',
     arcade: { gravity: { y: 900 }, debug: false }
   },
+  scale: {
+    mode: Phaser.Scale.NONE,
+    width: WIDTH,
+    height: HEIGHT
+  },
   scene: [
     { key: 'Title', preload: preload, create: titleCreate },
     { key: 'Game', create: create, update: update }
@@ -95,7 +123,34 @@ const config = {
 
 let player, cursors, platforms, coins, spikes, scoreText, score = 0, gameOver = false, goal, winText;
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+function toggleFs() {
+  const el = document.getElementById('game');
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else {
+    (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+  }
+}
+document.getElementById('fs').addEventListener('click', toggleFs);
+
+// Recompute Phaser size whenever viewport changes
+function resizeGame() {
+  const fs = document.fullscreenElement || document.webkitFullscreenElement;
+  const w = fs ? window.innerWidth : WIDTH;
+  const h = fs ? window.innerHeight : HEIGHT;
+  // FIT scale: fit canvas inside w×h while keeping WIDTH:HEIGHT aspect
+  const scale = Math.min(w / WIDTH, h / HEIGHT);
+  const cw = Math.floor(WIDTH * scale);
+  const ch = Math.floor(HEIGHT * scale);
+  const canvas = game.canvas;
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+}
+document.addEventListener('fullscreenchange', () => setTimeout(resizeGame, 50));
+document.addEventListener('webkitfullscreenchange', () => setTimeout(resizeGame, 50));
+window.addEventListener('resize', resizeGame);
 
 function preload() {
   // player run spritesheet (552x92, 6 frames @ 92x92)
@@ -314,6 +369,7 @@ function create() {
   });
   this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
   this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+  this.input.keyboard.on('keydown-F', toggleFs);
 
   // unlock WebAudio on first key (autoplay policy)
   this.input.keyboard.once('keydown', ensureAudio);
