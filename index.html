@@ -700,10 +700,13 @@ function titleCreate() {
 }
 
 function create() {
+  gameOver = false;
+  invulnUntil = 0;
   const level = LEVELS[currentLevel];
   const theme = THEMES[level.theme || 'outdoor'];
   const worldWidth = level.worldWidth;
   this.physics.world.setBounds(0, 0, worldWidth, HEIGHT);
+  this.cameras.main.resetFX();
 
   // --- LAYERED PARALLAX BACKGROUND ---
   // sky gradient (locked to camera)
@@ -946,13 +949,20 @@ function create() {
   this.jKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J);
   this.lastAttackAt = 0;
   this.input.keyboard.on('keydown-F', toggleFs);
+  this.input.keyboard.on('keydown-M', toggleMute);
 
   // unlock WebAudio on first key (autoplay policy), then start BGM
   const unlock = () => { ensureAudio(); startBGM(); };
   unlock(); // actx already unlocked from Title scene; safe no-op otherwise
   this.input.keyboard.once('keydown', unlock);
   this.input.once('pointerdown', unlock);
-  this.input.keyboard.on('keydown-M', toggleMute);
+
+  // strip per-scene listeners on shutdown so they don't accumulate across restarts
+  this.events.once('shutdown', () => {
+    this.input.keyboard.off('keydown-F', toggleFs);
+    this.input.keyboard.off('keydown-M', toggleMute);
+    this.input.keyboard.removeAllKeys(true);
+  });
 
   scoreText = this.add.text(16, 16, 'Score: ' + score, {
     fontSize: '20px', color: '#fff', fontFamily: 'monospace',
