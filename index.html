@@ -388,9 +388,8 @@ function resizeGame() {
   const fs = document.fullscreenElement || document.webkitFullscreenElement;
   const w = fs ? window.innerWidth : WIDTH;
   const h = fs ? window.innerHeight : HEIGHT;
-  // FIT scale with INTEGER multiplier — avoids fractional CSS scaling that
-  // causes subpixel blur and sprites visually bleeding past their texture bounds.
-  const scale = Math.max(1, Math.floor(Math.min(w / WIDTH, h / HEIGHT)));
+  // FIT scale: fit canvas inside w×h while keeping WIDTH:HEIGHT aspect
+  const scale = Math.min(w / WIDTH, h / HEIGHT);
   const cw = Math.floor(WIDTH * scale);
   const ch = Math.floor(HEIGHT * scale);
   const canvas = game.canvas;
@@ -928,20 +927,19 @@ function create() {
   const platKey = (k) => k === 'bigplatform' ? theme.bigplat : theme.plat;
   level.floats.forEach(([x, y, key]) => platforms.create(x, y, platKey(key)).refreshBody());
 
-  // spikes — clamp each x to its hole's safe range; drop if no hole/no room.
-  // Sprite is 16x16 so it can always sit inside any 32-px-wide hole with buffer.
+  // spikes — auto-fill every hole wall-to-wall (sprite 16 wide, placed every 16
+  // pixels within the safe range so the pit floor reads as a solid spike bed).
   spikes = this.physics.add.staticGroup();
   const SPIKE_HALF = 8;
-  const SPIKE_BUFFER = 6;
-  level.spikes.forEach(rawX => {
-    const h = holes.find(h => rawX >= h.left - SPIKE_HALF && rawX < h.right + SPIKE_HALF);
-    if (!h) return;
-    const minX = h.left + SPIKE_HALF + SPIKE_BUFFER;
-    const maxX = h.right - SPIKE_HALF - SPIKE_BUFFER;
-    if (minX > maxX) return;
-    const x = Math.max(minX, Math.min(maxX, rawX));
-    const s = spikes.create(x, HEIGHT - 8, theme.spike);
-    s.body.setSize(12, 12).setOffset(2, 4);
+  const SPIKE_BUFFER = 4;
+  holes.forEach(h => {
+    const startX = h.left + SPIKE_HALF + SPIKE_BUFFER;
+    const endX   = h.right - SPIKE_HALF - SPIKE_BUFFER;
+    if (startX > endX) return;
+    for (let x = startX; x <= endX; x += 16) {
+      const s = spikes.create(x, HEIGHT - 8, theme.spike);
+      s.body.setSize(12, 12).setOffset(2, 4);
+    }
   });
 
   // coins (cull any whose y is at ground level and x is inside a hole)
