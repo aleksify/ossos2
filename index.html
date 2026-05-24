@@ -39,7 +39,7 @@
 <body>
 <div id="game"></div>
 <button id="fs">Fullscreen (F)</button>
-<div class="hint">WASD/Arrows = move &middot; W/Up/Space = jump &middot; X/J = attack &middot; F = fullscreen &middot; R = restart &middot; touch flag = checkpoint</div>
+<div class="hint">WASD/Arrows = move &middot; W/Up/Space = jump &middot; X/J = attack &middot; F = fullscreen &middot; R = restart &middot; M = mute &middot; touch flag = checkpoint</div>
 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 <script>
@@ -97,6 +97,68 @@ const sfx = {
                       setTimeout(() => beep({ freq: 990, dur: 0.1, type: 'triangle', vol: 0.16 }), 70);
                       setTimeout(() => beep({ freq: 1320, dur: 0.12, type: 'triangle', vol: 0.16 }), 150); }
 };
+
+// --- BGM: procedural arp loop, scheduled via WebAudio ---
+const bgm = { playing: false, muted: false, timer: null, nextTime: 0, stepIdx: 0 };
+function startBGM() {
+  if (!actx || bgm.playing) return;
+  bgm.playing = true;
+  bgm.stepIdx = 0;
+  bgm.nextTime = actx.currentTime + 0.1;
+  const bpm = 104;
+  const step = 60 / bpm / 2; // eighth note
+  const A2 = 110;
+  // chord progression (semitones from A2): Am - F - C - G
+  const prog = [
+    [0, 3, 7, 12],
+    [-4, 0, 5, 8],
+    [3, 7, 10, 15],
+    [-2, 5, 10, 14]
+  ];
+  const arpPattern = [0, 1, 2, 3, 2, 3, 1, 2];
+  const freq = (semi) => A2 * Math.pow(2, semi / 12);
+  const note = (t, f, dur, type, vol) => {
+    if (bgm.muted) return;
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type = type;
+    o.frequency.value = f;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  };
+  const schedule = () => {
+    while (bgm.nextTime < actx.currentTime + 0.25) {
+      const barIdx = Math.floor(bgm.stepIdx / 8) % prog.length;
+      const chord = prog[barIdx];
+      const localStep = bgm.stepIdx % 8;
+      // arp lead (one octave up)
+      note(bgm.nextTime, freq(chord[arpPattern[localStep]]) * 2, step * 0.85, 'triangle', 0.035);
+      // bass on beats 1 and 3
+      if (localStep === 0 || localStep === 4) {
+        note(bgm.nextTime, freq(chord[0]) / 2, step * 1.7, 'sine', 0.06);
+      }
+      // pad chord stab on bar start
+      if (localStep === 0) {
+        note(bgm.nextTime, freq(chord[1]), step * 3.5, 'sine', 0.018);
+        note(bgm.nextTime, freq(chord[2]), step * 3.5, 'sine', 0.018);
+      }
+      bgm.nextTime += step;
+      bgm.stepIdx++;
+    }
+  };
+  bgm.timer = setInterval(schedule, 60);
+  schedule();
+}
+function stopBGM() {
+  if (bgm.timer) clearInterval(bgm.timer);
+  bgm.timer = null;
+  bgm.playing = false;
+}
+function toggleMute() { bgm.muted = !bgm.muted; }
 
 const WIDTH = 800;
 const HEIGHT = 480;
@@ -713,9 +775,12 @@ function create() {
   this.lastAttackAt = 0;
   this.input.keyboard.on('keydown-F', toggleFs);
 
-  // unlock WebAudio on first key (autoplay policy)
-  this.input.keyboard.once('keydown', ensureAudio);
-  this.input.once('pointerdown', ensureAudio);
+  // unlock WebAudio on first key (autoplay policy), then start BGM
+  const unlock = () => { ensureAudio(); startBGM(); };
+  unlock(); // actx already unlocked from Title scene; safe no-op otherwise
+  this.input.keyboard.once('keydown', unlock);
+  this.input.once('pointerdown', unlock);
+  this.input.keyboard.on('keydown-M', toggleMute);
 
   scoreText = this.add.text(16, 16, 'Score: ' + score, {
     fontSize: '20px', color: '#fff', fontFamily: 'monospace',
