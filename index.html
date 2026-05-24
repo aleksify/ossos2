@@ -87,7 +87,10 @@ const config = {
     default: 'arcade',
     arcade: { gravity: { y: 900 }, debug: false }
   },
-  scene: { preload, create, update }
+  scene: [
+    { key: 'Title', preload: preload, create: titleCreate },
+    { key: 'Game', create: create, update: update }
+  ]
 };
 
 let player, cursors, platforms, coins, spikes, scoreText, score = 0, gameOver = false, goal, winText;
@@ -99,6 +102,8 @@ function preload() {
   this.load.spritesheet('player', 'sprite.png', { frameWidth: 92, frameHeight: 92 });
   // player jump spritesheet (828x92, 9 frames @ 92x92)
   this.load.spritesheet('player_jump', 'sprite2.png', { frameWidth: 92, frameHeight: 92 });
+  // player spin spritesheet (736x92, 8 frames @ 92x92) — title screen
+  this.load.spritesheet('player_spin', 'sprite3.png', { frameWidth: 92, frameHeight: 92 });
 
   // generate other textures procedurally — no external assets
   const g = this.add.graphics();
@@ -145,6 +150,43 @@ function preload() {
   g.fillStyle(0xffffff, 1).fillCircle(3, 3, 1);
   g.generateTexture('spark', 6, 6);
   g.destroy();
+}
+
+function titleCreate() {
+  this.cameras.main.setBackgroundColor('#000000');
+
+  // spin anim once
+  if (!this.anims.exists('spin')) {
+    this.anims.create({
+      key: 'spin',
+      frames: this.anims.generateFrameNumbers('player_spin', { start: 0, end: 7 }),
+      frameRate: 10,
+      repeat: -1
+    });
+  }
+
+  const hero = this.add.sprite(WIDTH / 2, HEIGHT / 2 - 20, 'player_spin');
+  hero.setScale(2);
+  hero.play('spin');
+
+  this.add.text(WIDTH / 2, HEIGHT - 80, 'World of Sosso', {
+    fontSize: '40px', color: '#ffffff', fontFamily: 'monospace',
+    stroke: '#444', strokeThickness: 2
+  }).setOrigin(0.5);
+
+  const prompt = this.add.text(WIDTH / 2, HEIGHT - 36, 'Press any key to start', {
+    fontSize: '16px', color: '#aaaaaa', fontFamily: 'monospace'
+  }).setOrigin(0.5);
+  this.tweens.add({ targets: prompt, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
+
+  this.input.keyboard.once('keydown', () => {
+    ensureAudio();
+    this.scene.start('Game');
+  });
+  this.input.once('pointerdown', () => {
+    ensureAudio();
+    this.scene.start('Game');
+  });
 }
 
 function create() {
