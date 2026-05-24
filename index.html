@@ -80,6 +80,12 @@ function preload() {
   g.fillStyle(0xd9c9a3, 1).fillCircle(4, 4, 4);
   g.fillStyle(0xffffff, 0.5).fillCircle(4, 4, 2);
   g.generateTexture('dust', 8, 8);
+  g.clear();
+
+  // spark (6x6 bright gold w/ white core)
+  g.fillStyle(0xffd700, 1).fillCircle(3, 3, 3);
+  g.fillStyle(0xffffff, 1).fillCircle(3, 3, 1);
+  g.generateTexture('spark', 6, 6);
   g.destroy();
 }
 
@@ -172,6 +178,20 @@ function create() {
   });
   this.dust.setDepth(5);
 
+  // coin sparkle emitter — burst on collect, radial outward
+  this.sparkles = this.add.particles(0, 0, 'spark', {
+    speed: { min: 60, max: 160 },
+    angle: { min: 0, max: 360 },
+    scale: { start: 1.2, end: 0 },
+    alpha: { start: 1, end: 0 },
+    lifespan: { min: 300, max: 600 },
+    gravityY: 120,
+    rotate: { start: 0, end: 360 },
+    blendMode: 'ADD',
+    emitting: false
+  });
+  this.sparkles.setDepth(10);
+
   this.wasOnGround = true;
   this.lastRunDustAt = 0;
 
@@ -252,6 +272,7 @@ function update() {
 }
 
 function collectCoin(_p, coin) {
+  this.sparkles.emitParticleAt(coin.x, coin.y, 12);
   coin.destroy();
   score += 10;
   scoreText.setText('Score: ' + score);
