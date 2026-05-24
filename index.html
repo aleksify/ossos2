@@ -101,7 +101,7 @@ const config = {
   width: WIDTH,
   height: HEIGHT,
   parent: 'game',
-  backgroundColor: '#5dade2',
+  backgroundColor: '#87ceeb',
   pixelArt: true,
   roundPixels: true,
   antialias: false,
@@ -163,16 +163,79 @@ function preload() {
   // generate other textures procedurally — no external assets
   const g = this.add.graphics();
 
-  // ground tile (32x32 brown w/ green top)
-  g.fillStyle(0x8b5a2b, 1).fillRect(0, 0, 32, 32);
-  g.fillStyle(0x4caf50, 1).fillRect(0, 0, 32, 6);
+  // ground tile (32x32 dirt + grass top, textured)
+  g.fillStyle(0x6b4423, 1).fillRect(0, 0, 32, 32);
+  g.fillStyle(0x553318, 1);
+  [[4,12],[18,16],[10,22],[24,26],[14,8],[2,20]].forEach(([x,y]) => g.fillRect(x, y, 3, 3));
+  g.fillStyle(0x4a7c2a, 1).fillRect(0, 0, 32, 8);
+  g.fillStyle(0x65a23a, 1).fillRect(0, 0, 32, 4);
+  // grass blades
+  g.fillStyle(0x7bc24a, 1);
+  [3,9,15,21,27].forEach(x => g.fillRect(x, 2, 1, 3));
   g.generateTexture('ground', 32, 32);
   g.clear();
 
-  // platform (96x16 wood)
-  g.fillStyle(0x6d4c2b, 1).fillRect(0, 0, 96, 16);
-  g.fillStyle(0x4caf50, 1).fillRect(0, 0, 96, 4);
+  // stone platform (96x16 gray w/ moss top + speckle)
+  g.fillStyle(0x6e6e78, 1).fillRect(0, 0, 96, 16);
+  g.fillStyle(0x55555f, 1);
+  [[10,8],[26,10],[42,6],[58,11],[74,9],[88,7]].forEach(([x,y]) => g.fillRect(x, y, 3, 2));
+  g.fillStyle(0x8a8a94, 1).fillRect(0, 0, 96, 3);
+  g.fillStyle(0x4a7c2a, 1).fillRect(0, 0, 96, 2);
+  [6,22,40,58,76,90].forEach(x => g.fillRect(x, 2, 2, 2));
   g.generateTexture('platform', 96, 16);
+  g.clear();
+
+  // big stone platform (128x16) variant
+  g.fillStyle(0x6e6e78, 1).fillRect(0, 0, 128, 16);
+  g.fillStyle(0x55555f, 1);
+  [[10,8],[28,10],[46,6],[64,11],[82,9],[100,7],[118,10]].forEach(([x,y]) => g.fillRect(x, y, 3, 2));
+  g.fillStyle(0x8a8a94, 1).fillRect(0, 0, 128, 3);
+  g.fillStyle(0x4a7c2a, 1).fillRect(0, 0, 128, 2);
+  for (let x = 6; x < 128; x += 16) g.fillRect(x, 2, 2, 2);
+  g.generateTexture('bigplatform', 128, 16);
+  g.clear();
+
+  // tree (64x112 trunk + canopy)
+  g.fillStyle(0x4a2f1a, 1).fillRect(28, 60, 10, 52);
+  g.fillStyle(0x3a2412, 1).fillRect(28, 60, 3, 52);
+  g.fillStyle(0x2f5a1e, 1).fillCircle(32, 40, 28);
+  g.fillStyle(0x3d7028, 1).fillCircle(22, 32, 18);
+  g.fillStyle(0x3d7028, 1).fillCircle(44, 32, 18);
+  g.fillStyle(0x4a8a30, 1).fillCircle(28, 28, 12);
+  g.generateTexture('tree', 64, 112);
+  g.clear();
+
+  // bush (48x24)
+  g.fillStyle(0x2f5a1e, 1).fillCircle(12, 16, 12);
+  g.fillStyle(0x2f5a1e, 1).fillCircle(24, 12, 14);
+  g.fillStyle(0x2f5a1e, 1).fillCircle(36, 16, 12);
+  g.fillStyle(0x4a8a30, 1).fillCircle(20, 10, 6);
+  g.fillStyle(0x4a8a30, 1).fillCircle(32, 12, 5);
+  g.generateTexture('bush', 48, 24);
+  g.clear();
+
+  // rock (28x18)
+  g.fillStyle(0x6e6e78, 1).fillCircle(14, 14, 12);
+  g.fillStyle(0x55555f, 1).fillRect(14, 12, 8, 4);
+  g.fillStyle(0x8a8a94, 1).fillCircle(10, 10, 3);
+  g.generateTexture('rock', 28, 18);
+  g.clear();
+
+  // mountain silhouette (240x140)
+  g.fillStyle(0x3a4a5a, 1);
+  g.beginPath();
+  g.moveTo(0, 140); g.lineTo(60, 50); g.lineTo(110, 90); g.lineTo(160, 20); g.lineTo(210, 70); g.lineTo(240, 140); g.closePath(); g.fillPath();
+  g.fillStyle(0xeaeaf0, 1);
+  g.beginPath(); g.moveTo(150, 35); g.lineTo(160, 20); g.lineTo(170, 35); g.lineTo(166, 38); g.lineTo(160, 32); g.lineTo(154, 38); g.closePath(); g.fillPath();
+  g.generateTexture('mountain', 240, 140);
+  g.clear();
+
+  // cloud (96x28)
+  g.fillStyle(0xffffff, 0.9).fillCircle(20, 18, 14);
+  g.fillStyle(0xffffff, 0.9).fillCircle(40, 14, 18);
+  g.fillStyle(0xffffff, 0.9).fillCircle(62, 16, 16);
+  g.fillStyle(0xffffff, 0.9).fillCircle(78, 20, 12);
+  g.generateTexture('cloud', 96, 28);
   g.clear();
 
   // coin (16x16 gold)
@@ -247,18 +310,49 @@ function titleCreate() {
 function create() {
   this.physics.world.setBounds(0, 0, WORLD_WIDTH, HEIGHT);
 
-  // parallax background — distant hills
-  const hills = this.add.graphics();
-  hills.fillStyle(0x2e8b57, 0.6);
-  for (let x = 0; x < WORLD_WIDTH; x += 200) {
-    hills.fillCircle(x, HEIGHT - 60, 120);
-  }
-  hills.setScrollFactor(0.3);
+  // --- LAYERED PARALLAX BACKGROUND ---
+  // sky gradient (locked to camera)
+  const sky = this.add.graphics();
+  sky.fillGradientStyle(0x6cb7e0, 0x6cb7e0, 0xc9e7f5, 0xc9e7f5, 1);
+  sky.fillRect(0, 0, WIDTH, HEIGHT);
+  sky.setScrollFactor(0).setDepth(-100);
 
+  // distant mountains (slowest)
+  for (let x = -100; x < WORLD_WIDTH; x += 220) {
+    const m = this.add.image(x, HEIGHT - 60, 'mountain').setOrigin(0, 1);
+    m.setScrollFactor(0.2).setDepth(-90).setAlpha(0.6);
+  }
+
+  // drifting clouds
+  for (let i = 0; i < 12; i++) {
+    const cx = Phaser.Math.Between(0, WIDTH);
+    const cy = Phaser.Math.Between(30, 160);
+    const c = this.add.image(cx, cy, 'cloud').setScrollFactor(0.1).setDepth(-80).setAlpha(0.85);
+    this.tweens.add({ targets: c, x: cx + 200, duration: Phaser.Math.Between(40000, 70000), repeat: -1, yoyo: false,
+      onRepeat: () => { c.x = -100; }
+    });
+  }
+
+  // green hills mid-layer
+  const hills = this.add.graphics();
+  hills.fillStyle(0x3d7028, 0.7);
+  for (let x = 0; x < WORLD_WIDTH; x += 180) {
+    hills.fillCircle(x, HEIGHT - 50, 110);
+  }
+  hills.setScrollFactor(0.4).setDepth(-70);
+
+  // background tree line (between hills and game)
+  for (let x = 30; x < WORLD_WIDTH; x += 110) {
+    const t = this.add.image(x + Phaser.Math.Between(-20, 20), HEIGHT - 32, 'tree')
+      .setOrigin(0.5, 1).setScale(0.6).setTint(0x7a9a6a).setAlpha(0.7);
+    t.setScrollFactor(0.55).setDepth(-60);
+  }
+
+  // --- LEVEL GEOMETRY ---
   platforms = this.physics.add.staticGroup();
 
-  // continuous ground with gaps
-  const gaps = [[600, 740], [1300, 1440], [2100, 2240], [2700, 2820]];
+  // ground with intentional gaps per zone
+  const gaps = [[640, 820], [1480, 1660], [2400, 2580]];
   for (let x = 0; x < WORLD_WIDTH; x += 32) {
     const inGap = gaps.some(([a, b]) => x >= a && x < b);
     if (!inGap) {
@@ -266,32 +360,67 @@ function create() {
     }
   }
 
-  // floating platforms
+  // floating platforms — designed paths per zone
   const floats = [
-    [300, 340], [450, 270], [820, 340], [950, 260], [1080, 200],
-    [1500, 340], [1640, 270], [1800, 200], [2300, 320], [2450, 250],
-    [2600, 180], [2880, 280], [3020, 200]
+    // Z1 tutorial steps
+    [240, 380, 'platform'], [400, 320, 'platform'], [560, 260, 'platform'],
+    // Z2 spike-pit crossing
+    [680, 320, 'platform'], [780, 260, 'platform'],
+    // Z3 ascending climb
+    [920, 340, 'platform'], [1060, 270, 'platform'], [1200, 210, 'platform'], [1340, 270, 'bigplatform'],
+    // Z4 chasm stepping stones
+    [1500, 360, 'platform'], [1580, 300, 'platform'], [1660, 360, 'platform'],
+    // Z5 zigzag
+    [1780, 280, 'platform'], [1920, 220, 'platform'], [2060, 280, 'platform'], [2200, 220, 'bigplatform'],
+    // Z6 big jumps over pit
+    [2370, 320, 'platform'], [2490, 250, 'bigplatform'], [2630, 320, 'platform'],
+    // Z7 final ascent
+    [2780, 280, 'platform'], [2900, 220, 'platform'], [3020, 280, 'bigplatform']
   ];
-  floats.forEach(([x, y]) => platforms.create(x, y, 'platform').refreshBody());
+  floats.forEach(([x, y, key]) => platforms.create(x, y, key).refreshBody());
 
-  // spikes in some gaps
+  // spikes inside pit gaps
   spikes = this.physics.add.staticGroup();
-  [650, 700, 1350, 1390, 2150, 2200, 2750, 2790].forEach(x => {
+  [660, 700, 740, 780, 1500, 1540, 1580, 1620, 2420, 2460, 2500, 2540].forEach(x => {
     const s = spikes.create(x, HEIGHT - 8, 'spike');
     s.body.setSize(20, 12).setOffset(2, 4);
   });
 
-  // coins
+  // coins — guide player along intended path
   coins = this.physics.add.group({ allowGravity: false, immovable: true });
   const coinPositions = [
-    [300, 300], [450, 230], [820, 300], [950, 220], [1080, 160],
-    [1200, 380], [1500, 300], [1640, 230], [1800, 160], [1950, 380],
-    [2300, 280], [2450, 210], [2600, 140], [2880, 240], [3020, 160],
-    [3100, 380]
+    // Z1 arc
+    [180, 380], [240, 340], [320, 360], [400, 280], [480, 290], [560, 220],
+    // Z2 pit crossing
+    [680, 280], [780, 220],
+    // Z3 climb rewards
+    [920, 300], [1060, 230], [1200, 170], [1340, 230], [1340, 200],
+    // Z4 chasm
+    [1500, 320], [1580, 260], [1660, 320],
+    // Z5 zigzag
+    [1780, 240], [1920, 180], [2060, 240], [2200, 180], [2200, 150],
+    // Z6 big jumps
+    [2370, 280], [2490, 210], [2630, 280],
+    // Z7 final
+    [2780, 240], [2900, 180], [3020, 240], [3120, 380]
   ];
   coinPositions.forEach(([x, y]) => {
     const c = coins.create(x, y, 'coin');
     this.tweens.add({ targets: c, y: y - 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  });
+
+  // --- FOREGROUND DECORATIONS (no physics) ---
+  // trees on ground sections
+  [80, 200, 920, 1100, 1280, 1740, 1880, 2120, 2680, 2840, 3000].forEach(x => {
+    this.add.image(x, HEIGHT - 32, 'tree').setOrigin(0.5, 1).setDepth(-10);
+  });
+  // bushes
+  [150, 360, 540, 900, 1300, 1700, 1900, 2200, 2700, 2900, 3100].forEach(x => {
+    this.add.image(x, HEIGHT - 32, 'bush').setOrigin(0.5, 1).setDepth(-5);
+  });
+  // rocks scattered
+  [120, 380, 580, 880, 1280, 1780, 2080, 2680, 2960, 3140].forEach(x => {
+    this.add.image(x, HEIGHT - 32, 'rock').setOrigin(0.5, 1).setDepth(-5);
   });
 
   // goal flag at end
