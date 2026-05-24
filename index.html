@@ -176,7 +176,7 @@ const THEMES = {
   bagel: {
     ground: 'ground_tile', plat: 'counter', bigplat: 'counter_big',
     tree: 'coat_rack', bush: 'flour_sack', rock: 'coffee_tub',
-    enemy: 'customer', spike: 'coffee_spill', mountain: 'shop_bldg',
+    enemy: 'customer', spike: 'fork_hazard', mountain: 'shop_bldg',
     skyTop: 0xf3d6a4, skyBot: 0xffe9c2,
     hillColor: 0xb98456, bgTreeTint: 0xffffff,
     showMountains: true, showHills: false, showBgTrees: false
@@ -540,102 +540,230 @@ function preload() {
 
   // ============ BAGEL-SHOP THEME TEXTURES ============
 
-  // tile floor (32x32) — cream + brown checker w/ grout
-  g.fillStyle(0xf5e6c8, 1).fillRect(0, 0, 32, 32);
-  g.fillStyle(0x6b4423, 1).fillRect(0, 0, 16, 16).fillRect(16, 16, 16, 16);
-  g.fillStyle(0x3a2010, 1).fillRect(0, 15, 32, 1).fillRect(15, 0, 1, 32).fillRect(0, 31, 32, 1).fillRect(31, 0, 1, 32);
-  // tiny tile sheen
-  g.fillStyle(0xffffff, 0.15).fillRect(2, 2, 4, 1).fillRect(18, 18, 4, 1);
+  // tile floor (32x32) — soft cream/tan checker w/ thin grout
+  g.fillStyle(0xf2e2bd, 1).fillRect(0, 0, 32, 32);
+  g.fillStyle(0xdcc18a, 1).fillRect(0, 0, 16, 16).fillRect(16, 16, 16, 16);
+  // subtle diagonal sheen
+  g.fillStyle(0xffffff, 0.18).fillRect(2, 2, 6, 1).fillRect(18, 18, 6, 1);
+  g.fillStyle(0xffffff, 0.10).fillRect(2, 3, 3, 1).fillRect(18, 19, 3, 1);
+  // thin grout
+  g.fillStyle(0xa07a48, 1).fillRect(0, 15, 32, 1).fillRect(15, 0, 1, 32);
+  g.fillStyle(0xa07a48, 1).fillRect(0, 31, 32, 1).fillRect(31, 0, 1, 32);
   g.generateTexture('ground_tile', 32, 32);
   g.clear();
 
-  // wood counter (96x16) — replaces 'platform'
-  g.fillStyle(0x6b4423, 1).fillRect(0, 0, 96, 16);
-  g.fillStyle(0x8a5a30, 1).fillRect(0, 0, 96, 5);
-  g.fillStyle(0xc9a878, 1).fillRect(0, 0, 96, 2);
-  g.fillStyle(0x553318, 1);
-  [10, 28, 46, 64, 82].forEach(x => g.fillRect(x, 8, 3, 2));
-  g.fillStyle(0x3a2010, 1);
-  [24, 48, 72].forEach(x => g.fillRect(x, 5, 1, 11));
+  // wood counter (96x16) — warm walnut w/ marble top edge
+  g.fillStyle(0x7a4a22, 1).fillRect(0, 0, 96, 16);                  // body
+  g.fillStyle(0xeae0c8, 1).fillRect(0, 0, 96, 4);                   // marble top
+  g.fillStyle(0xd8c8a4, 1).fillRect(0, 3, 96, 1);                   // marble shadow line
+  g.fillStyle(0xa8987a, 0.4);                                       // marble veining
+  [12, 38, 64, 82].forEach(x => g.fillRect(x, 1, 2, 2));
+  g.fillStyle(0xa86c34, 1).fillRect(0, 4, 96, 1);                   // wood top highlight
+  g.fillStyle(0x4a2810, 0.5);                                       // grain
+  for (let x = 6; x < 96; x += 6) g.fillRect(x, 7, 1, 7);
+  g.fillStyle(0x3a2010, 1);                                         // vertical seams
+  [32, 64].forEach(x => g.fillRect(x, 4, 1, 12));
+  g.fillStyle(0x2a1808, 1).fillRect(0, 15, 96, 1);                  // base shadow
   g.generateTexture('counter', 96, 16);
   g.clear();
 
   // wood counter big (128x16)
-  g.fillStyle(0x6b4423, 1).fillRect(0, 0, 128, 16);
-  g.fillStyle(0x8a5a30, 1).fillRect(0, 0, 128, 5);
-  g.fillStyle(0xc9a878, 1).fillRect(0, 0, 128, 2);
-  g.fillStyle(0x553318, 1);
-  [10, 28, 46, 64, 82, 100, 118].forEach(x => g.fillRect(x, 8, 3, 2));
+  g.fillStyle(0x7a4a22, 1).fillRect(0, 0, 128, 16);
+  g.fillStyle(0xeae0c8, 1).fillRect(0, 0, 128, 4);
+  g.fillStyle(0xd8c8a4, 1).fillRect(0, 3, 128, 1);
+  g.fillStyle(0xa8987a, 0.4);
+  [10, 36, 60, 88, 112].forEach(x => g.fillRect(x, 1, 2, 2));
+  g.fillStyle(0xa86c34, 1).fillRect(0, 4, 128, 1);
+  g.fillStyle(0x4a2810, 0.5);
+  for (let x = 6; x < 128; x += 6) g.fillRect(x, 7, 1, 7);
   g.fillStyle(0x3a2010, 1);
-  [32, 64, 96].forEach(x => g.fillRect(x, 5, 1, 11));
+  [32, 64, 96].forEach(x => g.fillRect(x, 4, 1, 12));
+  g.fillStyle(0x2a1808, 1).fillRect(0, 15, 128, 1);
   g.generateTexture('counter_big', 128, 16);
   g.clear();
 
-  // coat rack (64x112) — replaces 'tree'
-  g.fillStyle(0x222222, 1).fillEllipse(32, 108, 26, 6);     // base disc
-  g.fillStyle(0x3a2412, 1).fillRect(30, 28, 4, 80);          // pole
-  g.fillStyle(0x3a2412, 1).fillRect(18, 26, 28, 3);          // top crossbar
-  g.fillStyle(0x3a2412, 1).fillRect(18, 26, 3, 8).fillRect(43, 26, 3, 8); // hooks
-  g.fillStyle(0x444444, 1).fillEllipse(20, 36, 14, 4).fillRect(14, 32, 12, 4); // hat
-  g.fillStyle(0xc23030, 1).fillRect(36, 36, 14, 38);         // coat
-  g.fillStyle(0x901818, 1).fillRect(36, 36, 4, 38);
-  g.fillStyle(0xa01818, 1).fillRect(44, 40, 2, 2);           // button
+  // coat rack (64x112) — pole + coat + scarf + hat
+  g.fillStyle(0x1a1a1a, 1).fillEllipse(32, 108, 30, 8);             // base shadow
+  g.fillStyle(0x222222, 1).fillEllipse(32, 106, 24, 5);             // base disc
+  g.fillStyle(0x3a2412, 1).fillRect(30, 24, 4, 82);                 // pole
+  g.fillStyle(0x5a3a20, 1).fillRect(30, 24, 1, 82);                 // pole highlight
+  g.fillStyle(0x3a2412, 1).fillRect(16, 22, 32, 3);                 // top crossbar
+  g.fillStyle(0x3a2412, 1).fillRect(16, 22, 3, 8).fillRect(45, 22, 3, 8); // hooks (down)
+  // hat on left hook
+  g.fillStyle(0x202020, 1).fillEllipse(18, 32, 16, 4);              // brim
+  g.fillStyle(0x202020, 1).fillRect(13, 28, 10, 4);                 // crown
+  g.fillStyle(0xc23030, 1).fillRect(13, 31, 10, 1);                 // band
+  // coat on right hook
+  g.fillStyle(0xc23030, 1).fillRect(36, 30, 16, 44);                // coat body
+  g.fillStyle(0x8a1818, 1).fillRect(36, 30, 4, 44);                 // coat shadow
+  g.fillStyle(0x6a0808, 1).fillRect(43, 30, 2, 44);                 // button line
+  g.fillStyle(0xeec050, 1).fillRect(43, 38, 2, 2).fillRect(43, 50, 2, 2).fillRect(43, 62, 2, 2); // buttons
+  // scarf draped
+  g.fillStyle(0x4a8ab0, 1).fillRect(40, 22, 6, 12);
+  g.fillStyle(0x2a6a90, 1).fillRect(40, 22, 2, 12);
   g.generateTexture('coat_rack', 64, 112);
   g.clear();
 
-  // flour sack (48x24) — replaces 'bush'
-  g.fillStyle(0xeeead0, 1).fillRect(6, 4, 18, 18);
-  g.fillStyle(0xc8c0a0, 1).fillRect(6, 4, 18, 4);
-  g.fillStyle(0x3a2010, 1).fillRect(10, 12, 10, 2);
-  g.fillStyle(0xeeead0, 1).fillRect(26, 6, 18, 16);
-  g.fillStyle(0xc8c0a0, 1).fillRect(26, 6, 18, 4);
-  g.fillStyle(0x3a2010, 1).fillRect(30, 13, 10, 2);
+  // flour sack (48x24) — pair w/ "FLOUR" labels
+  for (let i = 0; i < 2; i++) {
+    const ox = i * 22 + 4;
+    g.fillStyle(0xf3ecd6, 1).fillRect(ox, 5, 18, 18);             // sack body
+    g.fillStyle(0xddd2b2, 1).fillRect(ox, 5, 18, 4);              // top fold dark
+    g.fillStyle(0xfff8e0, 1).fillRect(ox, 5, 18, 1);              // top fold light
+    g.fillStyle(0xc2b88e, 1).fillRect(ox, 22, 18, 1);             // bottom shadow
+    g.fillStyle(0xc23030, 1).fillRect(ox + 3, 12, 12, 5);         // red label box
+    g.fillStyle(0xffffff, 1).fillRect(ox + 4, 13, 1, 3);          // F
+    g.fillRect(ox + 4, 13, 3, 1); g.fillRect(ox + 4, 14, 2, 1);
+    g.fillRect(ox + 8, 13, 1, 3); g.fillRect(ox + 10, 13, 1, 3);  // L,O rough
+    g.fillRect(ox + 8, 15, 3, 1);
+    g.fillRect(ox + 12, 13, 1, 3); g.fillRect(ox + 13, 13, 1, 1); g.fillRect(ox + 13, 15, 1, 1);
+  }
   g.generateTexture('flour_sack', 48, 24);
   g.clear();
 
-  // coffee tub (28x18) — replaces 'rock'
-  g.fillStyle(0x6b4423, 1).fillRect(2, 6, 24, 12);
-  g.fillStyle(0x4a2818, 1).fillRect(2, 4, 24, 3);
-  g.fillStyle(0x222222, 1).fillEllipse(14, 5, 20, 2);
-  g.fillStyle(0xc9a878, 1).fillRect(7, 10, 14, 4);
-  g.fillStyle(0x3a2010, 1).fillRect(9, 11, 10, 1);
+  // coffee tub (28x18) — labeled bean canister
+  g.fillStyle(0x5a3818, 1).fillRect(2, 6, 24, 12);                 // tub body
+  g.fillStyle(0x7a4a22, 1).fillRect(2, 6, 24, 1);                  // body highlight
+  g.fillStyle(0x3a2010, 1).fillRect(2, 17, 24, 1);                 // bottom shadow
+  g.fillStyle(0x2a1808, 1).fillRect(2, 3, 24, 4);                  // lid dark
+  g.fillStyle(0x4a2818, 1).fillRect(2, 3, 24, 1);                  // lid highlight
+  g.fillStyle(0xeac88e, 1).fillRect(6, 9, 16, 6);                  // cream label
+  g.fillStyle(0xc8a868, 1).fillRect(6, 9, 16, 1);                  // label shadow top
+  g.fillStyle(0x3a2010, 1).fillRect(8, 11, 12, 1).fillRect(10, 13, 8, 1); // text lines
+  // bean icon
+  g.fillStyle(0x3a2010, 1).fillEllipse(11, 6, 4, 2);
+  g.fillStyle(0x3a2010, 1).fillEllipse(17, 6, 4, 2);
   g.generateTexture('coffee_tub', 28, 18);
   g.clear();
 
-  // customer enemy (32x24) — annoying w/ phone
-  g.fillStyle(0xc23030, 1).fillRect(8, 12, 16, 12);                    // red shirt
-  g.fillStyle(0x8a1818, 1).fillRect(8, 12, 16, 2);                     // shirt shadow
-  g.fillStyle(0xf2c2a0, 1).fillCircle(16, 8, 6);                       // head
-  g.fillStyle(0x3a2010, 1).fillRect(11, 3, 10, 3);                     // hair
-  g.fillStyle(0x111111, 1).fillRect(11, 9, 3, 1).fillRect(18, 9, 3, 1); // brows (angry)
-  g.fillStyle(0xffffff, 1).fillRect(12, 10, 2, 2).fillRect(18, 10, 2, 2); // eyes
-  g.fillStyle(0x000000, 1).fillRect(13, 11, 1, 1).fillRect(19, 11, 1, 1); // pupils
-  g.fillStyle(0x000000, 1).fillRect(13, 14, 6, 1);                     // angry mouth
-  g.fillStyle(0x222222, 1).fillRect(24, 14, 3, 6);                     // phone
-  g.fillStyle(0x55aaff, 1).fillRect(24, 15, 3, 3);                     // phone screen
+  // customer enemy (32x24) — angry yuppie w/ raised phone
+  // pants
+  g.fillStyle(0x252535, 1).fillRect(10, 20, 12, 4);
+  // shirt (collared red)
+  g.fillStyle(0xc8312f, 1).fillRect(8, 12, 16, 9);
+  g.fillStyle(0xa01818, 1).fillRect(8, 12, 16, 1);                 // collar shadow
+  g.fillStyle(0xffffff, 1).fillRect(15, 12, 2, 4);                 // tie/placket
+  g.fillStyle(0x444466, 1).fillRect(15, 14, 2, 2);                 // tie color
+  // head
+  g.fillStyle(0xf3c39a, 1).fillCircle(15, 6, 5);
+  g.fillStyle(0xd99878, 1).fillRect(11, 9, 8, 2);                  // chin/jaw shadow
+  // hair (comb-over)
+  g.fillStyle(0x2a1a08, 1).fillRect(11, 1, 9, 2);
+  g.fillStyle(0x2a1a08, 1).fillRect(11, 3, 3, 2);
+  // angry brows (V)
+  g.fillStyle(0x000000, 1).fillRect(11, 5, 3, 1).fillRect(12, 4, 2, 1);
+  g.fillStyle(0x000000, 1).fillRect(17, 5, 3, 1).fillRect(17, 4, 2, 1);
+  // eyes
+  g.fillStyle(0xffffff, 1).fillRect(12, 6, 2, 2).fillRect(17, 6, 2, 2);
+  g.fillStyle(0x000000, 1).fillRect(13, 7, 1, 1).fillRect(18, 7, 1, 1);
+  // shouting mouth (open oval)
+  g.fillStyle(0x000000, 1).fillRect(13, 9, 5, 2);
+  g.fillStyle(0xff5555, 1).fillRect(14, 10, 3, 1);
+  // raised arm + phone
+  g.fillStyle(0xf3c39a, 1).fillRect(22, 11, 3, 5);                 // arm
+  g.fillStyle(0x1a1a22, 1).fillRect(24, 6, 5, 8);                  // phone body
+  g.fillStyle(0x66ccff, 1).fillRect(25, 7, 3, 6);                  // screen
+  g.fillStyle(0xffffff, 1).fillRect(26, 8, 1, 1);                  // screen glare
+  // other arm
+  g.fillStyle(0xf3c39a, 1).fillRect(7, 14, 3, 4);
   g.generateTexture('customer', 32, 24);
   g.clear();
 
-  // coffee spill (24x16) — replaces 'spike' hazard
-  g.fillStyle(0x4a2818, 1).fillEllipse(12, 13, 22, 6);
-  g.fillStyle(0x6a4028, 1).fillEllipse(7, 12, 8, 3).fillEllipse(18, 11, 7, 3);
-  g.fillStyle(0xc9a878, 0.5).fillCircle(12, 13, 2);
-  g.fillStyle(0xffffff, 0.35).fillCircle(7, 6, 2).fillCircle(13, 3, 2).fillCircle(19, 5, 2); // steam
-  g.generateTexture('coffee_spill', 24, 16);
+  // fork hazard (24x16) — upturned silver tines (replaces spike)
+  g.fillStyle(0x6a6a73, 1).fillRect(1, 13, 22, 3);                 // base handle
+  g.fillStyle(0x8a8a93, 1).fillRect(1, 13, 22, 1);                 // base highlight
+  g.fillStyle(0x3a3a44, 1).fillRect(1, 15, 22, 1);                 // base shadow
+  // 4 tines, sharp triangles
+  g.fillStyle(0xc8c8d0, 1);
+  g.fillTriangle(2, 13, 4, 1, 6, 13);
+  g.fillTriangle(7, 13, 9, 0, 11, 13);
+  g.fillTriangle(12, 13, 14, 0, 16, 13);
+  g.fillTriangle(17, 13, 19, 1, 21, 13);
+  // shine highlights
+  g.fillStyle(0xffffff, 0.9);
+  g.fillRect(4, 4, 1, 8);
+  g.fillRect(9, 3, 1, 9);
+  g.fillRect(14, 3, 1, 9);
+  g.fillRect(19, 4, 1, 8);
+  // tine tips darker for definition
+  g.fillStyle(0x9a9aa3, 1);
+  g.fillRect(3, 11, 3, 2);
+  g.fillRect(8, 11, 3, 2);
+  g.fillRect(13, 11, 3, 2);
+  g.fillRect(18, 11, 3, 2);
+  g.generateTexture('fork_hazard', 24, 16);
   g.clear();
 
-  // shop building backdrop (240x140) — replaces 'mountain'
-  g.fillStyle(0xb98456, 1).fillRect(0, 30, 240, 110);
-  g.fillStyle(0x8a5a30, 1).fillRect(0, 30, 240, 6);
-  g.fillStyle(0xc23030, 1).fillRect(40, 8, 160, 26);
-  g.fillStyle(0x901818, 1).fillRect(40, 30, 160, 4);
-  g.fillStyle(0xe9b97a, 1).fillCircle(120, 70, 26);
-  g.fillStyle(0xb98456, 1).fillCircle(120, 70, 9);
-  g.fillStyle(0x6cb7e0, 1).fillRect(22, 60, 36, 50).fillRect(182, 60, 36, 50);
-  g.fillStyle(0x4a8ab0, 1).fillRect(22, 60, 36, 4).fillRect(182, 60, 36, 4);
-  g.fillStyle(0x3a2010, 1).fillRect(100, 100, 40, 40);
-  g.fillStyle(0xc9a878, 1).fillRect(134, 118, 3, 3);
+  // shop facade backdrop (240x140) — replaces 'mountain'
+  // wall
+  g.fillStyle(0xd6a878, 1).fillRect(0, 30, 240, 110);              // tan brick body
+  g.fillStyle(0xc09060, 1).fillRect(0, 30, 240, 110);              // base color
+  // brick pattern
+  g.fillStyle(0xa87648, 0.5);
+  for (let by = 38; by < 140; by += 8) {
+    const off = ((by / 8) % 2) * 12;
+    for (let bx = off; bx < 240; bx += 24) g.fillRect(bx, by, 22, 1);
+  }
+  g.fillStyle(0xa87648, 0.3);
+  for (let by = 38; by < 140; by += 8) {
+    const off = ((by / 8) % 2) * 12;
+    for (let bx = off + 22; bx < 240; bx += 24) g.fillRect(bx, by, 1, 8);
+  }
+  // awning (red & white stripes)
+  g.fillStyle(0xc23030, 1).fillRect(0, 30, 240, 14);
+  g.fillStyle(0xffffff, 1);
+  for (let sx = 0; sx < 240; sx += 28) g.fillRect(sx, 30, 14, 14);
+  g.fillStyle(0x8a1818, 1).fillRect(0, 43, 240, 2);                // awning shadow
+  // scalloped awning bottom
+  g.fillStyle(0xc23030, 1);
+  for (let sx = 0; sx < 240; sx += 14) g.fillTriangle(sx, 44, sx + 7, 50, sx + 14, 44);
+  // sign panel
+  g.fillStyle(0xfff0d4, 1).fillRect(40, 10, 160, 20);
+  g.fillStyle(0x3a2010, 1).fillRect(40, 10, 160, 2).fillRect(40, 28, 160, 2);
+  // "BAGELS" text bars
+  g.fillStyle(0x6a3a18, 1);
+  [50, 70, 90, 110, 130, 150].forEach((tx, i) => {
+    g.fillRect(tx, 15, 12, 10);
+    g.fillStyle(0xfff0d4, 1).fillRect(tx + 4, 18, 4, 4);
+    g.fillStyle(0x6a3a18, 1);
+  });
+  // big bagel in window
+  g.fillStyle(0xe9b97a, 1).fillCircle(120, 90, 22);
+  g.fillStyle(0xc89a5a, 1).fillCircle(120, 90, 22).fillCircle(120, 90, 18);
+  g.fillStyle(0xe9b97a, 1).fillCircle(120, 90, 18);
+  g.fillStyle(0xb98456, 1).fillCircle(120, 90, 7);
+  // sesame seeds
+  g.fillStyle(0xfff8e0, 1);
+  [[112,82],[120,80],[128,82],[110,90],[130,90],[112,98],[120,100],[128,98]].forEach(([px,py]) => g.fillRect(px, py, 2, 1));
+  // windows flanking
+  g.fillStyle(0x222222, 1).fillRect(20, 70, 40, 50).fillRect(180, 70, 40, 50);
+  g.fillStyle(0x6cb7e0, 1).fillRect(22, 72, 36, 46).fillRect(182, 72, 36, 46);
+  g.fillStyle(0xffffff, 0.5).fillRect(24, 74, 14, 14).fillRect(184, 74, 14, 14); // window shine
+  g.fillStyle(0x222222, 1).fillRect(38, 72, 2, 46).fillRect(198, 72, 2, 46);    // window frame
+  g.fillStyle(0x222222, 1).fillRect(22, 92, 36, 2).fillRect(182, 92, 36, 2);
+  // door
+  g.fillStyle(0x3a2010, 1).fillRect(102, 110, 36, 30);
+  g.fillStyle(0x5a3a20, 1).fillRect(104, 112, 32, 26);
+  g.fillStyle(0x6cb7e0, 1).fillRect(108, 116, 24, 12);
+  g.fillStyle(0xeac88e, 1).fillRect(132, 124, 2, 2);               // door knob
   g.generateTexture('shop_bldg', 240, 140);
+  g.clear();
+
+  // bagel shelf row (140x60) — bg parallax layer
+  g.fillStyle(0x6a3a18, 1).fillRect(0, 50, 140, 6);                // wood shelf
+  g.fillStyle(0x8a5a30, 1).fillRect(0, 50, 140, 2);
+  g.fillStyle(0x3a1808, 1).fillRect(0, 55, 140, 1);
+  // 4 bagels lined up
+  for (let i = 0; i < 4; i++) {
+    const bx = 18 + i * 32;
+    g.fillStyle(0xe9b97a, 1).fillCircle(bx, 38, 12);
+    g.fillStyle(0xc89a5a, 1).fillCircle(bx, 38, 12);
+    g.fillStyle(0xe9b97a, 1).fillCircle(bx, 38, 10);
+    g.fillStyle(0xb98456, 1).fillCircle(bx, 38, 4);
+    g.fillStyle(0xfff8e0, 1);
+    [[-4,-4],[2,-5],[-5,2],[4,3],[0,5]].forEach(([dx,dy]) => g.fillRect(bx+dx, 38+dy, 1, 1));
+  }
+  g.generateTexture('bagel_shelf', 140, 60);
   g.clear();
 
   // hearts: full, half, empty (16x16)
@@ -749,6 +877,29 @@ function create() {
       const t = this.add.image(x + Phaser.Math.Between(-20, 20), HEIGHT - 32, theme.tree)
         .setOrigin(0.5, 1).setScale(0.6).setTint(theme.bgTreeTint).setAlpha(0.7);
       t.setScrollFactor(0.55).setDepth(-60);
+    }
+  }
+
+  // bagel theme: shelves of bagels parallax + warm wall tint
+  if (level.theme === 'bagel') {
+    // warm interior wall wash
+    const wall = this.add.graphics();
+    wall.fillStyle(0xc8965a, 0.35).fillRect(0, HEIGHT - 240, WIDTH, 240);
+    wall.setScrollFactor(0).setDepth(-85);
+    // shelves mid-layer
+    for (let x = -40; x < worldWidth; x += 200) {
+      this.add.image(x, HEIGHT - 200, 'bagel_shelf').setOrigin(0, 0).setScrollFactor(0.55).setDepth(-65).setAlpha(0.95);
+    }
+    // chalkboard menu accents (rare)
+    for (let x = 240; x < worldWidth; x += 720) {
+      const board = this.add.graphics();
+      board.fillStyle(0x2a3a2a, 1).fillRect(0, 0, 60, 40);
+      board.fillStyle(0x6a3a18, 1).fillRect(-3, -3, 66, 4).fillRect(-3, 39, 66, 4).fillRect(-3, -3, 4, 46).fillRect(59, -3, 4, 46);
+      board.fillStyle(0xeeeeee, 0.8);
+      [6, 14, 22, 30].forEach(y => board.fillRect(6, y, 48, 2));
+      board.fillStyle(0xeec050, 1).fillRect(6, 6, 14, 2);
+      board.x = x; board.y = HEIGHT - 280;
+      board.setScrollFactor(0.5).setDepth(-66);
     }
   }
 
