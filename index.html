@@ -358,11 +358,19 @@ const LEVEL_KEYS = ['level1', 'level2', 'level3'];
 
 function loadTilemap(scene, key) {
   const map = scene.make.tilemap({ key });
+  if (!map || map.width === 0) throw new Error('tilemap not loaded: ' + key);
   const tileset = map.addTilesetImage('tileset', 'tiles');
+  if (!tileset) throw new Error('tileset image missing for: ' + key);
   const ground = map.createLayer('ground', tileset, 0, 0);
+  if (!ground) throw new Error('ground layer missing in: ' + key);
   ground.setCollisionByProperty({ collides: true });
   const objects = map.getObjectLayer('objects')?.objects ?? [];
-  const props = Object.fromEntries((map.properties || []).map(p => [p.name, p.value]));
+  // Phaser may expose tilemap properties either as a plain object (parsed) or
+  // as the raw Tiled array [{name,type,value}]. Handle both.
+  const raw = map.properties;
+  const props = Array.isArray(raw)
+    ? Object.fromEntries(raw.map(p => [p.name, p.value]))
+    : (raw && typeof raw === 'object' ? raw : {});
   return { map, tileset, ground, objects, props };
 }
 
@@ -1049,7 +1057,7 @@ class GameScene extends Phaser.Scene {
     this.groundLayer = ground;
     this.groundLayer.setDepth(-20);
 
-    this.themeName = props.theme || 'outdoor';
+    this.themeName = THEMES[props.theme] ? props.theme : 'outdoor';
     this.levelName = props.name || '';
     this.theme = THEMES[this.themeName];
     this.worldWidth = map.widthInPixels;
@@ -1194,8 +1202,7 @@ class GameScene extends Phaser.Scene {
       const w = o.width || 0, h = o.height || 0;
       const cx = isTile ? o.x + w / 2 : o.x;
       const cy = isTile ? o.y - h / 2 : o.y;
-      const yBottom = isTile ? o.y : o.y;
-      return BOTTOM_ANCHORED.has(o.type) ? { x: cx, y: yBottom } : { x: cx, y: cy };
+      return BOTTOM_ANCHORED.has(o.type) ? { x: cx, y: o.y } : { x: cx, y: cy };
     };
 
     for (const o of objects) {

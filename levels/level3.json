@@ -11,7 +11,7 @@
   "version": "1.10",
   "tiledversion": "1.10.2",
   "nextlayerid": 3,
-  "nextobjectid": 110,
+  "nextobjectid": 81,
   "properties": [
     {
       "name": "theme",
@@ -2258,354 +2258,6 @@
         },
         {
           "id": 23,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 312,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 24,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 352,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 25,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 392,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 26,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 432,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 27,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 732,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 28,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 772,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 29,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 812,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 30,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 852,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 31,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 892,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 32,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1252,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 33,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1292,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 34,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1332,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 35,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1372,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 36,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1412,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 37,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1832,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 38,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1872,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 39,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1912,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 40,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1952,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 41,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 1992,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 42,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 2412,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 43,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 2452,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 44,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 2492,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 45,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 2532,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 46,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 2572,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 47,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 3012,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 48,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 3052,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 49,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 3092,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 50,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 3132,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 51,
-          "gid": 10,
-          "name": "",
-          "type": "spike",
-          "x": 3172,
-          "y": 480,
-          "width": 16,
-          "height": 16,
-          "rotation": 0,
-          "visible": true
-        },
-        {
-          "id": 52,
           "gid": 14,
           "name": "",
           "type": "enemy",
@@ -2625,16 +2277,11 @@
               "name": "max",
               "type": "int",
               "value": 280
-            },
-            {
-              "name": "onPlatform",
-              "type": "bool",
-              "value": false
             }
           ]
         },
         {
-          "id": 53,
+          "id": 24,
           "gid": 14,
           "name": "",
           "type": "enemy",
@@ -2654,16 +2301,11 @@
               "name": "max",
               "type": "int",
               "value": 1120
-            },
-            {
-              "name": "onPlatform",
-              "type": "bool",
-              "value": true
             }
           ]
         },
         {
-          "id": 54,
+          "id": 25,
           "gid": 14,
           "name": "",
           "type": "enemy",
@@ -2683,16 +2325,11 @@
               "name": "max",
               "type": "int",
               "value": 1800
-            },
-            {
-              "name": "onPlatform",
-              "type": "bool",
-              "value": false
             }
           ]
         },
         {
-          "id": 55,
+          "id": 26,
           "gid": 14,
           "name": "",
           "type": "enemy",
@@ -2712,16 +2349,11 @@
               "name": "max",
               "type": "int",
               "value": 2380
-            },
-            {
-              "name": "onPlatform",
-              "type": "bool",
-              "value": true
             }
           ]
         },
         {
-          "id": 56,
+          "id": 27,
           "gid": 14,
           "name": "",
           "type": "enemy",
@@ -2741,16 +2373,11 @@
               "name": "max",
               "type": "int",
               "value": 2780
-            },
-            {
-              "name": "onPlatform",
-              "type": "bool",
-              "value": false
             }
           ]
         },
         {
-          "id": 57,
+          "id": 28,
           "gid": 14,
           "name": "",
           "type": "enemy",
@@ -2770,16 +2397,11 @@
               "name": "max",
               "type": "int",
               "value": 3480
-            },
-            {
-              "name": "onPlatform",
-              "type": "bool",
-              "value": true
             }
           ]
         },
         {
-          "id": 58,
+          "id": 29,
           "gid": 26,
           "name": "",
           "type": "heart",
@@ -2791,7 +2413,7 @@
           "visible": true
         },
         {
-          "id": 59,
+          "id": 30,
           "gid": 26,
           "name": "",
           "type": "heart",
@@ -2803,7 +2425,7 @@
           "visible": true
         },
         {
-          "id": 60,
+          "id": 31,
           "gid": 26,
           "name": "",
           "type": "heart",
@@ -2815,7 +2437,7 @@
           "visible": true
         },
         {
-          "id": 61,
+          "id": 32,
           "gid": 13,
           "name": "",
           "type": "checkpoint",
@@ -2827,7 +2449,7 @@
           "visible": true
         },
         {
-          "id": 62,
+          "id": 33,
           "gid": 13,
           "name": "",
           "type": "checkpoint",
@@ -2839,7 +2461,7 @@
           "visible": true
         },
         {
-          "id": 63,
+          "id": 34,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2858,7 +2480,7 @@
           ]
         },
         {
-          "id": 64,
+          "id": 35,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2877,7 +2499,7 @@
           ]
         },
         {
-          "id": 65,
+          "id": 36,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2896,7 +2518,7 @@
           ]
         },
         {
-          "id": 66,
+          "id": 37,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2915,7 +2537,7 @@
           ]
         },
         {
-          "id": 67,
+          "id": 38,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2934,7 +2556,7 @@
           ]
         },
         {
-          "id": 68,
+          "id": 39,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2953,7 +2575,7 @@
           ]
         },
         {
-          "id": 69,
+          "id": 40,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -2972,7 +2594,7 @@
           ]
         },
         {
-          "id": 70,
+          "id": 41,
           "gid": 23,
           "name": "",
           "type": "platform",
@@ -2991,7 +2613,7 @@
           ]
         },
         {
-          "id": 71,
+          "id": 42,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3010,7 +2632,7 @@
           ]
         },
         {
-          "id": 72,
+          "id": 43,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3029,7 +2651,7 @@
           ]
         },
         {
-          "id": 73,
+          "id": 44,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3048,7 +2670,7 @@
           ]
         },
         {
-          "id": 74,
+          "id": 45,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3067,7 +2689,7 @@
           ]
         },
         {
-          "id": 75,
+          "id": 46,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3086,7 +2708,7 @@
           ]
         },
         {
-          "id": 76,
+          "id": 47,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3105,7 +2727,7 @@
           ]
         },
         {
-          "id": 77,
+          "id": 48,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3124,7 +2746,7 @@
           ]
         },
         {
-          "id": 78,
+          "id": 49,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3143,7 +2765,7 @@
           ]
         },
         {
-          "id": 79,
+          "id": 50,
           "gid": 23,
           "name": "",
           "type": "platform",
@@ -3162,7 +2784,7 @@
           ]
         },
         {
-          "id": 80,
+          "id": 51,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3181,7 +2803,7 @@
           ]
         },
         {
-          "id": 81,
+          "id": 52,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3200,7 +2822,7 @@
           ]
         },
         {
-          "id": 82,
+          "id": 53,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3219,7 +2841,7 @@
           ]
         },
         {
-          "id": 83,
+          "id": 54,
           "gid": 23,
           "name": "",
           "type": "platform",
@@ -3238,7 +2860,7 @@
           ]
         },
         {
-          "id": 84,
+          "id": 55,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3257,7 +2879,7 @@
           ]
         },
         {
-          "id": 85,
+          "id": 56,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3276,7 +2898,7 @@
           ]
         },
         {
-          "id": 86,
+          "id": 57,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3295,7 +2917,7 @@
           ]
         },
         {
-          "id": 87,
+          "id": 58,
           "gid": 22,
           "name": "",
           "type": "platform",
@@ -3314,7 +2936,7 @@
           ]
         },
         {
-          "id": 88,
+          "id": 59,
           "gid": 23,
           "name": "",
           "type": "platform",
@@ -3333,7 +2955,7 @@
           ]
         },
         {
-          "id": 89,
+          "id": 60,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3345,7 +2967,7 @@
           "visible": true
         },
         {
-          "id": 90,
+          "id": 61,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3357,7 +2979,7 @@
           "visible": true
         },
         {
-          "id": 91,
+          "id": 62,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3369,7 +2991,7 @@
           "visible": true
         },
         {
-          "id": 92,
+          "id": 63,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3381,7 +3003,7 @@
           "visible": true
         },
         {
-          "id": 93,
+          "id": 64,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3393,7 +3015,7 @@
           "visible": true
         },
         {
-          "id": 94,
+          "id": 65,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3405,7 +3027,7 @@
           "visible": true
         },
         {
-          "id": 95,
+          "id": 66,
           "gid": 16,
           "name": "",
           "type": "tree",
@@ -3417,7 +3039,7 @@
           "visible": true
         },
         {
-          "id": 96,
+          "id": 67,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3429,7 +3051,7 @@
           "visible": true
         },
         {
-          "id": 97,
+          "id": 68,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3441,7 +3063,7 @@
           "visible": true
         },
         {
-          "id": 98,
+          "id": 69,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3453,7 +3075,7 @@
           "visible": true
         },
         {
-          "id": 99,
+          "id": 70,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3465,7 +3087,7 @@
           "visible": true
         },
         {
-          "id": 100,
+          "id": 71,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3477,7 +3099,7 @@
           "visible": true
         },
         {
-          "id": 101,
+          "id": 72,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3489,7 +3111,7 @@
           "visible": true
         },
         {
-          "id": 102,
+          "id": 73,
           "gid": 18,
           "name": "",
           "type": "bush",
@@ -3501,7 +3123,7 @@
           "visible": true
         },
         {
-          "id": 103,
+          "id": 74,
           "gid": 20,
           "name": "",
           "type": "rock",
@@ -3513,7 +3135,7 @@
           "visible": true
         },
         {
-          "id": 104,
+          "id": 75,
           "gid": 20,
           "name": "",
           "type": "rock",
@@ -3525,7 +3147,7 @@
           "visible": true
         },
         {
-          "id": 105,
+          "id": 76,
           "gid": 20,
           "name": "",
           "type": "rock",
@@ -3537,7 +3159,7 @@
           "visible": true
         },
         {
-          "id": 106,
+          "id": 77,
           "gid": 20,
           "name": "",
           "type": "rock",
@@ -3549,7 +3171,7 @@
           "visible": true
         },
         {
-          "id": 107,
+          "id": 78,
           "gid": 20,
           "name": "",
           "type": "rock",
@@ -3561,7 +3183,7 @@
           "visible": true
         },
         {
-          "id": 108,
+          "id": 79,
           "gid": 20,
           "name": "",
           "type": "rock",
@@ -3573,7 +3195,7 @@
           "visible": true
         },
         {
-          "id": 109,
+          "id": 80,
           "gid": 20,
           "name": "",
           "type": "rock",

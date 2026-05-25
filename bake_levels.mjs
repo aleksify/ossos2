@@ -184,7 +184,10 @@ function gidFor(theme, type, key) {
 }
 
 function entitiesTilesetInline() {
-  const tsj = JSON.parse(readFileSync('levels/entities.tsj', 'utf8'));
+  let txt;
+  try { txt = readFileSync('levels/entities.tsj', 'utf8'); }
+  catch (e) { throw new Error('cannot read levels/entities.tsj — run from repo root: ' + e.message); }
+  const tsj = JSON.parse(txt);
   // Drop the keys that only belong to a standalone tileset file (Tiled and
   // Phaser both accept the embedded form below).
   const { type, version, tiledversion, ...rest } = tsj;
@@ -232,11 +235,11 @@ function buildLevelJSON(level) {
   pushCenter('spawn', level.playerStart[0], level.playerStart[1]);
   pushBottom('goal', level.goal[0], level.goal[1]);
   level.coins.forEach(([x, y]) => pushCenter('coin', x, y));
-  level.spikes.forEach(x => pushCenter('spike', x, HEIGHT - 8));
+  // Spikes are auto-filled per ground hole at runtime (see _buildGeometry).
+  // Object-layer spikes are intentionally ignored, so we no longer emit them.
   level.enemies.forEach(e => pushCenter('enemy', e.x, e.y, null, [
     prop('min', 'int', e.min),
-    prop('max', 'int', e.max),
-    prop('onPlatform', 'bool', e.y < 400)
+    prop('max', 'int', e.max)
   ]));
   (level.hearts || []).forEach(([x, y]) => pushCenter('heart', x, y));
   level.checkpoints.forEach(([x, y]) => pushBottom('checkpoint', x, y));
