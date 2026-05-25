@@ -333,7 +333,7 @@ function startBGM() {
 function toggleMute() { bgm.muted = !bgm.muted; }
 
 // ============================================================
-// THEMES + LEVELS
+// THEMES + LEVEL_KEYS
 // ============================================================
 const THEMES = {
   outdoor: {
@@ -354,138 +354,107 @@ const THEMES = {
   }
 };
 
-const LEVELS = [
-  {
-    theme: 'bagel',
-    name: "Schmear Campaign",
-    worldWidth: 3400,
-    playerStart: [60, HEIGHT - 100],
-    groundGaps: [[380, 460], [720, 800], [1400, 1520], [2350, 2450], [2700, 2820], [3050, 3170]],
-    floats: [
-      [200, 380, 'platform'], [340, 320, 'platform'], [500, 380, 'platform'],
-      [620, 320, 'platform'], [820, 380, 'platform'], [940, 320, 'platform'],
-      [1100, 360, 'bigplatform'], [1280, 280, 'platform'], [1400, 220, 'bigplatform'],
-      [1600, 280, 'platform'], [1740, 220, 'platform'], [1880, 280, 'bigplatform'],
-      [2020, 220, 'platform'], [2160, 280, 'platform'],
-      [2280, 320, 'platform'], [2400, 240, 'platform'], [2520, 180, 'platform'],
-      [2640, 240, 'platform'], [2780, 180, 'bigplatform'], [2920, 240, 'platform'],
-      [3050, 300, 'platform'], [3170, 240, 'platform'], [3290, 180, 'bigplatform']
-    ],
-    spikes: [400, 440, 740, 780, 1420, 1452, 1484, 1508, 2370, 2400, 2430, 2720, 2752, 2784, 2808, 3070, 3102, 3134, 3158],
-    coins: [
-      [120, 380], [340, 280], [500, 340], [620, 280], [820, 340], [940, 280], [1020, 380],
-      [1100, 320], [1280, 240], [1340, 180], [1600, 240], [1740, 180], [1880, 240], [2020, 180], [2160, 240],
-      [2280, 280], [2400, 200], [2520, 140], [2640, 200], [2740, 140], [2920, 200],
-      [3050, 260], [3170, 200], [3260, 140], [3360, 380]
-    ],
-    enemies: [
-      { x: 280, y: 400, min: 120, max: 360 },
-      { x: 850, y: 400, min: 820, max: 990 },
-      { x: 1450, y: 180, min: 1400, max: 1500 },
-      { x: 1750, y: 400, min: 1600, max: 1880 },
-      { x: 2580, y: 400, min: 2450, max: 2680 },
-      { x: 2800, y: 140, min: 2740, max: 2830 },
-      { x: 3220, y: 400, min: 3170, max: 3360 }
-    ],
-    hearts: [[1400, 170], [2780, 140], [3290, 140]],
-    checkpoints: [[1020, HEIGHT - 32], [2200, HEIGHT - 32]],
-    trees:  [80, 540, 900, 1900, 2700, 3300],
-    bushes: [150, 480, 860, 1300, 1700, 2100, 2900, 3360],
-    rocks:  [240, 600, 1180, 1620, 2050, 2850, 3220],
-    goal: [3380, HEIGHT - 32]
-  },
-  {
-    theme: 'outdoor',
-    name: "Sky Climb",
-    worldWidth: 2800,
-    playerStart: [60, HEIGHT - 100],
-    groundGaps: [[400, 560], [900, 1120], [1500, 1700], [2100, 2300]],
-    floats: [
-      [200, 360, 'platform'], [340, 290, 'platform'], [480, 220, 'platform'],
-      [620, 280, 'platform'], [760, 220, 'platform'], [880, 160, 'platform'],
-      [1020, 220, 'platform'], [1160, 280, 'bigplatform'],
-      [1280, 240, 'platform'], [1420, 180, 'platform'], [1560, 240, 'platform'],
-      [1700, 180, 'bigplatform'], [1860, 240, 'platform'], [2000, 180, 'platform'],
-      [2150, 300, 'platform'], [2290, 240, 'platform'], [2430, 180, 'bigplatform'],
-      [2600, 240, 'platform']
-    ],
-    spikes: [410, 450, 490, 530, 1510, 1550, 1590, 1630, 1670, 2110, 2150, 2190, 2230, 2270],
-    coins: [
-      [200, 320], [340, 250], [480, 180],
-      [620, 240], [760, 180], [880, 120],
-      [1020, 180], [1160, 240],
-      [1280, 200], [1420, 140], [1560, 200], [1700, 140],
-      [1860, 200], [2000, 140],
-      [2150, 260], [2290, 200], [2430, 140], [2600, 200]
-    ],
-    enemies: [
-      { x: 250, y: 400, min: 100, max: 380 },
-      { x: 700, y: 200, min: 620, max: 880 },
-      { x: 1300, y: 400, min: 1120, max: 1480 },
-      { x: 1850, y: 400, min: 1720, max: 2080 },
-      { x: 2500, y: 160, min: 2430, max: 2580 }
-    ],
-    hearts: [[880, 120], [1700, 140], [2430, 140]],
-    checkpoints: [[1180, HEIGHT - 32], [1880, HEIGHT - 32]],
-    trees: [80, 700, 1300, 1820, 2400, 2700],
-    bushes: [150, 660, 1340, 1880, 2360, 2680],
-    rocks: [120, 720, 1320, 1860, 2440, 2720],
-    goal: [2740, HEIGHT - 32]
-  },
-  {
-    theme: 'outdoor',
-    name: "Spike Gauntlet",
-    worldWidth: 3600,
-    playerStart: [60, HEIGHT - 100],
-    groundGaps: [[300, 480], [720, 920], [1240, 1440], [1820, 2020], [2400, 2620], [3000, 3200]],
-    floats: [
-      [220, 320, 'platform'], [360, 260, 'platform'],
-      [520, 320, 'platform'], [640, 260, 'platform'], [780, 320, 'platform'], [880, 260, 'platform'],
-      [960, 220, 'platform'], [1100, 280, 'bigplatform'], [1280, 220, 'platform'], [1420, 280, 'platform'],
-      [1500, 220, 'platform'], [1620, 260, 'platform'], [1760, 200, 'platform'],
-      [1880, 260, 'platform'], [1980, 320, 'platform'],
-      [2080, 200, 'platform'], [2220, 260, 'bigplatform'], [2380, 200, 'platform'],
-      [2520, 280, 'platform'], [2660, 220, 'platform'], [2800, 280, 'bigplatform'],
-      [2940, 220, 'platform'], [3060, 280, 'platform'], [3220, 220, 'platform'],
-      [3340, 280, 'platform'], [3460, 220, 'bigplatform']
-    ],
-    spikes: [
-      320, 360, 400, 440,
-      740, 780, 820, 860, 900,
-      1260, 1300, 1340, 1380, 1420,
-      1840, 1880, 1920, 1960, 2000,
-      2420, 2460, 2500, 2540, 2580,
-      3020, 3060, 3100, 3140, 3180
-    ],
-    coins: [
-      [220, 280], [360, 220],
-      [520, 280], [640, 220], [780, 280], [880, 220],
-      [960, 180], [1100, 240], [1280, 180], [1420, 240],
-      [1620, 220], [1760, 160],
-      [2080, 160], [2220, 220], [2380, 160],
-      [2660, 180], [2800, 240],
-      [2940, 180], [3220, 180], [3460, 180]
-    ],
-    enemies: [
-      { x: 150, y: 400, min: 50, max: 280 },
-      { x: 1000, y: 180, min: 940, max: 1120 },
-      { x: 1700, y: 400, min: 1620, max: 1800 },
-      { x: 2200, y: 220, min: 2080, max: 2380 },
-      { x: 2700, y: 400, min: 2620, max: 2780 },
-      { x: 3400, y: 180, min: 3340, max: 3480 }
-    ],
-    hearts: [[1100, 240], [2220, 220], [3460, 180]],
-    checkpoints: [[1140, 272], [2260, 252]],
-    trees: [80, 600, 1100, 1600, 2200, 2800, 3300],
-    bushes: [120, 580, 1050, 1640, 2240, 2820, 3340],
-    rocks: [160, 560, 1080, 1620, 2300, 2840, 3380],
-    goal: [3520, 212]
-  }
-];
+const LEVEL_KEYS = ['level1', 'level2', 'level3'];
+
+function loadTilemap(scene, key) {
+  const map = scene.make.tilemap({ key });
+  const tileset = map.addTilesetImage('tileset', 'tiles');
+  const ground = map.createLayer('ground', tileset, 0, 0);
+  ground.setCollisionByProperty({ collides: true });
+  const objects = map.getObjectLayer('objects')?.objects ?? [];
+  const props = Object.fromEntries((map.properties || []).map(p => [p.name, p.value]));
+  return { map, tileset, ground, objects, props };
+}
 
 // ============================================================
 // TEXTURE GENERATION
 // ============================================================
+function bakeTileset(scene) {
+  // Ground tile slots. GIDs (1-indexed in Tiled):
+  //   1 = outdoor ground, 2 = bagel ground_tile, 3-8 reserved.
+  const slots = ['ground', 'ground_tile'];
+  const cols = 8, size = 32;
+  const canvas = document.createElement('canvas');
+  canvas.width = cols * size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  slots.forEach((key, i) => {
+    const src = scene.textures.get(key).getSourceImage();
+    ctx.drawImage(src, i * size, 0);
+  });
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tileset.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;background:#222;color:#fff;font:14px monospace;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;text-align:center;';
+  wrap.innerHTML = '<div>tileset.png baked. Saved to Downloads.<br>Right-click image below → Save Image As → /Users/alex/Projects/ossos2/tileset.png<br>Then remove <code>?baketiles=1</code> from URL.</div>';
+  canvas.style.cssText = 'image-rendering:pixelated;border:2px solid #fff;width:512px;height:64px;';
+  wrap.appendChild(canvas);
+  document.body.appendChild(wrap);
+}
+
+// Bake one entity sprite to the page body for headless screenshotting.
+// Driven by bake_entities.mjs via `?bakeentity=NAME` + Brave --screenshot.
+// The viewport size matches the entity's native pixel size so the screenshot is exact.
+const ENTITY_BAKE_MAP = {
+  coin:          { key: 'coin' },
+  spike_outdoor: { key: 'spike' },
+  spike_bagel:   { key: 'fork_hazard' },
+  goal:          { key: 'goal' },
+  checkpoint:    { key: 'checkpoint' },
+  enemy_outdoor: { key: 'enemy' },
+  enemy_bagel:   { key: 'customer' },
+  tree_outdoor:  { key: 'tree' },
+  tree_bagel:    { key: 'coat_rack' },
+  bush_outdoor:  { key: 'bush' },
+  bush_bagel:    { key: 'flour_sack' },
+  rock_outdoor:  { key: 'rock' },
+  rock_bagel:    { key: 'coffee_tub' },
+  platform:      { key: 'platform' },
+  bigplatform:   { key: 'bigplatform' },
+  counter:       { key: 'counter' },
+  counter_big:   { key: 'counter_big' },
+  heart:         { key: 'bagel' },
+  spawn:         { key: 'player', cropFrame0: true }
+};
+function bakeOneEntity(scene, name) {
+  const item = ENTITY_BAKE_MAP[name];
+  if (!item) {
+    document.body.innerHTML = '<pre>unknown entity: ' + name + '</pre>';
+    return;
+  }
+  const tex = scene.textures.get(item.key);
+  const src = tex.getSourceImage();
+  let canvas;
+  if (item.cropFrame0) {
+    const f = 92;
+    canvas = document.createElement('canvas');
+    canvas.width = f; canvas.height = f;
+    canvas.getContext('2d').drawImage(src, 0, 0, f, f, 0, 0, f, f);
+  } else if (src instanceof HTMLCanvasElement) {
+    canvas = src;
+  } else {
+    canvas = document.createElement('canvas');
+    canvas.width = src.width; canvas.height = src.height;
+    canvas.getContext('2d').drawImage(src, 0, 0);
+  }
+  document.documentElement.style.cssText = 'margin:0;padding:0;background:transparent;width:' + canvas.width + 'px;height:' + canvas.height + 'px;overflow:hidden;';
+  document.body.style.cssText = 'margin:0;padding:0;background:transparent;width:' + canvas.width + 'px;height:' + canvas.height + 'px;overflow:hidden;';
+  document.body.innerHTML = '';
+  canvas.style.cssText = 'display:block;image-rendering:pixelated;width:' + canvas.width + 'px;height:' + canvas.height + 'px;';
+  document.body.appendChild(canvas);
+  // Stash dims on title so the node script can sanity-check.
+  document.title = canvas.width + 'x' + canvas.height;
+}
+
 function generateTextures(scene) {
   const g = scene.add.graphics();
 
@@ -948,27 +917,20 @@ class Player {
 }
 
 // ============================================================
-// HELPERS — derived geometry from level data
+// HELPERS — derived geometry from tilemap
 // ============================================================
-function computeHoles(level) {
-  return level.groundGaps.map(([a, b]) => {
-    const left  = Math.ceil(a / TILE) * TILE;
-    const right = Math.ceil(b / TILE) * TILE;
-    if (left >= right) return null;
-    return { left, right };
-  }).filter(Boolean);
-}
-
-function computeGroundRuns(worldWidth, holes) {
-  const sorted = [...holes].sort((a, b) => a.left - b.left);
-  const runs = [];
-  let cursor = 0;
-  for (const h of sorted) {
-    if (h.left > cursor) runs.push({ x: cursor, w: h.left - cursor });
-    cursor = Math.max(cursor, h.right);
+function computeHolesFromLayer(layer) {
+  const row = layer.layer.height - 1;
+  const holes = [];
+  let inHole = false, start = 0;
+  for (let x = 0; x < layer.layer.width; x++) {
+    const tile = layer.getTileAt(x, row);
+    const empty = !tile || tile.index === -1;
+    if (empty && !inHole) { inHole = true; start = x * TILE; }
+    else if (!empty && inHole) { inHole = false; holes.push({ left: start, right: x * TILE }); }
   }
-  if (cursor < worldWidth) runs.push({ x: cursor, w: worldWidth - cursor });
-  return runs;
+  if (inHole) holes.push({ left: start, right: layer.layer.width * TILE });
+  return holes;
 }
 
 // ============================================================
@@ -982,9 +944,21 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('player_spin',  'sprite3.png', { frameWidth: 92, frameHeight: 92 });
     this.load.spritesheet('player_punch', 'sprite4.png', { frameWidth: 92, frameHeight: 92 });
     this.load.image('bagel', 'bagel.png');
+    this.load.image('tiles', 'tileset.png');
+    LEVEL_KEYS.forEach((key, i) => this.load.tilemapTiledJSON(key, `levels/level${i + 1}.json`));
   }
   create() {
     generateTextures(this);
+
+    const params = new URLSearchParams(location.search);
+    if (params.get('baketiles') === '1') {
+      bakeTileset(this);
+      return;
+    }
+    if (params.has('bakeentity')) {
+      bakeOneEntity(this, params.get('bakeentity'));
+      return;
+    }
 
     // shared anims registered once on global anims manager
     this.anims.create({ key: 'spin',  frames: this.anims.generateFrameNumbers('player_spin',  { start: 0, end: 7 }), frameRate: 10, repeat: -1 });
@@ -993,15 +967,27 @@ class BootScene extends Phaser.Scene {
     this.anims.create({ key: 'jump',  frames: this.anims.generateFrameNumbers('player_jump',  { start: 0, end: 8 }), frameRate: 14, repeat: 0 });
     this.anims.create({ key: 'punch', frames: this.anims.generateFrameNumbers('player_punch', { start: 0, end: 2 }), frameRate: 18, repeat: 0 });
 
+    // Cache level names from tilemap props for HUD + Title.
+    const levelNames = LEVEL_KEYS.map(k => {
+      const data = this.cache.tilemap.get(k)?.data;
+      return data?.properties?.find(p => p.name === 'name')?.value || k;
+    });
+    this.registry.set('levelNames', levelNames);
+
     // init persistent run-state on registry
     this.registry.set('score', 0);
     const save = Save.load();
-    this.registry.set('startLevel', Math.min(save.maxLevel || 0, LEVELS.length - 1));
+    this.registry.set('startLevel', Math.min(save.maxLevel || 0, LEVEL_KEYS.length - 1));
     this.registry.set('currentLevel', this.registry.get('startLevel'));
     this.registry.set('checkpoint', null);
     this.registry.set('hp', MAX_HP);
 
-    this.scene.start('Title');
+    const lvl = parseInt(params.get('lvl') || '', 10);
+    if (Number.isFinite(lvl) && lvl >= 0 && lvl < LEVEL_KEYS.length) {
+      this.registry.set('currentLevel', lvl);
+    }
+    if (params.get('autogame') === '1') this.scene.start('Game');
+    else this.scene.start('Title');
   }
 }
 
@@ -1020,9 +1006,10 @@ class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const save = Save.load();
-    const startLevel = Math.min(save.maxLevel || 0, LEVELS.length - 1);
+    const startLevel = Math.min(save.maxLevel || 0, LEVEL_KEYS.length - 1);
+    const levelNames = this.registry.get('levelNames') || [];
     const continueMsg = startLevel > 0
-      ? `Continue from Level ${startLevel + 1} — ${LEVELS[startLevel].name}`
+      ? `Continue from Level ${startLevel + 1} — ${levelNames[startLevel] || ''}`
       : 'Press any key to start';
     const prompt = this.add.text(this.scale.width / 2, HEIGHT - 66, continueMsg, {
       fontSize: '16px', color: '#aaaaaa', fontFamily: 'monospace'
@@ -1057,27 +1044,29 @@ class GameScene extends Phaser.Scene {
     this.bobbers = [];
 
     const currentLevel = this.registry.get('currentLevel');
-    const level = LEVELS[currentLevel];
-    const theme = THEMES[level.theme || 'outdoor'];
-    const worldWidth = level.worldWidth;
-    this.level = level;
-    this.theme = theme;
-    this.worldWidth = worldWidth;
+    const { map, ground, props } = loadTilemap(this, LEVEL_KEYS[currentLevel]);
+    this.tilemap = map;
+    this.groundLayer = ground;
+    this.groundLayer.setDepth(-20);
 
-    this.physics.world.setBounds(0, 0, worldWidth, HEIGHT);
+    this.themeName = props.theme || 'outdoor';
+    this.levelName = props.name || '';
+    this.theme = THEMES[this.themeName];
+    this.worldWidth = map.widthInPixels;
+
+    this.physics.world.setBounds(0, 0, this.worldWidth, HEIGHT);
     this.cameras.main.resetFX();
 
     this._buildBackground();
     this._buildGeometry();
-    this._buildPickupsAndEnemies();
-    this._buildGoalAndCheckpoints();
+    this._buildEntitiesFromObjects(this.tilemap);
     this._spawnPlayer();
     this._buildParticles();
     this._wireColliders();
     this._buildHUD();
     this._wireInput();
 
-    this.cameras.main.setBounds(0, 0, worldWidth, HEIGHT);
+    this.cameras.main.setBounds(0, 0, this.worldWidth, HEIGHT);
     this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.15);
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
@@ -1088,7 +1077,7 @@ class GameScene extends Phaser.Scene {
   }
 
   _buildBackground() {
-    const { theme, level, worldWidth } = this;
+    const { theme, themeName, worldWidth } = this;
 
     this.sky = this.add.graphics();
     const drawSky = () => {
@@ -1102,7 +1091,7 @@ class GameScene extends Phaser.Scene {
     if (theme.showMountains) {
       for (let x = -100; x < worldWidth; x += 220) {
         const m = this.add.image(x, HEIGHT - 60, theme.mountain).setOrigin(0, 1);
-        m.setScrollFactor(0.2).setDepth(-90).setAlpha(level.theme === 'bagel' ? 0.85 : 0.6);
+        m.setScrollFactor(0.2).setDepth(-90).setAlpha(themeName === 'bagel' ? 0.85 : 0.6);
       }
     }
 
@@ -1147,7 +1136,7 @@ class GameScene extends Phaser.Scene {
       this.wall.fillStyle(0xa87648, 0.25);
       for (let vx = 0; vx < vw; vx += 40) this.wall.fillRect(vx, HEIGHT - 175, 1, 175);
     };
-    if (level.theme === 'bagel') {
+    if (themeName === 'bagel') {
       this.wall = this.add.graphics();
       drawWall();
       this.wall.setScrollFactor(0).setDepth(-90);
@@ -1161,35 +1150,15 @@ class GameScene extends Phaser.Scene {
   }
 
   _buildGeometry() {
-    const { theme, level, worldWidth } = this;
+    const { theme } = this;
 
-    this.holes = computeHoles(level);
-    const inHole = (x) => this.holes.some(h => x >= h.left && x < h.right);
-    const overHole = (x, halfW) => this.holes.some(h => (x + halfW) > h.left && (x - halfW) < h.right);
-    this.inHole = inHole;
-    this.overHole = overHole;
-
-    // VISUAL ground tiles (no physics)
-    for (let x = 0; x < worldWidth; x += TILE) {
-      if (inHole(x)) continue;
-      this.add.image(x + TILE / 2, HEIGHT - TILE / 2, theme.ground).setDepth(-20);
-    }
-
-    // PHYSICS: merged static bodies per contiguous run (one body per run, not per tile)
     this.platforms = this.physics.add.staticGroup();
-    const runs = computeGroundRuns(worldWidth, this.holes);
-    runs.forEach(r => {
-      const rect = this.add.rectangle(r.x + r.w / 2, HEIGHT - TILE / 2, r.w, TILE);
-      rect.setVisible(false);
-      this.physics.add.existing(rect, true);
-      this.platforms.add(rect);
-    });
+    this.holes = computeHolesFromLayer(this.groundLayer);
+    this.inHole = (x) => this.holes.some(h => x >= h.left && x < h.right);
+    this.overHole = (x, halfW) => this.holes.some(h => (x + halfW) > h.left && (x - halfW) < h.right);
 
-    // floating platforms
-    const platKey = (k) => k === 'bigplatform' ? theme.bigplat : theme.plat;
-    level.floats.forEach(([x, y, key]) => this.platforms.create(x, y, platKey(key)).refreshBody());
-
-    // spike bed in every hole
+    // spike bed auto-filled per hole (data-driven by hole geometry, not object layer).
+    // Object-layer spikes ignored; revisit if paint-style spike tiles land (Step 9).
     this.spikes = this.physics.add.staticGroup();
     this.holes.forEach(h => {
       const startX = h.left + SPIKE.HALF + SPIKE.BUFFER;
@@ -1201,101 +1170,124 @@ class GameScene extends Phaser.Scene {
         s.refreshBody();
       }
     });
-
-    // decorations (no physics)
-    level.trees.forEach(x => {
-      if (overHole(x, 32)) return;
-      this.add.image(x, HEIGHT - 32, theme.tree).setOrigin(0.5, 1).setDepth(-10);
-    });
-    level.bushes.forEach(x => {
-      if (overHole(x, 24)) return;
-      this.add.image(x, HEIGHT - 32, theme.bush).setOrigin(0.5, 1).setDepth(-5);
-    });
-    level.rocks.forEach(x => {
-      if (overHole(x, 14)) return;
-      this.add.image(x, HEIGHT - 32, theme.rock).setOrigin(0.5, 1).setDepth(-5);
-    });
   }
 
-  _buildPickupsAndEnemies() {
-    const { theme, level } = this;
+  _buildEntitiesFromObjects(map) {
+    const { theme, themeName } = this;
+    const checkpoint = this.registry.get('checkpoint');
+    const objects = map.getObjectLayer('objects')?.objects ?? [];
+    const propsOf = (o) => Object.fromEntries((o.properties || []).map(p => [p.name, p.value]));
+    const platKey = (k) => k === 'bigplatform' ? theme.bigplat : theme.plat;
+    const customerLines = ["WHERE'S MY BAGEL?!", "EXTRA SCHMEAR!", "TOO SLOW!", "MANAGER!", "DECAF, NOT REGULAR!", "I WANT A REFUND!", "IT'S COLD!"];
 
     this.coins = this.physics.add.group({ allowGravity: false, immovable: true });
-    level.coins.forEach(([x, y]) => {
-      if (y > HEIGHT - 60 && this.inHole(x)) return;
-      const c = this.coins.create(x, y, 'coin');
-      this._addBob(c, y, 6, 600);
-    });
-
-    const customerLines = ["WHERE'S MY BAGEL?!", "EXTRA SCHMEAR!", "TOO SLOW!", "MANAGER!", "DECAF, NOT REGULAR!", "I WANT A REFUND!", "IT'S COLD!"];
     this.enemies = this.physics.add.group();
-    level.enemies.forEach(d => {
-      let minX = d.min, maxX = d.max;
-      if (d.y > HEIGHT - 100) {
-        this.holes.forEach(h => {
-          if (minX >= h.left && minX < h.right) minX = h.right;
-          if (maxX > h.left && maxX <= h.right) maxX = h.left;
-        });
-        if (minX > maxX) return;
-      }
-      const e = this.enemies.create(d.x, d.y, theme.enemy);
-      e.body.setSize(ENEMY.BODY_W, ENEMY.BODY_H).setOffset(ENEMY.BODY_OFF_X, ENEMY.BODY_OFF_Y);
-      e.setVelocityX(ENEMY.PATROL_SPEED);
-      e.setBounce(0, 0);
-      e.setCollideWorldBounds(true);
-      e.minX = minX;
-      e.maxX = maxX;
-      this.tweens.add({ targets: e, scaleY: 0.85, duration: 350, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-
-      if (level.theme === 'bagel') {
-        const shout = () => {
-          if (!e.active) return;
-          const line = Phaser.Math.RND.pick(customerLines);
-          const t = this.add.text(e.x, e.y - 22, line, {
-            fontSize: '9px', color: '#fff', fontFamily: 'monospace',
-            backgroundColor: '#c23030', padding: { x: 3, y: 1 }
-          }).setOrigin(0.5).setDepth(20);
-          this.tweens.add({ targets: t, y: t.y - 14, alpha: 0, duration: 1500, onComplete: () => t.destroy() });
-        };
-        this.time.addEvent({
-          delay: Phaser.Math.Between(2500, 5500),
-          startAt: Phaser.Math.Between(0, 2000),
-          loop: true,
-          callback: shout
-        });
-      }
-    });
-
     this.healthPickups = this.physics.add.group({ allowGravity: false, immovable: true });
-    level.hearts.forEach(([x, y]) => {
-      const h = this.healthPickups.create(x, y, 'bagel').setScale(0.55);
-      h.body.setSize(56, 56).setOffset(4, 4);
-      h.baseScale = 0.55;
-      this._addBob(h, y, 6, 700);
-      this._addScalePulse(h, 0.55, 0.65, 500);
-    });
-  }
-
-  _buildGoalAndCheckpoints() {
-    const { level } = this;
-    const checkpoint = this.registry.get('checkpoint');
-
     this.checkpointFlags = this.physics.add.staticGroup();
-    (level.checkpoints || []).forEach(([x, y]) => {
-      const f = this.checkpointFlags.create(x, y, 'checkpoint').setOrigin(0.5, 1);
-      f.body.setSize(14, 44).setOffset(1, 4);
-      f.refreshBody();
-      f.activated = false;
-      if (checkpoint && checkpoint.x === f.x && checkpoint.y === f.y) {
-        f.activated = true;
-      } else {
-        f.setTint(0x666666);
-      }
-    });
 
-    this.goal = this.physics.add.staticSprite(level.goal[0], level.goal[1], 'goal').setOrigin(0.5, 1);
-    if (level.theme === 'bagel') this.goal.setTint(0xffd24a);
-    this.goal.refreshBody();
+    // Tiled tile objects anchor at bottom-LEFT of their bbox. Point objects use x/y directly.
+    // Bottom-anchored runtime sprites (goal, checkpoint, tree, bush, rock) want their (x,y) at
+    // the sprite's bottom-center. Everything else wants center.
+    const BOTTOM_ANCHORED = new Set(['goal', 'checkpoint', 'tree', 'bush', 'rock']);
+    const posOf = (o) => {
+      const isTile = o.gid !== undefined;
+      const w = o.width || 0, h = o.height || 0;
+      const cx = isTile ? o.x + w / 2 : o.x;
+      const cy = isTile ? o.y - h / 2 : o.y;
+      const yBottom = isTile ? o.y : o.y;
+      return BOTTOM_ANCHORED.has(o.type) ? { x: cx, y: yBottom } : { x: cx, y: cy };
+    };
+
+    for (const o of objects) {
+      const p = propsOf(o);
+      const { x, y } = posOf(o);
+      switch (o.type) {
+        case 'spawn':
+          this.spawnPoint = { x, y };
+          break;
+        case 'goal':
+          this.goal = this.physics.add.staticSprite(x, y, 'goal').setOrigin(0.5, 1);
+          if (themeName === 'bagel') this.goal.setTint(0xffd24a);
+          this.goal.refreshBody();
+          break;
+        case 'coin': {
+          if (y > HEIGHT - 60 && this.inHole(x)) break;
+          const c = this.coins.create(x, y, 'coin');
+          this._addBob(c, y, 6, 600);
+          break;
+        }
+        case 'heart': {
+          const h = this.healthPickups.create(x, y, 'bagel').setScale(0.55);
+          h.body.setSize(56, 56).setOffset(4, 4);
+          h.baseScale = 0.55;
+          this._addBob(h, y, 6, 700);
+          this._addScalePulse(h, 0.55, 0.65, 500);
+          break;
+        }
+        case 'checkpoint': {
+          const f = this.checkpointFlags.create(x, y, 'checkpoint').setOrigin(0.5, 1);
+          f.body.setSize(14, 44).setOffset(1, 4);
+          f.refreshBody();
+          f.activated = false;
+          if (checkpoint && checkpoint.x === f.x && checkpoint.y === f.y) f.activated = true;
+          else f.setTint(0x666666);
+          break;
+        }
+        case 'enemy': {
+          let minX = p.min ?? 0, maxX = p.max ?? this.worldWidth;
+          // Match original threshold: ground-level enemies (y > HEIGHT - 100) get hole-clamped.
+          if (y > HEIGHT - 100) {
+            this.holes.forEach(h => {
+              if (minX >= h.left && minX < h.right) minX = h.right;
+              if (maxX > h.left && maxX <= h.right) maxX = h.left;
+            });
+            if (minX > maxX) break;
+          }
+          const e = this.enemies.create(x, y, theme.enemy);
+          e.body.setSize(ENEMY.BODY_W, ENEMY.BODY_H).setOffset(ENEMY.BODY_OFF_X, ENEMY.BODY_OFF_Y);
+          e.setVelocityX(ENEMY.PATROL_SPEED);
+          e.setBounce(0, 0);
+          e.setCollideWorldBounds(true);
+          e.minX = minX;
+          e.maxX = maxX;
+          this.tweens.add({ targets: e, scaleY: 0.85, duration: 350, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+          if (themeName === 'bagel') {
+            const shout = () => {
+              if (!e.active) return;
+              const line = Phaser.Math.RND.pick(customerLines);
+              const t = this.add.text(e.x, e.y - 22, line, {
+                fontSize: '9px', color: '#fff', fontFamily: 'monospace',
+                backgroundColor: '#c23030', padding: { x: 3, y: 1 }
+              }).setOrigin(0.5).setDepth(20);
+              this.tweens.add({ targets: t, y: t.y - 14, alpha: 0, duration: 1500, onComplete: () => t.destroy() });
+            };
+            this.time.addEvent({
+              delay: Phaser.Math.Between(2500, 5500),
+              startAt: Phaser.Math.Between(0, 2000),
+              loop: true,
+              callback: shout
+            });
+          }
+          break;
+        }
+        case 'platform':
+          this.platforms.create(x, y, platKey(p.key || 'platform')).refreshBody();
+          break;
+        case 'tree':
+          if (this.overHole(x, 32)) break;
+          this.add.image(x, y, theme.tree).setOrigin(0.5, 1).setDepth(-10);
+          break;
+        case 'bush':
+          if (this.overHole(x, 24)) break;
+          this.add.image(x, y, theme.bush).setOrigin(0.5, 1).setDepth(-5);
+          break;
+        case 'rock':
+          if (this.overHole(x, 14)) break;
+          this.add.image(x, y, theme.rock).setOrigin(0.5, 1).setDepth(-5);
+          break;
+        // spike: ignored — auto-filled per hole in _buildGeometry
+      }
+    }
   }
 
   _spawnPlayer() {
@@ -1305,7 +1297,7 @@ class GameScene extends Phaser.Scene {
       sx = checkpoint.x;
       sy = checkpoint.y - PLAYER.RESPAWN_OFFSET_Y;
     } else {
-      [sx, sy] = this.level.playerStart;
+      ({ x: sx, y: sy } = this.spawnPoint);
     }
     this.player = new Player(this, sx, sy);
   }
@@ -1340,6 +1332,8 @@ class GameScene extends Phaser.Scene {
     const p = this.player.sprite;
     this.physics.add.collider(p, this.platforms);
     this.physics.add.collider(this.enemies, this.platforms);
+    this.physics.add.collider(p, this.groundLayer);
+    this.physics.add.collider(this.enemies, this.groundLayer);
     this.physics.add.overlap(p, this.coins, (_p, c) => this.collectCoin(c), null, this);
     this.physics.add.overlap(p, this.spikes, () => this.die(), null, this);
     this.physics.add.overlap(p, this.goal, () => this.reachGoal(), null, this);
@@ -1355,7 +1349,7 @@ class GameScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(100);
 
     const currentLevel = this.registry.get('currentLevel');
-    const label = 'Level ' + (currentLevel + 1) + '/' + LEVELS.length + (this.level.name ? ' — ' + this.level.name : '');
+    const label = 'Level ' + (currentLevel + 1) + '/' + LEVEL_KEYS.length + (this.levelName ? ' — ' + this.levelName : '');
     this.levelText = this.add.text(this.scale.width - 16, 16, label, {
       fontSize: '18px', color: '#fff', fontFamily: 'monospace',
       stroke: '#000', strokeThickness: 3
@@ -1556,7 +1550,7 @@ class GameScene extends Phaser.Scene {
     const nextLevel = currentLevel + 1;
     Save.setMaxLevel(nextLevel);
 
-    if (nextLevel >= LEVELS.length) {
+    if (nextLevel >= LEVEL_KEYS.length) {
       this.add.text(this.scale.width / 2, HEIGHT / 2, 'YOU WIN!\nScore: ' + this.registry.get('score') + '\nPress R to restart', {
         fontSize: '32px', color: '#fff700', fontFamily: 'monospace',
         align: 'center', stroke: '#000', strokeThickness: 4
