@@ -1,9 +1,10 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { AssetKeys, TileFrames } from '../assets/keys';
+import vocab from '../assets/level-vocab.json';
 import { LEVELS } from '../systems/levels';
 import { RegKeys } from '../systems/state';
-import { Player } from '../entities/Player';
+import { Player, PlayerEvents } from '../entities/Player';
 import { Walker } from '../entities/Walker';
 import { Saw } from '../entities/Saw';
 import { Bat } from '../entities/Bat';
@@ -31,8 +32,11 @@ export class Game extends Phaser.Scene {
         super(SceneKeys.Game);
     }
 
-    init(data: { level?: number }): void {
+    private fromDeath = false;
+
+    init(data: { level?: number; died?: boolean }): void {
         this.levelIndex = data.level ?? 0;
+        this.fromDeath = data.died ?? false;
         this.phase = 'play';
         this.attemptGems = 0;
     }
@@ -40,21 +44,21 @@ export class Game extends Phaser.Scene {
     create(): void {
         const spec = LEVELS[this.levelIndex];
         const map = this.make.tilemap({ key: spec.key });
-        const tileset = map.addTilesetImage('tiles', AssetKeys.Tiles)!;
+        const tileset = map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!;
 
         this.cameras.main.setBackgroundColor(spec.sky);
         this.addParallax(spec.bgFrames, map.widthInPixels);
 
-        this.ground = map.createLayer('ground', tileset) as Phaser.Tilemaps.TilemapLayer;
-        map.createLayer('deco', tileset);
-        this.hazards = map.createLayer('hazards', tileset) as Phaser.Tilemaps.TilemapLayer;
+        this.ground = map.createLayer(vocab.layers.ground, tileset) as Phaser.Tilemaps.TilemapLayer;
+        map.createLayer(vocab.layers.deco, tileset);
+        this.hazards = map.createLayer(vocab.layers.hazards, tileset) as Phaser.Tilemaps.TilemapLayer;
         this.ground.setCollisionByExclusion([-1]);
         this.hazards.setCollisionByExclusion([-1]);
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, LEVEL_HEIGHT);
 
-        const objects = map.getObjectLayer('objects')?.objects ?? [];
-        const spawn = objects.find((o) => o.type === 'spawn');
+        const objects = map.getObjectLayer(vocab.layers.objects)?.objects ?? [];
+        const spawn = objects.find((o) => o.type === vocab.objects.spawn);
         this.player = new Player(this, spawn?.x ?? 32, spawn?.y ?? 32);
 
         const enemies = this.physics.add.group();
@@ -63,7 +67,7 @@ export class Game extends Phaser.Scene {
             const x = obj.x ?? 0;
             const y = obj.y ?? 0;
             switch (obj.type) {
-                case 'gem': {
+                case vocab.objects.gem: {
                     const gem = gems.create(x, y, AssetKeys.Tiles, TileFrames.Gem) as Phaser.Physics.Arcade.Sprite;
                     // generous pickup zone — ceiling riders only graze the gem row
                     (gem.body as Phaser.Physics.Arcade.StaticBody).setSize(26, 26);
@@ -78,19 +82,19 @@ export class Game extends Phaser.Scene {
                     });
                     break;
                 }
-                case 'walker':
+                case vocab.objects.walker:
                     enemies.add(new Walker(this, x, y, false, this.ground, this.hazards));
                     break;
-                case 'walker-ceiling':
+                case vocab.objects.walkerCeiling:
                     enemies.add(new Walker(this, x, y, true, this.ground, this.hazards));
                     break;
-                case 'saw':
+                case vocab.objects.saw:
                     enemies.add(new Saw(this, x, y));
                     break;
-                case 'bat':
+                case vocab.objects.bat:
                     enemies.add(new Bat(this, x, y));
                     break;
-                case 'door':
+                case vocab.objects.door:
                     this.createDoorSensor(x, y);
                     break;
             }
@@ -102,8 +106,6 @@ export class Game extends Phaser.Scene {
             this.collectGem(gemObj as Phaser.Physics.Arcade.Sprite);
         });
         this.physics.add.overlap(this.player, enemies, () => this.die());
-        // tile-precise check happens in update; the layer overlap alone is too generous
-        this.physics.add.overlap(this.player, this.hazards);
 
         this.burst = this.add.particles(0, 0, AssetKeys.Pixel, {
             speed: { min: 50, max: 150 },
@@ -120,14 +122,14 @@ export class Game extends Phaser.Scene {
             emitting: false,
         });
 
-        this.player.on('flip', () => {
+        this.player.on(PlayerEvents.Flip, () => {
             this.sound.play(AssetKeys.SfxFlip, { volume: 0.4 });
             this.burst.setParticleTint(0x7df0ff);
             this.burst.explode(14, this.player.x, this.player.feetY);
             this.cameras.main.shake(70, 0.004);
             this.zoomPunch();
         });
-        this.player.on('land', () => {
+        this.player.on(PlayerEvents.Land, () => {
             this.tweens.add({
                 targets: this.player,
                 scaleY: 0.82,
@@ -154,7 +156,7 @@ export class Game extends Phaser.Scene {
             this.scene.start(SceneKeys.Menu);
         });
 
-        this.scene.launch(SceneKeys.UI, { level: this.levelIndex });
+        this.scene.launch(SceneKeys.UI, { level: this.levelIndex, died: this.fromDeath });
     }
 
     update(time: number): void {
@@ -218,6 +220,7 @@ export class Game extends Phaser.Scene {
         this.phase = 'won';
         const lastLevel = this.levelIndex === LEVELS.length - 1;
         this.sound.play(lastLevel ? AssetKeys.SfxWin : AssetKeys.SfxDoor, { volume: 0.6 });
+        this.dust.emitting = false;
         (this.player.body as Phaser.Physics.Arcade.Body).stop();
         this.tweens.add({ targets: this.player, alpha: 0, scale: 0.4, duration: 350 });
         this.cameras.main.fadeOut(450, 0, 0, 0);
@@ -250,7 +253,7 @@ export class Game extends Phaser.Scene {
         if (!fromDeath && this.phase !== 'play') return;
         // gems picked up this attempt come back with the level
         this.registry.inc(RegKeys.Gems, -this.attemptGems);
-        this.scene.restart({ level: this.levelIndex });
+        this.scene.restart({ level: this.levelIndex, died: true });
     }
 
     private zoomPunch(): void {

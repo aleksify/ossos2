@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'tools/levels');
 const OUT = join(ROOT, 'public/assets/tilemaps');
+// shared with src/scenes/Game.ts and src/scenes/Preload.ts — keep names in one place
+const VOCAB = JSON.parse(readFileSync(join(ROOT, 'src/assets/level-vocab.json'), 'utf8'));
 
 const FLIP_V = 0x40000000;
 
@@ -82,13 +84,13 @@ function build(name, text, seed) {
       } else if (c === 'D') {
         deco[i] = gid(T.doorBottom);
         deco[i - w] = gid(T.doorTop);
-        obj('door', x, y);
-      } else if (c === 'P') obj('spawn', x, y);
-      else if (c === '*') obj('gem', x, y);
-      else if (c === 'W') obj('walker', x, y);
-      else if (c === 'M') obj('walker-ceiling', x, y);
-      else if (c === 'S') obj('saw', x, y);
-      else if (c === 'B') obj('bat', x, y);
+        obj(VOCAB.objects.door, x, y);
+      } else if (c === 'P') obj(VOCAB.objects.spawn, x, y);
+      else if (c === '*') obj(VOCAB.objects.gem, x, y);
+      else if (c === 'W') obj(VOCAB.objects.walker, x, y);
+      else if (c === 'M') obj(VOCAB.objects.walkerCeiling, x, y);
+      else if (c === 'S') obj(VOCAB.objects.saw, x, y);
+      else if (c === 'B') obj(VOCAB.objects.bat, x, y);
       else if (c !== '.' && c !== ' ') throw new Error(`${name}: unknown char '${c}' at ${x},${y}`);
     }
   }
@@ -118,21 +120,21 @@ function build(name, text, seed) {
   const map = {
     compressionlevel: -1, height: h, width: w, infinite: false,
     layers: [
-      layer(1, 'ground', ground),
-      layer(2, 'deco', deco),
-      layer(3, 'hazards', hazards),
-      { draworder: 'topdown', id: 4, name: 'objects', objects, opacity: 1, type: 'objectgroup', visible: true, x: 0, y: 0 },
+      layer(1, VOCAB.layers.ground, ground),
+      layer(2, VOCAB.layers.deco, deco),
+      layer(3, VOCAB.layers.hazards, hazards),
+      { draworder: 'topdown', id: 4, name: VOCAB.layers.objects, objects, opacity: 1, type: 'objectgroup', visible: true, x: 0, y: 0 },
     ],
     nextlayerid: 5, nextobjectid: oid, orientation: 'orthogonal', renderorder: 'right-down',
     tiledversion: '1.10.2', tileheight: 18, tilewidth: 18, type: 'map', version: '1.10',
     tilesets: [{
       columns: 20, firstgid: 1, image: '../tiles/tiles.png', imageheight: 162, imagewidth: 360,
-      margin: 0, name: 'tiles', spacing: 0, tilecount: 180, tileheight: 18, tilewidth: 18,
+      margin: 0, name: VOCAB.tileset, spacing: 0, tilecount: 180, tileheight: 18, tilewidth: 18,
     }],
   };
 
-  if (!objects.some((o) => o.type === 'spawn')) throw new Error(`${name}: no spawn`);
-  if (!objects.some((o) => o.type === 'door')) throw new Error(`${name}: no door`);
+  if (!objects.some((o) => o.type === VOCAB.objects.spawn)) throw new Error(`${name}: no spawn`);
+  if (!objects.some((o) => o.type === VOCAB.objects.door)) throw new Error(`${name}: no door`);
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify(map));
   console.log(`${name}: ${w}x${h}, ${objects.length} objects`);
 }

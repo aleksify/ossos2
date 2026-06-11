@@ -11,12 +11,12 @@
         "skipLibCheck": true,
         /* Bundler mode */
         "moduleResolution": "bundler",
+        "resolveJsonModule": true,
         "allowImportingTsExtensions": true,
         "isolatedModules": true,
         "moduleDetection": "force",
         "noEmit": true,
         /* Linting */
-        "strictPropertyInitialization": false,
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,

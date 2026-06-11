@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { AnimKeys, AssetKeys, CharFrames } from '../assets/keys';
+import vocab from '../assets/level-vocab.json';
 import { LEVELS } from '../systems/levels';
 import { RegKeys } from '../systems/state';
 
@@ -89,7 +90,7 @@ export class Preload extends Phaser.Scene {
                 | undefined;
             for (const layer of data?.layers ?? []) {
                 if (layer.type === 'objectgroup') {
-                    total += (layer.objects ?? []).filter((o) => o.type === 'gem').length;
+                    total += (layer.objects ?? []).filter((o) => o.type === vocab.objects.gem).length;
                 }
             }
         }

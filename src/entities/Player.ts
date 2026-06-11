@@ -9,6 +9,11 @@ const MAX_FALL = 460;
 // flip is allowed shortly after leaving a surface, VVVVVV-style
 const COYOTE_MS = 100;
 
+export const PlayerEvents = {
+    Flip: 'flip',
+    Land: 'land',
+} as const;
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
     gravityDir: 1 | -1 = 1;
     private coyoteUntil = 0;
@@ -40,7 +45,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         (this.body as Phaser.Physics.Arcade.Body).setGravityY(GRAVITY * this.gravityDir);
         this.setFlipY(this.gravityDir === -1);
         this.coyoteUntil = 0;
-        this.emit('flip', this.gravityDir);
+        this.emit(PlayerEvents.Flip, this.gravityDir);
         return true;
     }
 
@@ -51,7 +56,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         const grounded = this.grounded;
         if (grounded) this.coyoteUntil = now + COYOTE_MS;
-        if (grounded && !this.wasGrounded) this.emit('land');
+        if (grounded && !this.wasGrounded) this.emit(PlayerEvents.Land);
         this.wasGrounded = grounded;
 
         if (!grounded) {

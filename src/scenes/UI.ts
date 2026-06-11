@@ -21,7 +21,7 @@ export class UI extends Phaser.Scene {
         super(SceneKeys.UI);
     }
 
-    create(data: { level: number }): void {
+    create(data: { level: number; died?: boolean }): void {
         const spec = LEVELS[data.level];
 
         this.add.image(24, 24, AssetKeys.Tiles, TileFrames.Gem).setScale(1.6);
@@ -35,22 +35,25 @@ export class UI extends Phaser.Scene {
             this.registry.events.off('changedata', this.refresh, this);
         });
 
-        const banner = this.add
-            .text(480, 90, `${data.level + 1} / ${LEVELS.length} — ${spec.name}`, {
-                ...TEXT_STYLE,
-                fontSize: 26,
-            })
-            .setOrigin(0.5)
-            .setAlpha(0);
-        this.tweens.chain({
-            targets: banner,
-            tweens: [
-                { alpha: 1, duration: 350 },
-                { alpha: 0, duration: 500, delay: 1600 },
-            ],
-        });
+        // replaying the banner/hint on every quick respawn is just noise
+        if (!data.died) {
+            const banner = this.add
+                .text(480, 90, `${data.level + 1} / ${LEVELS.length} — ${spec.name}`, {
+                    ...TEXT_STYLE,
+                    fontSize: 26,
+                })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            this.tweens.chain({
+                targets: banner,
+                tweens: [
+                    { alpha: 1, duration: 350 },
+                    { alpha: 0, duration: 500, delay: 1600 },
+                ],
+            });
+        }
 
-        if (spec.hint) {
+        if (spec.hint && !data.died) {
             const hint = this.add
                 .text(480, 510, spec.hint, { ...TEXT_STYLE, fontSize: 17, color: '#d7e4ef' })
                 .setOrigin(0.5);

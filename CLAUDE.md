@@ -1,13 +1,13 @@
 # CLAUDE.md
 
-Project context for Claude Code. Game design TBD — this file covers stack, conventions, and workflow only.
+Project context for Claude Code. The game is **Flipside**, a gravity-flip 2D platformer — see Game design below.
 
 ## Stack
 
 - **Phaser 4** (WebGL, new RenderNode pipeline). Treat v3 patterns as suspect — use `phaser-v3-to-v4-migration` skill when porting examples from older docs.
 - **TypeScript** strict mode. No `any` without a `// why:` comment.
 - **Vite** dev server on `localhost:5173`. HMR is the iteration loop.
-- **Tiled** for levels — exports JSON, loaded via `this.load.tilemapTiledJSON()`. Tilesets and maps live in `public/assets/tilemaps/`.
+- **Levels** are ASCII files in `tools/levels/*.txt`, compiled to Tiled-format JSON by `npm run levels` (`tools/build-levels.mjs` — legend in its header). Output in `public/assets/tilemaps/` is **generated, never hand-edit**. Loaded via `this.load.tilemapTiledJSON()`. Tileset images live in `public/assets/tiles/` (Kenney Pixel Platformer, CC0; 18px tiles). Layer/object-type names shared via `src/assets/level-vocab.json`.
 - **Playwright CLI** for in-browser verification. Not a unit test framework — used to actually drive the game and inspect state.
 
 ## Skills
@@ -17,13 +17,18 @@ Project context for Claude Code. Game design TBD — this file covers stack, con
 ## Project layout
 
 ```
-public/assets/          sprites, audio, tilemaps (Tiled JSON)
+public/assets/tiles/    spritesheets (tiles.png 18px, characters.png 24px, backgrounds.png 24px)
+public/assets/audio/    sfx (Kenney Digital Audio, CC0)
+public/assets/tilemaps/ GENERATED level JSON — edit tools/levels/*.txt instead
 src/
   main.ts               game config, scene registration, exposes window.__game__
-  scenes/               Boot, Preload, Menu, Game, UI, GameOver
-  entities/             Player, Enemy, Pickup — composition over inheritance
-  systems/              input, save/load, physics helpers — pure modules, no scene refs
-tests/                  Playwright specs
+  scenes/               Boot, Preload, Menu, Game, UI, GameOver (+ keys.ts)
+  entities/             Player, Walker, Saw, Bat — extend Arcade.Sprite
+  systems/              levels (specs/palettes), state (registry helpers) — no scene imports
+  assets/               keys.ts (asset/anim/frame consts), level-vocab.json
+tools/
+  build-levels.mjs      ASCII → Tiled JSON compiler (npm run levels)
+  levels/               level1..5.txt — ASCII level sources
 ```
 
 ## Conventions
@@ -57,4 +62,11 @@ Every runnable milestone. Cheap insurance. Use `/caveman-commit` for terse conve
 
 ## Game design
 
-Not yet specified. Will be added to this file once decided. Until then, ask before inventing mechanics, scenes, or content.
+**Flipside** — gravity-flip platformer (VVVVVV-style), pixel art, Kenney assets.
+
+- **Core mechanic**: no jump. SPACE/W/↑ flips player gravity; allowed only while grounded (100ms coyote window). Player walks on floors *and* ceilings.
+- **Levels**: 5 handcrafted, 15 tiles tall (fits viewport at zoom 2, no vertical scroll), horizontal scroll, fully enclosed rooms. Ramp: movement → spike rhythm → enemy patrols → comb fingers → gauntlet.
+- **Objects**: gems (collect; lost on death within the attempt, banked on door), door (exit), spikes (floor `^` / ceiling `v`), walkers (patrol floor `W` / ceiling `M`, turn at walls/ledges/spikes), saws `S` (static, spinning), bats `B` (vertical bob).
+- **Death**: instant; respawn at level start; deaths counted. R restarts level, ESC to menu.
+- **Player physics**: body 14×18, run 170 px/s, gravity ±1500, max fall 460, tileBias 18.
+- **Scoring/HUD**: gems x/total, deaths, run timer; win screen shows all three.

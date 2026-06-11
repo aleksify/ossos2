@@ -1,0 +1,18 @@
+{
+    "tileset": "tiles",
+    "layers": {
+        "ground": "ground",
+        "deco": "deco",
+        "hazards": "hazards",
+        "objects": "objects"
+    },
+    "objects": {
+        "spawn": "spawn",
+        "door": "door",
+        "gem": "gem",
+        "walker": "walker",
+        "walkerCeiling": "walker-ceiling",
+        "saw": "saw",
+        "bat": "bat"
+    }
+}
