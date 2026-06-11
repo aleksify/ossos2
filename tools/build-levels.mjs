@@ -136,7 +136,7 @@ function build(name, text, seed) {
       }
     }
   }
-  for (let n = 0; n < Math.floor(w / 6); n++) {
+  for (let n = 0; n < Math.floor(Math.max(w, h) / 6); n++) {
     const x = 1 + Math.floor(rng() * (w - 5));
     const y = 2 + Math.floor(rng() * (h - 8));
     const clear = [0, 1, 2].every((d) => at(x + d, y) === '.' && deco[y * w + x + d] === 0);

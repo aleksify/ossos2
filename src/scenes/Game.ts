@@ -14,7 +14,6 @@ import { Bagel } from '../entities/Bagel';
 import { Shot } from '../entities/Shot';
 
 const VIEW_ZOOM = 2;
-const LEVEL_HEIGHT = 270;
 
 type Phase = 'play' | 'dead' | 'won' | 'cinematic';
 
@@ -70,7 +69,7 @@ export class Game extends Phaser.Scene {
         const tileset = map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!;
 
         this.cameras.main.setBackgroundColor(spec.sky);
-        this.addParallax(spec, map.widthInPixels);
+        this.addParallax(spec, map.widthInPixels, map.heightInPixels);
 
         this.ground = map.createLayer(vocab.layers.ground, tileset) as Phaser.Tilemaps.TilemapLayer;
         map.createLayer(vocab.layers.deco, tileset);
@@ -78,7 +77,7 @@ export class Game extends Phaser.Scene {
         this.ground.setCollisionByExclusion([-1]);
         this.hazards.setCollisionByExclusion([-1]);
 
-        this.physics.world.setBounds(0, 0, map.widthInPixels, LEVEL_HEIGHT);
+        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
         const objects = map.getObjectLayer(vocab.layers.objects)?.objects ?? [];
         const spawn = objects.find((o) => o.type === vocab.objects.spawn);
@@ -226,7 +225,7 @@ export class Game extends Phaser.Scene {
 
         const cam = this.cameras.main;
         cam.setZoom(VIEW_ZOOM);
-        cam.setBounds(0, 0, map.widthInPixels, LEVEL_HEIGHT);
+        cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         cam.startFollow(this.player, true, 0.12, 0.12);
         cam.fadeIn(300, 0, 0, 0);
 
@@ -528,20 +527,23 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private addParallax(spec: LevelSpec, mapWidth: number): void {
+    private addParallax(spec: LevelSpec, mapWidth: number, mapHeight: number): void {
         if (spec.theme === 'paris') {
-            for (const fx of [0.3, 0.75]) {
-                this.add
-                    .image(mapWidth * fx, LEVEL_HEIGHT - 18, AssetKeys.Eiffel)
-                    .setOrigin(0.5, 1)
-                    .setScrollFactor(0.15, 1)
-                    .setScale(1.7)
-                    .setAlpha(0.55);
+            // tall maps are climbed from inside the tower — no exterior Eiffel
+            if (mapHeight <= 540) {
+                for (const fx of [0.3, 0.75]) {
+                    this.add
+                        .image(mapWidth * fx, mapHeight - 18, AssetKeys.Eiffel)
+                        .setOrigin(0.5, 1)
+                        .setScrollFactor(0.15, 1)
+                        .setScale(1.7)
+                        .setAlpha(0.55);
+                }
             }
             for (let x = 0; x < mapWidth + 480; x += 24) {
                 const frame = spec.bgFrames[(x / 24) % spec.bgFrames.length];
                 this.add
-                    .image(x, LEVEL_HEIGHT - 18, AssetKeys.Paris, frame)
+                    .image(x, mapHeight - 18, AssetKeys.Paris, frame)
                     .setOrigin(0, 1)
                     .setScrollFactor(0.35, 1)
                     .setScale(1.4)
@@ -552,7 +554,7 @@ export class Game extends Phaser.Scene {
         for (let x = 0; x < mapWidth + 480; x += 24) {
             const frame = spec.bgFrames[(x / 24) % spec.bgFrames.length];
             this.add
-                .image(x, LEVEL_HEIGHT - 30, AssetKeys.Backgrounds, frame)
+                .image(x, mapHeight - 30, AssetKeys.Backgrounds, frame)
                 .setOrigin(0, 1)
                 .setScrollFactor(0.35, 1)
                 .setScale(1.6)

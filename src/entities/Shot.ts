@@ -17,6 +17,6 @@ export class Shot extends Phaser.Physics.Arcade.Sprite {
     preUpdate(time: number, delta: number): void {
         super.preUpdate(time, delta);
         this.angle += delta * 0.5;
-        if (this.y > 320 || this.y < -50) this.destroy();
+        if (this.y > this.scene.physics.world.bounds.bottom + 60 || this.y < -60) this.destroy();
     }
 }

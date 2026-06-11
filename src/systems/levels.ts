@@ -88,9 +88,9 @@ export const LEVELS: LevelSpec[] = [
     },
     {
         key: 'level8',
-        name: "Stinky's Rescue",
-        intro: 'A faint meow over the rooftops… Stinky?!',
-        hint: 'Save him.',
+        name: 'La Tour de Stinky',
+        intro: 'A faint meow from the top of the Tower… Stinky?!',
+        hint: 'Flip to rise. The only way is up.',
         sky: 0x8a93c4,
         bgFrames: [0, 2, 1, 3],
         flip: true,
