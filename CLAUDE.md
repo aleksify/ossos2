@@ -62,11 +62,12 @@ Every runnable milestone. Cheap insurance. Use `/caveman-commit` for terse conve
 
 ## Game design
 
-**Flipside** — gravity-flip platformer (VVVVVV-style), pixel art, Kenney assets.
+**Flipside — a Sosso story.** Sosso (young brunette, pale, red dress; the user's girlfriend — treat respectfully) escapes her bagel-shop job and gains gravity powers. Pixel art: Kenney tiles + custom sprites (see sprite pipeline above).
 
-- **Core mechanic**: no jump. SPACE/W/↑ flips player gravity; allowed only while grounded (100ms coyote window). Player walks on floors *and* ceilings.
-- **Levels**: 5 handcrafted, 15 tiles tall (fits viewport at zoom 2, no vertical scroll), horizontal scroll, fully enclosed rooms. Ramp: movement → spike rhythm → enemy patrols → comb fingers → gauntlet.
-- **Objects**: gems (collect; lost on death within the attempt, banked on door), door (exit), spikes (floor `^` / ceiling `v`), walkers (patrol floor `W` / ceiling `M`, turn at walls/ledges/spikes), saws `S` (static, spinning), bats `B` (vertical bob).
-- **Death**: instant; respawn at level start; deaths counted. R restarts level, ESC to menu.
-- **Player physics**: body 14×18, run 170 px/s, gravity ±1500, max fall 460, tileBias 18.
-- **Scoring/HUD**: gems x/total, deaths, run timer; win screen shows all three.
+- **Story arc**: levels 1–3 = bagel shop (no flip; SPACE jumps, X/J throws bagels). Enemies are annoying customers (patrol) and Karens (lob coffee). Level 3 is long, with checkpoint flags `F`, and ends in a boss fight vs **Lindy** (skinny boss, 6 HP, dash → rolling-pin volley → enrage at ≤3 HP). She drops the **anti-gravity bagel**: eating it permanently swaps jump → gravity flip. Levels 4–8 = the flip levels (spikes, walkers, saws, bats).
+- **Flip mechanic**: SPACE/W/↑ flips gravity, grounded-only (100ms coyote). Walk floors *and* ceilings. Bagel throw stays in flip levels; kills walkers/bats/customers/karens, not saws. Bagels die on terrain.
+- **Levels**: 15 tiles tall (viewport at zoom 2, no vertical scroll), horizontal scroll, enclosed rooms. ASCII legend in `tools/build-levels.mjs` (incl. `C` customer, `K` karen, `L` lindy, `F` checkpoint).
+- **Death**: one hit; respawn at level start or last checkpoint; deaths counted. R restarts, ESC to menu.
+- **Player physics**: body 14×19, run 170 px/s, jump 390, gravity ±1500, max fall 460, tileBias 18.
+- **HUD**: collectible (bagels in shop, gems after) x/total, deaths, boss HP bar, run timer on win screen.
+- **Gotcha**: use plain `add.group()` for entity collections — `physics.add.group()` re-applies group defaults on add() and wipes body config set in entity constructors.
