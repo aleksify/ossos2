@@ -4,12 +4,13 @@ export interface LevelSpec {
     hint?: string;
     intro?: string;
     sky: number;
-    // frame indices in backgrounds.png used for the parallax horizon strip
+    // frame indices for the parallax horizon strip (backgrounds.png, or paris.png for the paris theme)
     bgFrames: number[];
     // gravity flip available from the start (otherwise Sosso jumps)
     flip: boolean;
-    collectible: 'bagel' | 'gem';
+    collectible: 'bagel' | 'gem' | 'croissant';
     boss?: boolean;
+    theme?: 'paris';
 }
 
 export const LEVELS: LevelSpec[] = [
@@ -46,47 +47,54 @@ export const LEVELS: LevelSpec[] = [
     },
     {
         key: 'level4',
-        name: 'First Steps',
-        intro: 'The anti-gravity bagel hums in your stomach.',
+        name: 'Rue de la Flip',
+        intro: 'Wait — is this Paris?',
         hint: 'SPACE flips gravity (only while standing)',
-        sky: 0xd8f0ee,
-        bgFrames: [8, 9, 10, 11],
+        sky: 0xf2c4cd,
+        bgFrames: [0, 1, 2, 3],
         flip: true,
-        collectible: 'gem',
+        collectible: 'croissant',
+        theme: 'paris',
     },
     {
         key: 'level5',
-        name: 'Thorn Rhythm',
+        name: 'Boulevard of Thorns',
         hint: 'Flip in the gaps between the spikes',
-        sky: 0xd8f0ee,
-        bgFrames: [8, 9, 10, 11],
+        sky: 0xc9d4f0,
+        bgFrames: [1, 3, 0, 2],
         flip: true,
-        collectible: 'gem',
+        collectible: 'croissant',
+        theme: 'paris',
     },
     {
         key: 'level6',
-        name: 'Night Patrol',
-        hint: 'Patrols turn at edges — time your runs',
+        name: 'Métro Patrol',
+        hint: 'Pigeons turn at edges — time your runs',
         sky: 0xf6d8a0,
-        bgFrames: [12, 13],
+        bgFrames: [2, 0, 3, 1],
         flip: true,
-        collectible: 'gem',
+        collectible: 'croissant',
+        theme: 'paris',
     },
     {
         key: 'level7',
-        name: 'The Comb',
+        name: 'Les Toits',
         hint: 'Commit to the flip',
-        sky: 0xc0ecba,
-        bgFrames: [14, 15],
+        sky: 0xaeb8dc,
+        bgFrames: [3, 1, 0, 2],
         flip: true,
-        collectible: 'gem',
+        collectible: 'croissant',
+        theme: 'paris',
     },
     {
         key: 'level8',
-        name: 'The Gauntlet',
-        sky: 0xf6d8a0,
-        bgFrames: [12, 13],
+        name: "Stinky's Rescue",
+        intro: 'A faint meow over the rooftops… Stinky?!',
+        hint: 'Save him.',
+        sky: 0x8a93c4,
+        bgFrames: [0, 2, 1, 3],
         flip: true,
-        collectible: 'gem',
+        collectible: 'croissant',
+        theme: 'paris',
     },
 ];

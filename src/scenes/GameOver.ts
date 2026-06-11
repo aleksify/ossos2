@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AssetKeys, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, ItemFrames, StinkyFrames, TileFrames } from '../assets/keys';
 import { RegKeys, elapsedSeconds, formatTime } from '../systems/state';
 
 export class GameOver extends Phaser.Scene {
@@ -36,8 +36,12 @@ export class GameOver extends Phaser.Scene {
             frequency: 120,
         });
 
+        const cat = this.add.sprite(560, 360, AssetKeys.Stinky, StinkyFrames.Sit).setScale(3);
+        cat.anims.play(AnimKeys.StinkyHappy);
+        this.add.sprite(630, 362, AssetKeys.Sosso, 0).setScale(3);
+
         this.add
-            .text(480, 170, 'YOU FLIPPED IT!', {
+            .text(480, 170, 'STINKY IS SAFE!', {
                 fontFamily: '"Courier New", monospace',
                 fontStyle: 'bold',
                 fontSize: 64,
@@ -47,19 +51,19 @@ export class GameOver extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-        this.add.image(380, 280, AssetKeys.Tiles, TileFrames.Gem).setScale(2);
+        this.add.image(380, 280, AssetKeys.Items, ItemFrames.Croissant).setScale(2.4);
         this.add.image(380, 330, AssetKeys.Tiles, TileFrames.Heart).setScale(2);
         const statStyle = {
             fontFamily: '"Courier New", monospace',
             fontSize: 26,
             color: '#d7e4ef',
         };
-        this.add.text(410, 266, `${gems} / ${total} gems`, statStyle);
+        this.add.text(410, 266, `${gems} / ${total} treats`, statStyle);
         this.add.text(410, 316, `${deaths} deaths`, statStyle);
         this.add.text(366, 366, `time  ${time}`, statStyle);
 
         this.add
-            .text(480, 425, 'Sosso never went back.', {
+            .text(480, 425, 'Sosso never went back. Stinky never left her side.', {
                 fontFamily: '"Courier New", monospace',
                 fontSize: 20,
                 color: '#9aa7bd',

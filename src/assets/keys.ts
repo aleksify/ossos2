@@ -6,6 +6,9 @@ export const AssetKeys = {
     Npcs: 'npcs',
     Lindy: 'lindy',
     Items: 'items',
+    Paris: 'paris',
+    Eiffel: 'eiffel',
+    Stinky: 'stinky',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',
@@ -21,6 +24,7 @@ export const AssetKeys = {
 export const GameEvents = {
     BossHp: 'boss-hp',
     FlipUnlocked: 'flip-unlocked',
+    StinkyRescued: 'stinky-rescued',
 } as const;
 
 export const AnimKeys = {
@@ -28,6 +32,8 @@ export const AnimKeys = {
     CustomerWalk: 'customer-walk',
     KarenWave: 'karen-wave',
     LindyStride: 'lindy-stride',
+    PigeonWalk: 'pigeon-walk',
+    StinkyHappy: 'stinky-happy',
     WalkerMove: 'walker-move',
     BatFly: 'bat-fly',
 } as const;
@@ -63,6 +69,8 @@ export const NpcFrames = {
     Customer2: 1,
     Karen1: 2,
     Karen2: 3,
+    Pigeon1: 4,
+    Pigeon2: 5,
 } as const;
 
 export const LindyFrames = {
@@ -77,4 +85,11 @@ export const ItemFrames = {
     Pin: 1,
     Coffee: 2,
     GoldenBagel: 3,
+    Croissant: 4,
+} as const;
+
+export const StinkyFrames = {
+    Caged: 0,
+    Sit: 1,
+    Happy: 2,
 } as const;

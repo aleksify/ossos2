@@ -1,8 +1,8 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AssetKeys, GameEvents, ItemFrames, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, StinkyFrames, TileFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
-import { LEVELS } from '../systems/levels';
+import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
 import { Player, PlayerEvents } from '../entities/Player';
 import { Walker } from '../entities/Walker';
@@ -70,7 +70,7 @@ export class Game extends Phaser.Scene {
         const tileset = map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!;
 
         this.cameras.main.setBackgroundColor(spec.sky);
-        this.addParallax(spec.bgFrames, map.widthInPixels);
+        this.addParallax(spec, map.widthInPixels);
 
         this.ground = map.createLayer(vocab.layers.ground, tileset) as Phaser.Tilemaps.TilemapLayer;
         map.createLayer(vocab.layers.deco, tileset);
@@ -91,8 +91,13 @@ export class Game extends Phaser.Scene {
         this.bagels = this.add.group();
         this.shots = this.add.group();
         const gems = this.physics.add.staticGroup();
-        const collectibleTexture = spec.collectible === 'bagel' ? AssetKeys.Items : AssetKeys.Tiles;
-        const collectibleFrame = spec.collectible === 'bagel' ? ItemFrames.Bagel : TileFrames.Gem;
+        const collectibleTexture = spec.collectible === 'gem' ? AssetKeys.Tiles : AssetKeys.Items;
+        const collectibleFrame =
+            spec.collectible === 'gem'
+                ? TileFrames.Gem
+                : spec.collectible === 'bagel'
+                  ? ItemFrames.Bagel
+                  : ItemFrames.Croissant;
 
         for (const obj of objects) {
             const x = obj.x ?? 0;
@@ -113,10 +118,10 @@ export class Game extends Phaser.Scene {
                     break;
                 }
                 case vocab.objects.walker:
-                    this.addSoft(new Walker(this, x, y, { ceiling: false, ground: this.ground, hazards: this.hazards }));
+                    this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, false)));
                     break;
                 case vocab.objects.walkerCeiling:
-                    this.addSoft(new Walker(this, x, y, { ceiling: true, ground: this.ground, hazards: this.hazards }));
+                    this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, true)));
                     break;
                 case vocab.objects.customer:
                     this.addSoft(Walker.customer(this, x, y, this.ground, this.hazards));
@@ -140,6 +145,9 @@ export class Game extends Phaser.Scene {
                     break;
                 case vocab.objects.checkpoint:
                     this.createCheckpoint(x, y);
+                    break;
+                case vocab.objects.stinky:
+                    this.createStinkyCage(x, y);
                     break;
                 case vocab.objects.door:
                     this.createDoorSensor(x, y, spec.boss === true);
@@ -269,6 +277,66 @@ export class Game extends Phaser.Scene {
         this.dust.emitting = this.player.grounded && Math.abs(body.velocity.x) > 60;
 
         if (this.touchingSpike()) this.die();
+    }
+
+    private walkerConfig(spec: LevelSpec, ceiling: boolean) {
+        const base = { ceiling, ground: this.ground, hazards: this.hazards };
+        if (spec.theme !== 'paris') return base;
+        return {
+            ...base,
+            texture: AssetKeys.Npcs,
+            frame: NpcFrames.Pigeon1,
+            anim: AnimKeys.PigeonWalk,
+        };
+    }
+
+    private createStinkyCage(x: number, y: number): void {
+        const cage = this.physics.add.staticSprite(x, y, AssetKeys.Stinky, StinkyFrames.Caged);
+        (cage.body as Phaser.Physics.Arcade.StaticBody).setSize(28, 28);
+        this.physics.add.overlap(this.player, cage, () => {
+            if (this.phase !== 'play') return;
+            this.phase = 'cinematic';
+            this.sound.play(AssetKeys.SfxHit, { volume: 0.5 });
+            this.burst.setParticleTint(0xc4cad8);
+            this.burst.explode(20, cage.x, cage.y);
+            cage.destroy();
+
+            const cat = this.add.sprite(x, y, AssetKeys.Stinky, StinkyFrames.Sit);
+            cat.anims.play(AnimKeys.StinkyHappy);
+            this.sound.play(AssetKeys.SfxWin, { volume: 0.6 });
+            this.game.events.emit(GameEvents.StinkyRescued);
+            this.cameras.main.flash(400, 255, 220, 230);
+
+            const hearts = this.add.particles(0, 0, AssetKeys.Pixel, {
+                x: { min: x - 20, max: x + 20 },
+                y: y - 10,
+                speedY: { min: -50, max: -20 },
+                lifespan: 1200,
+                scale: { start: 1.2, end: 0 },
+                tint: 0xf08a9e,
+                frequency: 90,
+            });
+            this.tweens.add({
+                targets: cat,
+                x: this.player.x + (this.player.flipX ? 18 : -18),
+                duration: 900,
+                delay: 800,
+                ease: 'sine.inOut',
+            });
+            this.time.delayedCall(3000, () => {
+                hearts.destroy();
+                this.enterEnding();
+            });
+        });
+    }
+
+    private enterEnding(): void {
+        this.phase = 'won';
+        this.cameras.main.fadeOut(600, 0, 0, 0);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+            this.scene.stop(SceneKeys.UI);
+            this.scene.start(SceneKeys.GameOver);
+        });
     }
 
     private addSoft(enemy: Phaser.Physics.Arcade.Sprite): void {
@@ -460,9 +528,29 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private addParallax(frames: number[], mapWidth: number): void {
+    private addParallax(spec: LevelSpec, mapWidth: number): void {
+        if (spec.theme === 'paris') {
+            for (const fx of [0.3, 0.75]) {
+                this.add
+                    .image(mapWidth * fx, LEVEL_HEIGHT - 18, AssetKeys.Eiffel)
+                    .setOrigin(0.5, 1)
+                    .setScrollFactor(0.15, 1)
+                    .setScale(1.7)
+                    .setAlpha(0.55);
+            }
+            for (let x = 0; x < mapWidth + 480; x += 24) {
+                const frame = spec.bgFrames[(x / 24) % spec.bgFrames.length];
+                this.add
+                    .image(x, LEVEL_HEIGHT - 18, AssetKeys.Paris, frame)
+                    .setOrigin(0, 1)
+                    .setScrollFactor(0.35, 1)
+                    .setScale(1.4)
+                    .setAlpha(0.9);
+            }
+            return;
+        }
         for (let x = 0; x < mapWidth + 480; x += 24) {
-            const frame = frames[(x / 24) % frames.length];
+            const frame = spec.bgFrames[(x / 24) % spec.bgFrames.length];
             this.add
                 .image(x, LEVEL_HEIGHT - 30, AssetKeys.Backgrounds, frame)
                 .setOrigin(0, 1)

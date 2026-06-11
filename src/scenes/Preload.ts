@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, CharFrames, LindyFrames, NpcFrames, SossoFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, CharFrames, LindyFrames, NpcFrames, SossoFrames, StinkyFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS } from '../systems/levels';
 import { RegKeys } from '../systems/state';
@@ -50,6 +50,15 @@ export class Preload extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16,
         });
+        this.load.spritesheet(AssetKeys.Paris, 'assets/tiles/paris.png', {
+            frameWidth: 24,
+            frameHeight: 48,
+        });
+        this.load.spritesheet(AssetKeys.Stinky, 'assets/tiles/stinky.png', {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
+        this.load.image(AssetKeys.Eiffel, 'assets/tiles/eiffel.png');
 
         for (const level of LEVELS) {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);
@@ -94,6 +103,22 @@ export class Preload extends Phaser.Scene {
                 frames: [LindyFrames.Stride1, LindyFrames.Stride2],
             }),
             frameRate: 8,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.PigeonWalk,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Npcs, {
+                frames: [NpcFrames.Pigeon1, NpcFrames.Pigeon2],
+            }),
+            frameRate: 6,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.StinkyHappy,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Stinky, {
+                frames: [StinkyFrames.Sit, StinkyFrames.Happy],
+            }),
+            frameRate: 3,
             repeat: -1,
         });
         this.anims.create({

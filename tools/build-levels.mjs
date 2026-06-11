@@ -33,7 +33,14 @@ const T = {
   flag: 111,
   tufts: [124, 125, 128, 126], // grass, sprout, mushroom, pine
   cloud: [153, 154, 155],
+  // paris theme: limestone (snow-capped) tops, lamp posts, railings
+  stoneSingle: 80, stoneL: 81, stoneM: 82, stoneR: 83,
+  lampTop: 109, lampPost: 129,
+  rail: 105,
 };
+
+// levels using the paris tile/deco theme
+const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
 
@@ -48,6 +55,7 @@ function mulberry32(seed) {
 }
 
 function build(name, text, seed) {
+  const paris = PARIS.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
@@ -73,7 +81,9 @@ function build(name, text, seed) {
         const l = solid(x - 1, y);
         const r = solid(x + 1, y);
         const set = top
-          ? [T.grassSingle, T.grassL, T.grassM, T.grassR]
+          ? (paris
+              ? [T.stoneSingle, T.stoneL, T.stoneM, T.stoneR]
+              : [T.grassSingle, T.grassL, T.grassM, T.grassR])
           : [T.dirtSingle, T.dirtL, T.dirtM, T.dirtR];
         ground[i] = gid(!l && !r ? set[0] : !l ? set[1] : !r ? set[3] : set[2]);
       } else if (c === '=') {
@@ -101,6 +111,7 @@ function build(name, text, seed) {
         deco[i] = gid(T.flag);
         obj(VOCAB.objects.checkpoint, x, y);
       }
+      else if (c === 'G') obj(VOCAB.objects.stinky, x, y);
       else if (c !== '.' && c !== ' ') throw new Error(`${name}: unknown char '${c}' at ${x},${y}`);
     }
   }
@@ -112,7 +123,16 @@ function build(name, text, seed) {
       const i = (y - 1) * w + x;
       if (solid(x, y) && !solid(x, y - 1) && at(x, y - 1) === '.' && deco[i] === 0 && rng() < 0.18) {
         const roll = rng();
-        deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
+        if (paris) {
+          if (roll < 0.35 && y >= 2 && at(x, y - 2) === '.' && deco[i - w] === 0) {
+            deco[i] = gid(T.lampPost);
+            deco[i - w] = gid(T.lampTop);
+          } else if (roll < 0.75) {
+            deco[i] = gid(T.rail);
+          }
+        } else {
+          deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
+        }
       }
     }
   }
@@ -144,7 +164,10 @@ function build(name, text, seed) {
   };
 
   if (!objects.some((o) => o.type === VOCAB.objects.spawn)) throw new Error(`${name}: no spawn`);
-  if (!objects.some((o) => o.type === VOCAB.objects.door)) throw new Error(`${name}: no door`);
+  const hasExit = objects.some(
+    (o) => o.type === VOCAB.objects.door || o.type === VOCAB.objects.stinky,
+  );
+  if (!hasExit) throw new Error(`${name}: no door or stinky`);
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify(map));
   console.log(`${name}: ${w}x${h}, ${objects.length} objects`);
 }

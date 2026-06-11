@@ -26,10 +26,11 @@ export class UI extends Phaser.Scene {
     create(data: { level: number; died?: boolean }): void {
         const spec = LEVELS[data.level];
 
-        if (spec.collectible === 'bagel') {
-            this.add.image(24, 24, AssetKeys.Items, ItemFrames.Bagel).setScale(1.8);
-        } else {
+        if (spec.collectible === 'gem') {
             this.add.image(24, 24, AssetKeys.Tiles, TileFrames.Gem).setScale(1.6);
+        } else {
+            const frame = spec.collectible === 'bagel' ? ItemFrames.Bagel : ItemFrames.Croissant;
+            this.add.image(24, 24, AssetKeys.Items, frame).setScale(1.8);
         }
         this.gemText = this.add.text(40, 13, '', TEXT_STYLE);
         this.add.image(24, 52, AssetKeys.Tiles, TileFrames.Heart).setScale(1.6);
@@ -61,12 +62,25 @@ export class UI extends Phaser.Scene {
                 .setAlpha(0);
             this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2600 });
         };
+        const onRescue = () => {
+            const big = this.add
+                .text(480, 230, 'STINKY IS SAFE!', { ...TEXT_STYLE, fontSize: 40, color: '#f08a9e' })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            const small = this.add
+                .text(480, 272, 'the stinkiest boy in all of Paris', { ...TEXT_STYLE, fontSize: 17 })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2200 });
+        };
         this.game.events.on(GameEvents.BossHp, onBossHp);
         this.game.events.on(GameEvents.FlipUnlocked, onUnlock);
+        this.game.events.on(GameEvents.StinkyRescued, onRescue);
         this.registry.events.on('changedata', this.refresh, this);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.game.events.off(GameEvents.BossHp, onBossHp);
             this.game.events.off(GameEvents.FlipUnlocked, onUnlock);
+            this.game.events.off(GameEvents.StinkyRescued, onRescue);
             this.registry.events.off('changedata', this.refresh, this);
         });
 
