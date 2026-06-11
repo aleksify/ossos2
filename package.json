@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite --config vite/config.dev.mjs",
     "build": "vite build --config vite/config.prod.mjs",
-    "levels": "node tools/build-levels.mjs"
+    "levels": "node tools/build-levels.mjs",
+    "sprites": "node tools/build-sprites.mjs"
   },
   "devDependencies": {
     "@playwright/cli": "^0.1.13",
