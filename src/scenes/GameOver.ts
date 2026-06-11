@@ -58,6 +58,14 @@ export class GameOver extends Phaser.Scene {
         this.add.text(410, 316, `${deaths} deaths`, statStyle);
         this.add.text(366, 366, `time  ${time}`, statStyle);
 
+        this.add
+            .text(480, 425, 'Sosso never went back.', {
+                fontFamily: '"Courier New", monospace',
+                fontSize: 20,
+                color: '#9aa7bd',
+            })
+            .setOrigin(0.5);
+
         const prompt = this.add
             .text(480, 470, 'PRESS SPACE FOR MENU', {
                 fontFamily: '"Courier New", monospace',

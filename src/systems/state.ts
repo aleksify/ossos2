@@ -4,6 +4,7 @@ export const RegKeys = {
     GemsTotal: 'gemsTotal',
     Deaths: 'deaths',
     StartTime: 'startTime',
+    FlipUnlocked: 'flipUnlocked',
 } as const;
 
 export function initState(registry: Phaser.Data.DataManager): void {
@@ -11,12 +12,14 @@ export function initState(registry: Phaser.Data.DataManager): void {
     registry.set(RegKeys.GemsTotal, 0);
     registry.set(RegKeys.Deaths, 0);
     registry.set(RegKeys.StartTime, 0);
+    registry.set(RegKeys.FlipUnlocked, false);
 }
 
 export function startRun(registry: Phaser.Data.DataManager): void {
     registry.set(RegKeys.Gems, 0);
     registry.set(RegKeys.Deaths, 0);
     registry.set(RegKeys.StartTime, Date.now());
+    registry.set(RegKeys.FlipUnlocked, false);
 }
 
 export function elapsedSeconds(registry: Phaser.Data.DataManager): number {

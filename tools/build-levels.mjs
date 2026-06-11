@@ -5,10 +5,12 @@
 //   #  solid ground (auto-tiled grass/dirt)
 //   =  wooden platform (solid)
 //   ^  floor spikes        v  ceiling spikes (flipped gid)
-//   *  gem                 P  player spawn
+//   *  collectible         P  player spawn
 //   D  door (exit)         W  floor walker enemy
 //   M  ceiling walker      S  saw blade
 //   B  bat                 .  empty
+//   C  customer            K  karen (coffee thrower)
+//   L  lindy (boss)        F  checkpoint flag
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +30,7 @@ const T = {
   woodL: 48, woodM: 49, woodR: 50,
   spike: 68,
   doorTop: 130, doorBottom: 150,
+  flag: 111,
   tufts: [124, 125, 128, 126], // grass, sprout, mushroom, pine
   cloud: [153, 154, 155],
 };
@@ -91,6 +94,13 @@ function build(name, text, seed) {
       else if (c === 'M') obj(VOCAB.objects.walkerCeiling, x, y);
       else if (c === 'S') obj(VOCAB.objects.saw, x, y);
       else if (c === 'B') obj(VOCAB.objects.bat, x, y);
+      else if (c === 'C') obj(VOCAB.objects.customer, x, y);
+      else if (c === 'K') obj(VOCAB.objects.karen, x, y);
+      else if (c === 'L') obj(VOCAB.objects.lindy, x, y);
+      else if (c === 'F') {
+        deco[i] = gid(T.flag);
+        obj(VOCAB.objects.checkpoint, x, y);
+      }
       else if (c !== '.' && c !== ' ') throw new Error(`${name}: unknown char '${c}' at ${x},${y}`);
     }
   }

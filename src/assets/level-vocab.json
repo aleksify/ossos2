@@ -13,6 +13,10 @@
         "walker": "walker",
         "walkerCeiling": "walker-ceiling",
         "saw": "saw",
-        "bat": "bat"
+        "bat": "bat",
+        "customer": "customer",
+        "karen": "karen",
+        "lindy": "lindy",
+        "checkpoint": "checkpoint"
     }
 }

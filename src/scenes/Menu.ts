@@ -24,12 +24,12 @@ export class Menu extends Phaser.Scene {
         }
 
         this.physics.world.setBounds(0, 36, 960, 422);
-        this.demo = this.physics.add.sprite(120, 400, AssetKeys.Characters, 0).setScale(2);
+        this.demo = this.physics.add.sprite(120, 400, AssetKeys.Sosso, 0).setScale(2);
         const body = this.demo.body as Phaser.Physics.Arcade.Body;
         body.setCollideWorldBounds(true);
         body.setGravityY(1200);
         body.setVelocityX(130);
-        this.demo.anims.play(AnimKeys.PlayerWalk);
+        this.demo.anims.play(AnimKeys.SossoWalk);
         this.time.addEvent({
             delay: 1400,
             loop: true,
@@ -49,7 +49,7 @@ export class Menu extends Phaser.Scene {
             .setShadow(0, 6, '#1a1c2c55', 0, true, true);
 
         this.add
-            .text(480, 268, 'a gravity-flip platformer', {
+            .text(480, 268, 'a Sosso story', {
                 fontFamily: '"Courier New", monospace',
                 fontSize: 22,
                 color: '#3b4456',

@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, CharFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, CharFrames, LindyFrames, NpcFrames, SossoFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS } from '../systems/levels';
 import { RegKeys } from '../systems/state';
@@ -34,6 +34,22 @@ export class Preload extends Phaser.Scene {
             frameWidth: 24,
             frameHeight: 24,
         });
+        this.load.spritesheet(AssetKeys.Sosso, 'assets/tiles/sosso.png', {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
+        this.load.spritesheet(AssetKeys.Npcs, 'assets/tiles/npcs.png', {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
+        this.load.spritesheet(AssetKeys.Lindy, 'assets/tiles/lindy.png', {
+            frameWidth: 24,
+            frameHeight: 32,
+        });
+        this.load.spritesheet(AssetKeys.Items, 'assets/tiles/items.png', {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
 
         for (const level of LEVELS) {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);
@@ -44,6 +60,9 @@ export class Preload extends Phaser.Scene {
         this.load.audio(AssetKeys.SfxDeath, 'assets/audio/death.ogg');
         this.load.audio(AssetKeys.SfxDoor, 'assets/audio/door.ogg');
         this.load.audio(AssetKeys.SfxWin, 'assets/audio/win.ogg');
+        this.load.audio(AssetKeys.SfxThrow, 'assets/audio/throw.ogg');
+        this.load.audio(AssetKeys.SfxHit, 'assets/audio/hit.ogg');
+        this.load.audio(AssetKeys.SfxJump, 'assets/audio/jump.ogg');
     }
 
     create(): void {
@@ -54,11 +73,27 @@ export class Preload extends Phaser.Scene {
         g.destroy();
 
         this.anims.create({
-            key: AnimKeys.PlayerWalk,
-            frames: this.anims.generateFrameNumbers(AssetKeys.Characters, {
-                frames: [CharFrames.PlayerIdle, CharFrames.PlayerWalk],
+            key: AnimKeys.SossoWalk,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Sosso, {
+                frames: [SossoFrames.Walk1, SossoFrames.Walk2],
             }),
             frameRate: 10,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.CustomerWalk,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Npcs, {
+                frames: [NpcFrames.Customer1, NpcFrames.Customer2],
+            }),
+            frameRate: 5,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.LindyStride,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Lindy, {
+                frames: [LindyFrames.Stride1, LindyFrames.Stride2],
+            }),
+            frameRate: 8,
             repeat: -1,
         });
         this.anims.create({

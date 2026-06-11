@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AssetKeys, TileFrames } from '../assets/keys';
+import { AssetKeys, GameEvents, ItemFrames, TileFrames } from '../assets/keys';
 import { LEVELS } from '../systems/levels';
 import { RegKeys } from '../systems/state';
 
@@ -16,6 +16,8 @@ const TEXT_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
 export class UI extends Phaser.Scene {
     private gemText!: Phaser.GameObjects.Text;
     private deathText!: Phaser.GameObjects.Text;
+    private bossBar!: Phaser.GameObjects.Rectangle;
+    private bossBarBg!: Phaser.GameObjects.Container;
 
     constructor() {
         super(SceneKeys.UI);
@@ -24,21 +26,54 @@ export class UI extends Phaser.Scene {
     create(data: { level: number; died?: boolean }): void {
         const spec = LEVELS[data.level];
 
-        this.add.image(24, 24, AssetKeys.Tiles, TileFrames.Gem).setScale(1.6);
+        if (spec.collectible === 'bagel') {
+            this.add.image(24, 24, AssetKeys.Items, ItemFrames.Bagel).setScale(1.8);
+        } else {
+            this.add.image(24, 24, AssetKeys.Tiles, TileFrames.Gem).setScale(1.6);
+        }
         this.gemText = this.add.text(40, 13, '', TEXT_STYLE);
         this.add.image(24, 52, AssetKeys.Tiles, TileFrames.Heart).setScale(1.6);
         this.deathText = this.add.text(40, 41, '', TEXT_STYLE);
         this.refresh();
 
+        const barW = 300;
+        this.bossBar = this.add.rectangle(480 - barW / 2, 36, barW, 12, 0xd2627a).setOrigin(0, 0.5);
+        this.bossBarBg = this.add.container(0, 0, [
+            this.add.rectangle(480, 36, barW + 6, 18, 0x1a1c2c).setDepth(-1),
+            this.add.text(480, 14, 'LINDY', { ...TEXT_STYLE, fontSize: 14, color: '#ffd5de' }).setOrigin(0.5),
+        ]);
+        this.bossBarBg.add(this.bossBar);
+        this.bossBarBg.setVisible(false);
+
+        const onBossHp = (hp: number, max: number) => {
+            this.bossBarBg.setVisible(hp > 0);
+            this.tweens.add({ targets: this.bossBar, width: (barW * hp) / max, duration: 150 });
+        };
+        const onUnlock = () => {
+            this.bossBarBg.setVisible(false);
+            const big = this.add
+                .text(480, 230, 'GRAVITY FLIP UNLOCKED', { ...TEXT_STYLE, fontSize: 36, color: '#f7d976' })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            const small = this.add
+                .text(480, 270, 'SPACE now flips gravity — jumping is for quitters', { ...TEXT_STYLE, fontSize: 17 })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2600 });
+        };
+        this.game.events.on(GameEvents.BossHp, onBossHp);
+        this.game.events.on(GameEvents.FlipUnlocked, onUnlock);
         this.registry.events.on('changedata', this.refresh, this);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            this.game.events.off(GameEvents.BossHp, onBossHp);
+            this.game.events.off(GameEvents.FlipUnlocked, onUnlock);
             this.registry.events.off('changedata', this.refresh, this);
         });
 
         // replaying the banner/hint on every quick respawn is just noise
         if (!data.died) {
             const banner = this.add
-                .text(480, 90, `${data.level + 1} / ${LEVELS.length} — ${spec.name}`, {
+                .text(480, 84, `${data.level + 1} / ${LEVELS.length} — ${spec.name}`, {
                     ...TEXT_STYLE,
                     fontSize: 26,
                 })
@@ -51,6 +86,19 @@ export class UI extends Phaser.Scene {
                     { alpha: 0, duration: 500, delay: 1600 },
                 ],
             });
+            if (spec.intro) {
+                const intro = this.add
+                    .text(480, 116, spec.intro, { ...TEXT_STYLE, fontSize: 18, color: '#ffe9b8' })
+                    .setOrigin(0.5)
+                    .setAlpha(0);
+                this.tweens.chain({
+                    targets: intro,
+                    tweens: [
+                        { alpha: 1, duration: 350, delay: 250 },
+                        { alpha: 0, duration: 500, delay: 2200 },
+                    ],
+                });
+            }
         }
 
         if (spec.hint && !data.died) {

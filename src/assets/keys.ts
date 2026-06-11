@@ -2,16 +2,32 @@ export const AssetKeys = {
     Tiles: 'tiles',
     Characters: 'characters',
     Backgrounds: 'backgrounds',
+    Sosso: 'sosso',
+    Npcs: 'npcs',
+    Lindy: 'lindy',
+    Items: 'items',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',
     SfxDeath: 'sfx-death',
     SfxDoor: 'sfx-door',
     SfxWin: 'sfx-win',
+    SfxThrow: 'sfx-throw',
+    SfxHit: 'sfx-hit',
+    SfxJump: 'sfx-jump',
+} as const;
+
+// cross-scene events on game.events (Game scene → UI scene)
+export const GameEvents = {
+    BossHp: 'boss-hp',
+    FlipUnlocked: 'flip-unlocked',
 } as const;
 
 export const AnimKeys = {
-    PlayerWalk: 'player-walk',
+    SossoWalk: 'sosso-walk',
+    CustomerWalk: 'customer-walk',
+    KarenWave: 'karen-wave',
+    LindyStride: 'lindy-stride',
     WalkerMove: 'walker-move',
     BatFly: 'bat-fly',
 } as const;
@@ -21,15 +37,44 @@ export const TileFrames = {
     Gem: 67,
     Heart: 44,
     GrassMid: 2,
+    FlagA: 111,
+    FlagB: 112,
 } as const;
 
 // frame indices in characters.png (24px sheet, 9 columns)
 export const CharFrames = {
-    PlayerIdle: 0,
-    PlayerWalk: 1,
     WalkerA: 11,
     WalkerB: 12,
     Saw: 8,
     BatA: 24,
     BatB: 25,
+} as const;
+
+export const SossoFrames = {
+    Idle: 0,
+    Walk1: 1,
+    Walk2: 2,
+    Jump: 3,
+    Throw: 4,
+} as const;
+
+export const NpcFrames = {
+    Customer1: 0,
+    Customer2: 1,
+    Karen1: 2,
+    Karen2: 3,
+} as const;
+
+export const LindyFrames = {
+    Stride1: 0,
+    Stride2: 1,
+    Throw: 2,
+    Hurt: 3,
+} as const;
+
+export const ItemFrames = {
+    Bagel: 0,
+    Pin: 1,
+    Coffee: 2,
+    GoldenBagel: 3,
 } as const;
