@@ -48,6 +48,7 @@ export class Game extends Phaser.Scene {
     private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
     private dust!: Phaser.GameObjects.Particles.ParticleEmitter;
     private attemptGems = 0;
+    private skyFade?: { from: Phaser.Display.Color; to: Phaser.Display.Color; range: number };
 
     constructor() {
         super(SceneKeys.Game);
@@ -82,7 +83,8 @@ export class Game extends Phaser.Scene {
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-        // the tower sparkles at twilight
+        // the tower sparkles at twilight, a beacon blinks on top,
+        // and the sky deepens into night as you climb
         if (spec.theme === 'paris' && map.heightInPixels > 540) {
             this.add.particles(0, 0, AssetKeys.Pixel, {
                 x: { min: 18, max: map.widthInPixels - 18 },
@@ -93,6 +95,24 @@ export class Game extends Phaser.Scene {
                 frequency: 45,
                 speed: 0,
             });
+            const cx = map.widthInPixels / 2;
+            const halo = this.add.image(cx, 7, AssetKeys.Pixel).setScale(9).setTint(0xff4455).setAlpha(0.22);
+            const core = this.add.image(cx, 7, AssetKeys.Pixel).setScale(3).setTint(0xff6677);
+            this.tweens.add({
+                targets: [core, halo],
+                alpha: 0.06,
+                duration: 750,
+                yoyo: true,
+                repeat: -1,
+                ease: 'sine.inOut',
+            });
+            this.skyFade = {
+                from: Phaser.Display.Color.ValueToColor(spec.sky),
+                to: Phaser.Display.Color.ValueToColor(0x2e3354),
+                range: map.heightInPixels - 270,
+            };
+        } else {
+            this.skyFade = undefined;
         }
 
         const objects = map.getObjectLayer(vocab.layers.objects)?.objects ?? [];
@@ -262,6 +282,11 @@ export class Game extends Phaser.Scene {
     }
 
     update(time: number): void {
+        if (this.skyFade) {
+            const t = Phaser.Math.Clamp(1 - this.cameras.main.scrollY / this.skyFade.range, 0, 1);
+            const c = Phaser.Display.Color.Interpolate.ColorWithColor(this.skyFade.from, this.skyFade.to, 100, t * 100);
+            this.cameras.main.setBackgroundColor(Phaser.Display.Color.GetColor(c.r, c.g, c.b));
+        }
         if (this.phase === 'cinematic') {
             this.player.move(0, time);
             return;

@@ -43,7 +43,7 @@ const T = {
 const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
 // levels built from the riveted-iron tileset (second tileset, firstgid 181)
 const TOWER = new Set(['level8']);
-const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 190 };
+const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 193 };
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
 
@@ -124,8 +124,14 @@ function build(name, text, seed) {
         obj(VOCAB.objects.checkpoint, x, y);
       }
       else if (c === 'G') obj(VOCAB.objects.stinky, x, y);
-      else if (c === 'a') deco[i] = IRON.archL;
-      else if (c === 'b') deco[i] = IRON.archR;
+      else if (c === 'a' || c === 'b') {
+        // 2x2 arch, anchor at top-left
+        const base = c === 'a' ? IRON.archL : IRON.archR;
+        deco[i] = base;
+        deco[i + 1] = base + 1;
+        deco[i + w] = base + 2;
+        deco[i + w + 1] = base + 3;
+      }
       else if (c !== '.' && c !== ' ') throw new Error(`${name}: unknown char '${c}' at ${x},${y}`);
     }
   }
@@ -175,8 +181,8 @@ function build(name, text, seed) {
       columns: 20, firstgid: 1, image: '../tiles/tiles.png', imageheight: 162, imagewidth: 360,
       margin: 0, name: VOCAB.tileset, spacing: 0, tilecount: 180, tileheight: 18, tilewidth: 18,
     }, {
-      columns: 10, firstgid: 181, image: '../tiles/iron.png', imageheight: 18, imagewidth: 180,
-      margin: 0, name: 'iron', spacing: 0, tilecount: 10, tileheight: 18, tilewidth: 18,
+      columns: 16, firstgid: 181, image: '../tiles/iron.png', imageheight: 18, imagewidth: 288,
+      margin: 0, name: 'iron', spacing: 0, tilecount: 16, tileheight: 18, tilewidth: 18,
     }],
   };
 
