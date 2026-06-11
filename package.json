@@ -1,6 +1,6 @@
 {
-  "name": "template-vite-ts",
-  "description": "A Phaser 3 TypeScript template using Vite.",
+  "name": "flipside",
+  "description": "Gravity-flip 2D platformer built with Phaser 4.",
   "version": "1.4.0",
   "repository": {
     "type": "git",
@@ -17,7 +17,8 @@
     "dev": "node log.js dev & vite --config vite/config.dev.mjs",
     "build": "node log.js build & vite build --config vite/config.prod.mjs",
     "dev-nolog": "vite --config vite/config.dev.mjs",
-    "build-nolog": "vite build --config vite/config.prod.mjs"
+    "build-nolog": "vite build --config vite/config.prod.mjs",
+    "levels": "node tools/build-levels.mjs"
   },
   "devDependencies": {
     "@playwright/cli": "^0.1.13",
