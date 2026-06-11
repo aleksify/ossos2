@@ -59,6 +59,7 @@ export class Preload extends Phaser.Scene {
             frameHeight: 24,
         });
         this.load.image(AssetKeys.Eiffel, 'assets/tiles/eiffel.png');
+        this.load.image(AssetKeys.Iron, 'assets/tiles/iron.png');
 
         for (const level of LEVELS) {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);

@@ -9,6 +9,7 @@ export const AssetKeys = {
     Paris: 'paris',
     Eiffel: 'eiffel',
     Stinky: 'stinky',
+    Iron: 'iron',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',

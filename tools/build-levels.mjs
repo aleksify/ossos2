@@ -41,6 +41,9 @@ const T = {
 
 // levels using the paris tile/deco theme
 const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
+// levels built from the riveted-iron tileset (second tileset, firstgid 181)
+const TOWER = new Set(['level8']);
+const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 190 };
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
 
@@ -56,6 +59,7 @@ function mulberry32(seed) {
 
 function build(name, text, seed) {
   const paris = PARIS.has(name);
+  const tower = TOWER.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
@@ -80,12 +84,20 @@ function build(name, text, seed) {
         const top = !solid(x, y - 1);
         const l = solid(x - 1, y);
         const r = solid(x + 1, y);
-        const set = top
-          ? (paris
-              ? [T.stoneSingle, T.stoneL, T.stoneM, T.stoneR]
-              : [T.grassSingle, T.grassL, T.grassM, T.grassR])
-          : [T.dirtSingle, T.dirtL, T.dirtM, T.dirtR];
-        ground[i] = gid(!l && !r ? set[0] : !l ? set[1] : !r ? set[3] : set[2]);
+        const variant = !l && !r ? 0 : !l ? 1 : !r ? 3 : 2;
+        if (tower) {
+          const ironSet = top
+            ? [IRON.capSingle, IRON.capL, IRON.capM, IRON.capR]
+            : [IRON.fillSingle, IRON.fillL, IRON.fillM, IRON.fillR];
+          ground[i] = ironSet[variant];
+        } else {
+          const set = top
+            ? (paris
+                ? [T.stoneSingle, T.stoneL, T.stoneM, T.stoneR]
+                : [T.grassSingle, T.grassL, T.grassM, T.grassR])
+            : [T.dirtSingle, T.dirtL, T.dirtM, T.dirtR];
+          ground[i] = gid(set[variant]);
+        }
       } else if (c === '=') {
         const l = at(x - 1, y) === '=';
         const r = at(x + 1, y) === '=';
@@ -112,6 +124,8 @@ function build(name, text, seed) {
         obj(VOCAB.objects.checkpoint, x, y);
       }
       else if (c === 'G') obj(VOCAB.objects.stinky, x, y);
+      else if (c === 'a') deco[i] = IRON.archL;
+      else if (c === 'b') deco[i] = IRON.archR;
       else if (c !== '.' && c !== ' ') throw new Error(`${name}: unknown char '${c}' at ${x},${y}`);
     }
   }
@@ -160,6 +174,9 @@ function build(name, text, seed) {
     tilesets: [{
       columns: 20, firstgid: 1, image: '../tiles/tiles.png', imageheight: 162, imagewidth: 360,
       margin: 0, name: VOCAB.tileset, spacing: 0, tilecount: 180, tileheight: 18, tilewidth: 18,
+    }, {
+      columns: 10, firstgid: 181, image: '../tiles/iron.png', imageheight: 18, imagewidth: 180,
+      margin: 0, name: 'iron', spacing: 0, tilecount: 10, tileheight: 18, tilewidth: 18,
     }],
   };
 

@@ -66,18 +66,34 @@ export class Game extends Phaser.Scene {
     create(): void {
         const spec = LEVELS[this.levelIndex];
         const map = this.make.tilemap({ key: spec.key });
-        const tileset = map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!;
+        const tilesets = [
+            map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!,
+            map.addTilesetImage('iron', AssetKeys.Iron)!,
+        ];
 
         this.cameras.main.setBackgroundColor(spec.sky);
         this.addParallax(spec, map.widthInPixels, map.heightInPixels);
 
-        this.ground = map.createLayer(vocab.layers.ground, tileset) as Phaser.Tilemaps.TilemapLayer;
-        map.createLayer(vocab.layers.deco, tileset);
-        this.hazards = map.createLayer(vocab.layers.hazards, tileset) as Phaser.Tilemaps.TilemapLayer;
+        this.ground = map.createLayer(vocab.layers.ground, tilesets) as Phaser.Tilemaps.TilemapLayer;
+        map.createLayer(vocab.layers.deco, tilesets);
+        this.hazards = map.createLayer(vocab.layers.hazards, tilesets) as Phaser.Tilemaps.TilemapLayer;
         this.ground.setCollisionByExclusion([-1]);
         this.hazards.setCollisionByExclusion([-1]);
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+        // the tower sparkles at twilight
+        if (spec.theme === 'paris' && map.heightInPixels > 540) {
+            this.add.particles(0, 0, AssetKeys.Pixel, {
+                x: { min: 18, max: map.widthInPixels - 18 },
+                y: { min: 0, max: map.heightInPixels - 90 },
+                lifespan: { min: 200, max: 550 },
+                scale: { start: 1.1, end: 0 },
+                tint: 0xffe9a8,
+                frequency: 45,
+                speed: 0,
+            });
+        }
 
         const objects = map.getObjectLayer(vocab.layers.objects)?.objects ?? [];
         const spawn = objects.find((o) => o.type === vocab.objects.spawn);
