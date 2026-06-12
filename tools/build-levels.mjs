@@ -12,6 +12,7 @@
 //   C  customer            K  karen (coffee thrower)
 //   L  lindy (boss)        F  checkpoint flag
 //   G  stinky cage         t  palm tree (2x2 deco, brasil)
+//   H  sosso's parents (beach finale exit)
 //   a/b iron arch halves (2x2 deco, tower)
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -46,14 +47,19 @@ const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
 // levels built from the riveted-iron tileset (second tileset, firstgid 181)
 const TOWER = new Set(['level8']);
 const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 193 };
-// brasil train levels: the bottom row is the Ubatuba Express itself (train
-// roofs + car joints); everything above is concrete viaduct. firstgid 197.
-const BRASIL = new Set(['level9']);
+// brasil levels (third tileset, firstgid 197). TRAIN: the bottom row is the
+// Ubatuba Express itself (roofs + car joints), everything above is concrete
+// viaduct. BEACH: plain Ubatuba sand with umbrellas and beach balls.
+const TRAIN = new Set(['level9']);
+const BEACH = new Set(['level10']);
 const BRAZIL = {
   trainL: 197, trainM: 198, trainR: 199, joint: 200,
   capSingle: 201, capL: 202, capM: 203, capR: 204,
   fillSingle: 205, fillL: 206, fillM: 207, fillR: 208,
   palm: 209, vent: 213, bunting: 214, poleTop: 215, poleShaft: 216,
+  sandSingle: 217, sandL: 218, sandM: 219, sandR: 220,
+  sandFillSingle: 221, sandFillL: 222, sandFillM: 223, sandFillR: 224,
+  umbrella: 225, ball: 226,
 };
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
@@ -71,7 +77,8 @@ function mulberry32(seed) {
 function build(name, text, seed) {
   const paris = PARIS.has(name);
   const tower = TOWER.has(name);
-  const rio = BRASIL.has(name);
+  const train = TRAIN.has(name);
+  const beach = BEACH.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
@@ -102,7 +109,7 @@ function build(name, text, seed) {
             ? [IRON.capSingle, IRON.capL, IRON.capM, IRON.capR]
             : [IRON.fillSingle, IRON.fillL, IRON.fillM, IRON.fillR];
           ground[i] = ironSet[variant];
-        } else if (rio) {
+        } else if (train) {
           if (y === h - 1) {
             // the train: ribbed roofs with a coupling joint every car length
             ground[i] = x % 11 === 7 ? BRAZIL.joint : BRAZIL.trainM;
@@ -112,6 +119,11 @@ function build(name, text, seed) {
               : [BRAZIL.fillSingle, BRAZIL.fillL, BRAZIL.fillM, BRAZIL.fillR];
             ground[i] = set[variant];
           }
+        } else if (beach) {
+          const set = top
+            ? [BRAZIL.sandSingle, BRAZIL.sandL, BRAZIL.sandM, BRAZIL.sandR]
+            : [BRAZIL.sandFillSingle, BRAZIL.sandFillL, BRAZIL.sandFillM, BRAZIL.sandFillR];
+          ground[i] = set[variant];
         } else {
           const set = top
             ? (paris
@@ -146,6 +158,7 @@ function build(name, text, seed) {
         obj(VOCAB.objects.checkpoint, x, y);
       }
       else if (c === 'G') obj(VOCAB.objects.stinky, x, y);
+      else if (c === 'H') obj(VOCAB.objects.parents, x, y);
       else if (c === 'a' || c === 'b') {
         // 2x2 arch, anchor at top-left
         const base = c === 'a' ? IRON.archL : IRON.archR;
@@ -179,21 +192,24 @@ function build(name, text, seed) {
           } else if (roll < 0.75) {
             deco[i] = gid(T.rail);
           }
-        } else if (rio) {
+        } else if (train) {
           // AC vents only on the train roof; viaduct tops stay bare
           if (y === h - 1 && roll < 0.5) deco[i] = BRAZIL.vent;
+        } else if (beach) {
+          if (roll < 0.3) deco[i] = BRAZIL.umbrella;
+          else if (roll < 0.45) deco[i] = BRAZIL.ball;
         } else {
           deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
         }
       }
-      // festa bunting strung under rio ceilings
-      if (rio && solid(x, y - 1) && !solid(x, y) && at(x, y) === '.' && deco[y * w + x] === 0 && rng() < 0.12) {
+      // festa bunting strung under viaduct ceilings
+      if (train && solid(x, y - 1) && !solid(x, y) && at(x, y) === '.' && deco[y * w + x] === 0 && rng() < 0.12) {
         deco[y * w + x] = BRAZIL.bunting;
       }
     }
   }
   // catenary masts sweeping past behind the train
-  if (rio) {
+  if (train) {
     for (let x = 4; x < w - 2; x += 9) {
       const clear = [h - 7, h - 6, h - 5, h - 4, h - 3, h - 2].every(
         (y) => at(x, y) === '.' && deco[y * w + x] === 0,
@@ -203,8 +219,8 @@ function build(name, text, seed) {
       deco[(h - 2) * w + x] = BRAZIL.poleShaft;
     }
   }
-  // no clouds on rio: mid-sky shapes read as platforms in a flip level
-  for (let n = 0; n < (rio ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
+  // no clouds on brasil levels: mid-sky shapes read as platforms in a flip level
+  for (let n = 0; n < (train || beach ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
     const x = 1 + Math.floor(rng() * (w - 5));
     const y = 2 + Math.floor(rng() * (h - 8));
     const clear = [0, 1, 2].every((d) => at(x + d, y) === '.' && deco[y * w + x + d] === 0);
@@ -232,16 +248,19 @@ function build(name, text, seed) {
       columns: 16, firstgid: 181, image: '../tiles/iron.png', imageheight: 18, imagewidth: 288,
       margin: 0, name: 'iron', spacing: 0, tilecount: 16, tileheight: 18, tilewidth: 18,
     }, {
-      columns: 20, firstgid: 197, image: '../tiles/brazil.png', imageheight: 18, imagewidth: 360,
-      margin: 0, name: 'brazil', spacing: 0, tilecount: 20, tileheight: 18, tilewidth: 18,
+      columns: 30, firstgid: 197, image: '../tiles/brazil.png', imageheight: 18, imagewidth: 540,
+      margin: 0, name: 'brazil', spacing: 0, tilecount: 30, tileheight: 18, tilewidth: 18,
     }],
   };
 
   if (!objects.some((o) => o.type === VOCAB.objects.spawn)) throw new Error(`${name}: no spawn`);
   const hasExit = objects.some(
-    (o) => o.type === VOCAB.objects.door || o.type === VOCAB.objects.stinky,
+    (o) =>
+      o.type === VOCAB.objects.door ||
+      o.type === VOCAB.objects.stinky ||
+      o.type === VOCAB.objects.parents,
   );
-  if (!hasExit) throw new Error(`${name}: no door or stinky`);
+  if (!hasExit) throw new Error(`${name}: no door, stinky, or parents`);
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify(map));
   console.log(`${name}: ${w}x${h}, ${objects.length} objects`);
 }

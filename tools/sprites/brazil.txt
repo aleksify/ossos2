@@ -18,6 +18,10 @@ R #c04458
 y #f3d27e
 c #58b8c8
 o #453a4e
+s #ecd2a0
+S #dcbe8a
+d #c8a86e
+p #f4e0b6
 @frame trainL
 eAAAAAAAAAAAAAAAAA
 eaaaaaaaaaaaaaaaaa
@@ -398,3 +402,193 @@ oooooooooooooooooo
 ........ee........
 .......eeee.......
 .......eeee.......
+@frame sandSingle
+dppppppppppppppppd
+dppppppppppppppppd
+dssssssssssssssssd
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+@frame sandL
+dppppppppppppppppp
+dppppppppppppppppp
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+@frame sandM
+pppppppppppppppppp
+pppppppppppppppppp
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+@frame sandR
+pppppppppppppppppd
+pppppppppppppppppd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+@frame sandFillSingle
+dSSSSSSSSSSSSSSSSd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+@frame sandFillL
+dSSSSSSSSSSSSSSSSS
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+@frame sandFillM
+SSSSSSSSSSSSSSSSSS
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+@frame sandFillR
+SSSSSSSSSSSSSSSSSd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+@frame umbrella
+..................
+......oooooo......
+....oorrrrrroo....
+...orrrWWrrrrro...
+..orrrrWWrrrrrro..
+..orrrrWWrrrrrro..
+..oRRRRWWRRRRRRo..
+...o..o.WW.o..o...
+........tt........
+........tt........
+........tt........
+........tt........
+........tt........
+........tt........
+........tt........
+.......ttt........
+..................
+..................
+@frame ball
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+......oooooo......
+....orrrrWWWWo....
+...orrrrrWWWWWo...
+..orrrrrWWWWWWWo..
+..occcccyyyyyyyo..
+..occcccyyyyyyyo..
+...occccyyyyyo....
+....occcyyyoo.....
+......ooooo.......
+..................

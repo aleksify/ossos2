@@ -14,6 +14,7 @@ export const AssetKeys = {
     Serra: 'serra',
     Sampa: 'sampa',
     Brazil: 'brazil',
+    Parents: 'parents',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',
@@ -30,6 +31,7 @@ export const GameEvents = {
     BossHp: 'boss-hp',
     FlipUnlocked: 'flip-unlocked',
     StinkyRescued: 'stinky-rescued',
+    ParentsReunited: 'parents-reunited',
 } as const;
 
 export const AnimKeys = {
@@ -101,4 +103,9 @@ export const StinkyFrames = {
     Caged: 0,
     Sit: 1,
     Happy: 2,
+} as const;
+
+export const ParentFrames = {
+    Mom: 0,
+    Dad: 1,
 } as const;

@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, ItemFrames, StinkyFrames, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, ItemFrames, ParentFrames, StinkyFrames, TileFrames } from '../assets/keys';
 import { RegKeys, elapsedSeconds, formatTime } from '../systems/state';
 
 export class GameOver extends Phaser.Scene {
@@ -39,6 +39,8 @@ export class GameOver extends Phaser.Scene {
         const cat = this.add.sprite(560, 360, AssetKeys.Stinky, StinkyFrames.Sit).setScale(3);
         cat.anims.play(AnimKeys.StinkyHappy);
         this.add.sprite(630, 362, AssetKeys.Sosso, 0).setScale(3);
+        this.add.sprite(700, 360, AssetKeys.Parents, ParentFrames.Mom).setScale(3);
+        this.add.sprite(770, 360, AssetKeys.Parents, ParentFrames.Dad).setScale(3);
 
         this.add
             .text(480, 170, 'HAPPILY EVER AFTER!', {
@@ -69,9 +71,16 @@ export class GameOver extends Phaser.Scene {
                 color: '#9aa7bd',
             })
             .setOrigin(0.5);
+        this.add
+            .text(480, 450, 'Beijos from Ubatuba — Mamãe & Papai', {
+                fontFamily: '"Courier New", monospace',
+                fontSize: 16,
+                color: '#7d8aa3',
+            })
+            .setOrigin(0.5);
 
         const prompt = this.add
-            .text(480, 470, 'PRESS SPACE FOR MENU', {
+            .text(480, 488, 'PRESS SPACE FOR MENU', {
                 fontFamily: '"Courier New", monospace',
                 fontStyle: 'bold',
                 fontSize: 24,

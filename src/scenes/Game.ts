@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, StinkyFrames, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, StinkyFrames, TileFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
@@ -205,6 +205,9 @@ export class Game extends Phaser.Scene {
                     break;
                 case vocab.objects.stinky:
                     this.createStinkyCage(x, y);
+                    break;
+                case vocab.objects.parents:
+                    this.createParents(x, y);
                     break;
                 case vocab.objects.door:
                     doorAt = { x, y };
@@ -476,6 +479,49 @@ export class Game extends Phaser.Scene {
                 ease: 'sine.inOut',
             });
             this.time.delayedCall(3000, () => {
+                hearts.destroy();
+                this.advanceLevel(600);
+            });
+        });
+    }
+
+    // mamãe e papai wait at the end of the beach; reaching them ends the game
+    private createParents(x: number, y: number): void {
+        const mom = this.add.sprite(x - 9, y - 3, AssetKeys.Parents, ParentFrames.Mom);
+        const dad = this.add.sprite(x + 11, y - 3, AssetKeys.Parents, ParentFrames.Dad);
+        const cat = this.add.sprite(x + 26, y - 1, AssetKeys.Stinky, StinkyFrames.Sit);
+        cat.anims.play(AnimKeys.StinkyHappy);
+        this.tweens.add({
+            targets: [mom, dad],
+            y: y - 5,
+            duration: 900,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut',
+        });
+
+        const zone = this.add.zone(x, y - 9, 44, 36);
+        this.physics.add.existing(zone, true);
+        this.physics.add.overlap(this.player, zone, () => {
+            if (this.phase !== 'play') return;
+            this.phase = 'cinematic';
+            (this.player.body as Phaser.Physics.Arcade.Body).stop();
+            this.dust.emitting = false;
+            this.sound.play(AssetKeys.SfxWin, { volume: 0.6 });
+            this.game.events.emit(GameEvents.ParentsReunited);
+            this.cameras.main.flash(400, 255, 225, 200);
+            this.tweens.add({ targets: [mom, dad], scale: 1.08, duration: 250, yoyo: true, repeat: 3 });
+
+            const hearts = this.add.particles(0, 0, AssetKeys.Pixel, {
+                x: { min: x - 36, max: x + 36 },
+                y: y - 14,
+                speedY: { min: -55, max: -25 },
+                lifespan: 1300,
+                scale: { start: 1.3, end: 0 },
+                tint: [0xf08a9e, 0xf3d27e],
+                frequency: 70,
+            });
+            this.time.delayedCall(3200, () => {
                 hearts.destroy();
                 this.advanceLevel(600);
             });
@@ -765,12 +811,33 @@ export class Game extends Phaser.Scene {
 
     private addParallax(spec: LevelSpec, mapWidth: number, mapHeight: number): void {
         if (spec.theme === 'brasil') {
-            // the drive to the coast: São Paulo skyline (MASP, Banespa, Copan,
+            const ride = mapWidth - 480;
+            const seenAt = (p: number, sf: number, off: number) => ride * p * sf + 240 * (1 - sf) + off;
+            if (!spec.autoScroll) {
+                // static beach level: Serra do Mar behind the sand all the way
+                for (const p of [0, 0.35, 0.7, 1]) {
+                    this.add
+                        .image(seenAt(p, 0.3, 240), mapHeight - 18, AssetKeys.Serra)
+                        .setOrigin(0.5, 1)
+                        .setScrollFactor(0.3, 1)
+                        .setScale(2.4)
+                        .setAlpha(0.55);
+                }
+                const shore = [2, 3, 0, 2]; // palms, kiosks, beach houses
+                for (let x = 0; x < ride * 0.35 + 720; x += 24) {
+                    this.add
+                        .image(x, mapHeight - 18, AssetKeys.Brasil, shore[(x / 24) % shore.length])
+                        .setOrigin(0, 1)
+                        .setScrollFactor(0.35, 1)
+                        .setScale(1.4)
+                        .setAlpha(0.9);
+                }
+                return;
+            }
+            // the ride to the coast: São Paulo skyline (MASP, Banespa, Copan,
             // Ponte Estaiada) gives way to the Serra do Mar. Parallax compresses
             // placement: an element with scroll factor s is on screen at camera
             // progress p when x ≈ ride·p·s + 240·(1−s), NOT at p·mapWidth.
-            const ride = mapWidth - 480;
-            const seenAt = (p: number, sf: number, off: number) => ride * p * sf + 240 * (1 - sf) + off;
             for (const off of [90, 350]) {
                 this.add
                     .image(seenAt(0, 0.3, off), mapHeight - 64, AssetKeys.Sampa)

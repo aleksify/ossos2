@@ -111,4 +111,15 @@ export const LEVELS: LevelSpec[] = [
         theme: 'brasil',
         autoScroll: 88,
     },
+    {
+        key: 'level10',
+        name: 'Praia Grande',
+        intro: 'Ubatuba at last. Someone is waiting down the beach…',
+        hint: 'Mind the ouriços — sea urchins hurt',
+        sky: 0xf6c08a,
+        bgFrames: [2, 3, 0, 2],
+        flip: true,
+        collectible: 'brigadeiro',
+        theme: 'brasil',
+    },
 ];

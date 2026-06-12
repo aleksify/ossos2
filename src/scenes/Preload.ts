@@ -66,6 +66,10 @@ export class Preload extends Phaser.Scene {
         });
         this.load.image(AssetKeys.Serra, 'assets/tiles/serra.png');
         this.load.image(AssetKeys.Sampa, 'assets/tiles/sampa.png');
+        this.load.spritesheet(AssetKeys.Parents, 'assets/tiles/parents.png', {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
         this.load.image(AssetKeys.Brazil, 'assets/tiles/brazil.png');
 
         for (const level of LEVELS) {

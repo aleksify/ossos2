@@ -78,14 +78,27 @@ export class UI extends Phaser.Scene {
                 .setAlpha(0);
             this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2200 });
         };
+        const onReunion = () => {
+            const big = this.add
+                .text(480, 230, 'MAMÃE! PAPAI!', { ...TEXT_STYLE, fontSize: 44, color: '#f3d27e' })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            const small = this.add
+                .text(480, 274, 'the whole family, one beach', { ...TEXT_STYLE, fontSize: 17 })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2400 });
+        };
         this.game.events.on(GameEvents.BossHp, onBossHp);
         this.game.events.on(GameEvents.FlipUnlocked, onUnlock);
         this.game.events.on(GameEvents.StinkyRescued, onRescue);
+        this.game.events.on(GameEvents.ParentsReunited, onReunion);
         this.registry.events.on('changedata', this.refresh, this);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.game.events.off(GameEvents.BossHp, onBossHp);
             this.game.events.off(GameEvents.FlipUnlocked, onUnlock);
             this.game.events.off(GameEvents.StinkyRescued, onRescue);
+            this.game.events.off(GameEvents.ParentsReunited, onReunion);
             this.registry.events.off('changedata', this.refresh, this);
         });
 
