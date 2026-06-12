@@ -23,6 +23,8 @@ interface GameData {
     spawnX?: number;
     spawnY?: number;
     spawnGrav?: 1 | -1;
+    killed?: number[];
+    flagsTouched?: number[];
 }
 
 export class Game extends Phaser.Scene {
@@ -32,6 +34,8 @@ export class Game extends Phaser.Scene {
     private checkpoint?: { x: number; y: number; grav: 1 | -1 };
     private flags: { id: number; x: number; y: number }[] = [];
     private touchedFlags = new Set<number>();
+    private killedEnemies = new Set<number>();
+    private graceUntil = 0;
     private bossDefeated = false;
     private player!: Player;
     private ground!: Phaser.Tilemaps.TilemapLayer;
@@ -65,7 +69,8 @@ export class Game extends Phaser.Scene {
                 ? { x: data.spawnX, y: data.spawnY!, grav: data.spawnGrav ?? 1 }
                 : undefined;
         this.flags = [];
-        this.touchedFlags = new Set();
+        this.touchedFlags = new Set(data.flagsTouched ?? []);
+        this.killedEnemies = new Set(data.killed ?? []);
         this.phase = 'play';
         this.bossDefeated = false;
         this.lindy = undefined;
@@ -143,9 +148,10 @@ export class Game extends Phaser.Scene {
                   ? ItemFrames.Bagel
                   : ItemFrames.Croissant;
 
-        for (const obj of objects) {
+        for (const [oid, obj] of objects.entries()) {
             const x = obj.x ?? 0;
             const y = obj.y ?? 0;
+            const slain = this.killedEnemies.has(oid);
             switch (obj.type) {
                 case vocab.objects.gem: {
                     const gem = gems.create(x, y, collectibleTexture, collectibleFrame) as Phaser.Physics.Arcade.Sprite;
@@ -162,27 +168,28 @@ export class Game extends Phaser.Scene {
                     break;
                 }
                 case vocab.objects.walker:
-                    this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, false)));
+                    if (!slain) this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, false)), oid);
                     break;
                 case vocab.objects.walkerCeiling:
-                    this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, true)));
+                    if (!slain) this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, true)), oid);
                     break;
                 case vocab.objects.customer:
-                    this.addSoft(Walker.customer(this, x, y, this.ground, this.hazards, this.player));
+                    if (!slain) this.addSoft(Walker.customer(this, x, y, this.ground, this.hazards, this.player), oid);
                     break;
                 case vocab.objects.karen: {
+                    if (slain) break;
                     const karen = new Karen(this, x, y, this.player);
                     karen.on(KarenEvents.Shoot, (sx: number, sy: number, dir: number) => {
                         this.shots.add(new Shot(this, sx, sy, ItemFrames.Coffee, 110 * dir, -240));
                     });
-                    this.addSoft(karen);
+                    this.addSoft(karen, oid);
                     break;
                 }
                 case vocab.objects.saw:
                     this.enemies.add(new Saw(this, x, y));
                     break;
                 case vocab.objects.bat:
-                    this.addSoft(new Bat(this, x, y, this.player));
+                    if (!slain) this.addSoft(new Bat(this, x, y, this.player), oid);
                     break;
                 case vocab.objects.lindy:
                     this.spawnLindy(x, y);
@@ -297,6 +304,16 @@ export class Game extends Phaser.Scene {
             this.scene.start(SceneKeys.Menu);
         });
 
+        // brief grace after a respawn so nothing can spawn-kill the player
+        if (this.fromDeath) {
+            this.graceUntil = this.time.now + 900;
+            this.tweens.add({ targets: this.player, alpha: 0.35, duration: 110, yoyo: true, repeat: 3 });
+        }
+        // re-light shimmer on flags armed before this respawn
+        for (const flag of this.flags) {
+            if (this.touchedFlags.has(flag.id)) this.armFlagFx(flag.x, flag.y, false);
+        }
+
         this.scene.launch(SceneKeys.UI, { level: this.levelIndex, died: this.fromDeath });
     }
 
@@ -400,14 +417,17 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private addSoft(enemy: Phaser.Physics.Arcade.Sprite): void {
+    private addSoft(enemy: Phaser.Physics.Arcade.Sprite, oid?: number): void {
         enemy.setData('soft', true);
+        if (oid !== undefined) enemy.setData('oid', oid);
         enemy.on(WalkerEvents.Turned, (x: number, y: number) => this.puff(0xb89a6a, 3, x, y));
         enemy.on(WalkerEvents.Startled, (x: number, y: number) => this.puff(0xe8ecf2, 8, x, y));
         this.enemies.add(enemy);
     }
 
     private squashEnemy(enemy: Phaser.Physics.Arcade.Sprite): void {
+        const oid = enemy.getData('oid') as number | undefined;
+        if (oid !== undefined) this.killedEnemies.add(oid);
         this.sound.play(AssetKeys.SfxHit, { volume: 0.45 });
         (enemy.body as Phaser.Physics.Arcade.Body).enable = false;
         this.burst.setParticleTint(0xffffff);
@@ -515,19 +535,58 @@ export class Game extends Phaser.Scene {
 
     // flags are proximity beacons: they save the player's actual footing
     // (and gravity direction) while grounded nearby, so respawns never
-    // drop into a shaft — even from mid-air flags in the tower
+    // drop into a shaft — even from mid-air flags in the tower. A flag
+    // refuses to arm while an enemy is close (no saving doomed spots).
     private updateCheckpoints(): void {
         if (!this.player.grounded) return;
         for (const flag of this.flags) {
             if (Math.abs(this.player.x - flag.x) > 58 || Math.abs(this.player.y - flag.y) > 58) continue;
+            const danger = this.enemies.getChildren().some((e) => {
+                const foe = e as Phaser.Physics.Arcade.Sprite;
+                return foe.active && Math.abs(foe.x - this.player.x) < 48 && Math.abs(foe.y - this.player.y) < 36;
+            });
+            if (danger) continue;
             this.checkpoint = { x: this.player.x, y: this.player.y - 2, grav: this.player.gravityDir };
             if (!this.touchedFlags.has(flag.id)) {
                 this.touchedFlags.add(flag.id);
-                this.sound.play(AssetKeys.SfxGem, { volume: 0.3 });
-                this.burst.setParticleTint(0x9bf6a3);
-                this.burst.explode(10, flag.x, flag.y);
+                this.armFlagFx(flag.x, flag.y, true);
             }
         }
+    }
+
+    private armFlagFx(x: number, y: number, fresh: boolean): void {
+        // armed flags keep a gentle green shimmer
+        this.add.particles(x, y - 4, AssetKeys.Pixel, {
+            frequency: 380,
+            speedY: { min: -22, max: -10 },
+            speedX: { min: -6, max: 6 },
+            lifespan: 700,
+            scale: { start: 0.8, end: 0 },
+            alpha: { start: 0.9, end: 0 },
+            tint: 0x9bf6a3,
+        });
+        if (!fresh) return;
+        this.sound.play(AssetKeys.SfxGem, { volume: 0.5 });
+        this.burst.setParticleTint(0x9bf6a3);
+        this.burst.explode(18, x, y);
+        const label = this.add
+            .text(x, y - 16, 'CHECKPOINT', {
+                fontFamily: '"Courier New", monospace',
+                fontStyle: 'bold',
+                fontSize: 10,
+                color: '#9bf6a3',
+                stroke: '#1a1c2c',
+                strokeThickness: 3,
+            })
+            .setOrigin(0.5);
+        this.tweens.add({
+            targets: label,
+            y: y - 34,
+            alpha: 0,
+            duration: 1100,
+            ease: 'sine.out',
+            onComplete: () => label.destroy(),
+        });
     }
 
     // spikes only fill the surface half of their tile; kill on the graphic, not the cell
@@ -588,7 +647,7 @@ export class Game extends Phaser.Scene {
     }
 
     private die(): void {
-        if (this.phase !== 'play') return;
+        if (this.phase !== 'play' || this.time.now < this.graceUntil) return;
         this.phase = 'dead';
         this.sound.play(AssetKeys.SfxDeath, { volume: 0.5 });
         this.burst.setParticleTint(0xff5a5a);
@@ -612,6 +671,8 @@ export class Game extends Phaser.Scene {
             spawnX: this.checkpoint?.x,
             spawnY: this.checkpoint?.y,
             spawnGrav: this.checkpoint?.grav,
+            killed: [...this.killedEnemies],
+            flagsTouched: [...this.touchedFlags],
         } satisfies GameData);
     }
 
