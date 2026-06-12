@@ -22,13 +22,16 @@ interface GameData {
     died?: boolean;
     spawnX?: number;
     spawnY?: number;
+    spawnGrav?: 1 | -1;
 }
 
 export class Game extends Phaser.Scene {
     private levelIndex = 0;
     private phase: Phase = 'play';
     private fromDeath = false;
-    private checkpoint?: { x: number; y: number };
+    private checkpoint?: { x: number; y: number; grav: 1 | -1 };
+    private flags: { id: number; x: number; y: number }[] = [];
+    private touchedFlags = new Set<number>();
     private bossDefeated = false;
     private player!: Player;
     private ground!: Phaser.Tilemaps.TilemapLayer;
@@ -57,7 +60,12 @@ export class Game extends Phaser.Scene {
     init(data: GameData): void {
         this.levelIndex = data.level ?? 0;
         this.fromDeath = data.died ?? false;
-        this.checkpoint = data.spawnX !== undefined ? { x: data.spawnX, y: data.spawnY! } : undefined;
+        this.checkpoint =
+            data.spawnX !== undefined
+                ? { x: data.spawnX, y: data.spawnY!, grav: data.spawnGrav ?? 1 }
+                : undefined;
+        this.flags = [];
+        this.touchedFlags = new Set();
         this.phase = 'play';
         this.bossDefeated = false;
         this.lindy = undefined;
@@ -119,6 +127,7 @@ export class Game extends Phaser.Scene {
         const spawn = objects.find((o) => o.type === vocab.objects.spawn);
         const spawnAt = this.checkpoint ?? { x: spawn?.x ?? 32, y: spawn?.y ?? 32 };
         this.player = new Player(this, spawnAt.x, spawnAt.y);
+        if (this.checkpoint && this.checkpoint.grav === -1) this.player.setGravityDir(-1);
         this.player.canFlip = spec.flip || (this.registry.get(RegKeys.FlipUnlocked) as boolean);
         this.player.canJump = !this.player.canFlip;
 
@@ -179,7 +188,7 @@ export class Game extends Phaser.Scene {
                     this.spawnLindy(x, y);
                     break;
                 case vocab.objects.checkpoint:
-                    this.createCheckpoint(x, y);
+                    this.flags.push({ id: this.flags.length, x, y });
                     break;
                 case vocab.objects.stinky:
                     this.createStinkyCage(x, y);
@@ -316,6 +325,7 @@ export class Game extends Phaser.Scene {
         const body = this.player.body as Phaser.Physics.Arcade.Body;
         this.dust.emitting = this.player.grounded && Math.abs(body.velocity.x) > 60;
 
+        this.updateCheckpoints();
         if (this.touchingSpike()) this.die();
     }
 
@@ -460,16 +470,21 @@ export class Game extends Phaser.Scene {
         });
     }
 
-    private createCheckpoint(x: number, y: number): void {
-        const zone = this.add.zone(x, y, 18, 36);
-        this.physics.add.existing(zone, true);
-        this.physics.add.overlap(this.player, zone, () => {
-            if (this.checkpoint?.x === x) return;
-            this.checkpoint = { x, y };
-            this.sound.play(AssetKeys.SfxGem, { volume: 0.3 });
-            this.burst.setParticleTint(0x9bf6a3);
-            this.burst.explode(10, x, y);
-        });
+    // flags are proximity beacons: they save the player's actual footing
+    // (and gravity direction) while grounded nearby, so respawns never
+    // drop into a shaft — even from mid-air flags in the tower
+    private updateCheckpoints(): void {
+        if (!this.player.grounded) return;
+        for (const flag of this.flags) {
+            if (Math.abs(this.player.x - flag.x) > 58 || Math.abs(this.player.y - flag.y) > 58) continue;
+            this.checkpoint = { x: this.player.x, y: this.player.y - 2, grav: this.player.gravityDir };
+            if (!this.touchedFlags.has(flag.id)) {
+                this.touchedFlags.add(flag.id);
+                this.sound.play(AssetKeys.SfxGem, { volume: 0.3 });
+                this.burst.setParticleTint(0x9bf6a3);
+                this.burst.explode(10, flag.x, flag.y);
+            }
+        }
     }
 
     // spikes only fill the surface half of their tile; kill on the graphic, not the cell
@@ -553,6 +568,7 @@ export class Game extends Phaser.Scene {
             died: true,
             spawnX: this.checkpoint?.x,
             spawnY: this.checkpoint?.y,
+            spawnGrav: this.checkpoint?.grav,
         } satisfies GameData);
     }
 

@@ -47,13 +47,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return this.gravityDir === 1 ? body.blocked.down : body.blocked.up;
     }
 
+    setGravityDir(dir: 1 | -1): void {
+        this.gravityDir = dir;
+        (this.body as Phaser.Physics.Arcade.Body).setGravityY(GRAVITY * dir);
+        this.setFlipY(dir === -1);
+    }
+
     /** SPACE/W/up — flips gravity once unlocked, jumps before that. */
     tryAscend(now: number): void {
         if (now > this.coyoteUntil) return;
         if (this.canFlip) {
-            this.gravityDir = this.gravityDir === 1 ? -1 : 1;
-            (this.body as Phaser.Physics.Arcade.Body).setGravityY(GRAVITY * this.gravityDir);
-            this.setFlipY(this.gravityDir === -1);
+            this.setGravityDir(this.gravityDir === 1 ? -1 : 1);
             this.coyoteUntil = 0;
             this.emit(PlayerEvents.Flip, this.gravityDir);
         } else if (this.canJump) {
