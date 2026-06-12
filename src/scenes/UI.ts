@@ -68,7 +68,7 @@ export class UI extends Phaser.Scene {
                 .setOrigin(0.5)
                 .setAlpha(0);
             const small = this.add
-                .text(480, 272, 'the stinkiest boy in all of Paris', { ...TEXT_STYLE, fontSize: 17 })
+                .text(480, 272, 'the stinkiest girl in all of Paris', { ...TEXT_STYLE, fontSize: 17 })
                 .setOrigin(0.5)
                 .setAlpha(0);
             this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2200 });
