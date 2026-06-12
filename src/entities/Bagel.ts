@@ -17,6 +17,17 @@ export class Bagel extends Phaser.Physics.Arcade.Sprite {
         body.setAllowGravity(false);
         body.setCircle(5, 3, 3);
         body.setVelocityX(SPEED * dir);
+
+        const trail = scene.add.particles(0, 0, AssetKeys.Pixel, {
+            follow: this,
+            frequency: 30,
+            lifespan: 260,
+            speed: { min: 0, max: 16 },
+            scale: { start: 0.9, end: 0 },
+            alpha: { start: 0.9, end: 0 },
+            tint: [0xd9b285, 0xf3e3c0],
+        });
+        this.once(Phaser.GameObjects.Events.DESTROY, () => trail.destroy());
     }
 
     preUpdate(time: number, delta: number): void {

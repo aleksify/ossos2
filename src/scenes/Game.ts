@@ -255,8 +255,18 @@ export class Game extends Phaser.Scene {
             this.burst.explode(6, this.player.x, this.player.feetY);
         });
         this.player.on(PlayerEvents.Throw, (dir: -1 | 1) => {
-            this.sound.play(AssetKeys.SfxThrow, { volume: 0.35 });
-            this.bagels.add(new Bagel(this, this.player.x + dir * 10, this.player.y - 2, dir));
+            this.sound.play(AssetKeys.SfxThrow, { volume: 0.35, detune: Phaser.Math.Between(-120, 150) });
+            const bx = this.player.x + dir * 10;
+            const by = this.player.y - 2;
+            this.bagels.add(new Bagel(this, bx, by, dir));
+            this.puff(0xf3e3c0, 4, bx, by);
+            this.tweens.add({
+                targets: this.player,
+                scaleX: 0.85,
+                duration: 60,
+                yoyo: true,
+                ease: 'sine.out',
+            });
         });
         this.player.on(PlayerEvents.Land, () => {
             this.tweens.add({
@@ -454,19 +464,49 @@ export class Game extends Phaser.Scene {
         });
     }
 
+    // eating the anti-gravity bagel: the world holds its breath, Sosso
+    // levitates in a column of upward gold, spins, and gravity lets go
     private unlockFlip(): void {
         if (this.phase !== 'play') return;
         this.phase = 'cinematic';
         this.registry.set(RegKeys.FlipUnlocked, true);
+        const cam = this.cameras.main;
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        body.stop();
+        body.setAllowGravity(false);
+        this.player.anims.stop();
         this.sound.play(AssetKeys.SfxWin, { volume: 0.6 });
-        this.burst.setParticleTint(0xf7d976);
-        this.burst.explode(36, this.player.x, this.player.y);
-        this.cameras.main.flash(400, 255, 235, 160);
-        this.game.events.emit(GameEvents.FlipUnlocked);
-        this.time.delayedCall(2200, () => {
+
+        cam.zoomTo(2.6, 600, 'Sine.easeInOut');
+        const rain = this.add.particles(0, 0, AssetKeys.Pixel, {
+            x: { min: this.player.x - 36, max: this.player.x + 36 },
+            y: { min: this.player.y - 10, max: this.player.y + 40 },
+            speedY: { min: -140, max: -60 },
+            speedX: { min: -10, max: 10 },
+            lifespan: 800,
+            scale: { start: 1.3, end: 0 },
+            tint: [0xf7d976, 0xffe9a8, 0xe8b53a],
+            frequency: 18,
+        });
+        this.tweens.add({ targets: this.player, y: this.player.y - 24, duration: 1100, ease: 'sine.out' });
+        this.tweens.add({ targets: this.player, angle: 360, duration: 800, delay: 700, ease: 'sine.inOut' });
+        this.time.delayedCall(900, () => this.sound.play(AssetKeys.SfxFlip, { volume: 0.5 }));
+        this.time.delayedCall(1500, () => {
+            cam.flash(350, 255, 235, 160);
+            cam.shake(200, 0.006);
+            this.burst.setParticleTint(0xf7d976);
+            this.burst.explode(40, this.player.x, this.player.y);
+            this.game.events.emit(GameEvents.FlipUnlocked);
+        });
+        this.time.delayedCall(2400, () => {
+            rain.stop();
+            this.player.setAngle(0);
+            body.setAllowGravity(true);
             this.player.canFlip = true;
             this.player.canJump = false;
+            cam.zoomTo(2, 450, 'Sine.easeInOut');
             this.phase = 'play';
+            this.time.delayedCall(900, () => rain.destroy());
         });
     }
 
