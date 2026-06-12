@@ -46,9 +46,15 @@ const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
 // levels built from the riveted-iron tileset (second tileset, firstgid 181)
 const TOWER = new Set(['level8']);
 const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 193 };
-// brasil beach levels: ubatuba boardwalk tileset (third tileset, firstgid 197)
+// brasil train levels: the bottom row is the Ubatuba Express itself (train
+// roofs + car joints); everything above is concrete viaduct. firstgid 197.
 const BRASIL = new Set(['level9']);
-const BRAZIL = { capSingle: 197, capL: 198, capM: 199, capR: 200, fillSingle: 201, fillL: 202, fillM: 203, fillR: 204, palm: 205, umbrella: 209, bunting: 210, ball: 211 };
+const BRAZIL = {
+  trainL: 197, trainM: 198, trainR: 199, joint: 200,
+  capSingle: 201, capL: 202, capM: 203, capR: 204,
+  fillSingle: 205, fillL: 206, fillM: 207, fillR: 208,
+  palm: 209, vent: 213, bunting: 214, poleTop: 215, poleShaft: 216,
+};
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
 
@@ -97,10 +103,15 @@ function build(name, text, seed) {
             : [IRON.fillSingle, IRON.fillL, IRON.fillM, IRON.fillR];
           ground[i] = ironSet[variant];
         } else if (rio) {
-          const beachSet = top
-            ? [BRAZIL.capSingle, BRAZIL.capL, BRAZIL.capM, BRAZIL.capR]
-            : [BRAZIL.fillSingle, BRAZIL.fillL, BRAZIL.fillM, BRAZIL.fillR];
-          ground[i] = beachSet[variant];
+          if (y === h - 1) {
+            // the train: ribbed roofs with a coupling joint every car length
+            ground[i] = x % 11 === 7 ? BRAZIL.joint : BRAZIL.trainM;
+          } else {
+            const set = top
+              ? [BRAZIL.capSingle, BRAZIL.capL, BRAZIL.capM, BRAZIL.capR]
+              : [BRAZIL.fillSingle, BRAZIL.fillL, BRAZIL.fillM, BRAZIL.fillR];
+            ground[i] = set[variant];
+          }
         } else {
           const set = top
             ? (paris
@@ -169,8 +180,8 @@ function build(name, text, seed) {
             deco[i] = gid(T.rail);
           }
         } else if (rio) {
-          if (roll < 0.4) deco[i] = BRAZIL.umbrella;
-          else if (roll < 0.6) deco[i] = BRAZIL.ball;
+          // AC vents only on the train roof; viaduct tops stay bare
+          if (y === h - 1 && roll < 0.5) deco[i] = BRAZIL.vent;
         } else {
           deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
         }
@@ -179,6 +190,17 @@ function build(name, text, seed) {
       if (rio && solid(x, y - 1) && !solid(x, y) && at(x, y) === '.' && deco[y * w + x] === 0 && rng() < 0.12) {
         deco[y * w + x] = BRAZIL.bunting;
       }
+    }
+  }
+  // catenary masts sweeping past behind the train
+  if (rio) {
+    for (let x = 4; x < w - 2; x += 9) {
+      const clear = [h - 7, h - 6, h - 5, h - 4, h - 3, h - 2].every(
+        (y) => at(x, y) === '.' && deco[y * w + x] === 0,
+      );
+      if (!clear) continue;
+      deco[(h - 3) * w + x] = BRAZIL.poleTop;
+      deco[(h - 2) * w + x] = BRAZIL.poleShaft;
     }
   }
   // no clouds on rio: mid-sky shapes read as platforms in a flip level
@@ -210,8 +232,8 @@ function build(name, text, seed) {
       columns: 16, firstgid: 181, image: '../tiles/iron.png', imageheight: 18, imagewidth: 288,
       margin: 0, name: 'iron', spacing: 0, tilecount: 16, tileheight: 18, tilewidth: 18,
     }, {
-      columns: 16, firstgid: 197, image: '../tiles/brazil.png', imageheight: 18, imagewidth: 288,
-      margin: 0, name: 'brazil', spacing: 0, tilecount: 16, tileheight: 18, tilewidth: 18,
+      columns: 20, firstgid: 197, image: '../tiles/brazil.png', imageheight: 18, imagewidth: 360,
+      margin: 0, name: 'brazil', spacing: 0, tilecount: 20, tileheight: 18, tilewidth: 18,
     }],
   };
 

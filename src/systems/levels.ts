@@ -102,7 +102,7 @@ export const LEVELS: LevelSpec[] = [
     {
         key: 'level9',
         name: 'Ubatuba Express',
-        intro: 'Férias! São Paulo → Ubatuba. Stinky is already ahead…',
+        intro: 'Férias! Próxima parada: Ubatuba. Stinky rides up front…',
         hint: 'They call it Ubachuva — outrun the rain, don’t fall behind!',
         sky: 0xf2a65e,
         bgFrames: [0, 2, 1, 0, 3, 1],

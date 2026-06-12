@@ -261,6 +261,23 @@ export class Game extends Phaser.Scene {
             frequency: 70,
             emitting: false,
         });
+        if (this.autoScroll > 0) {
+            // wind streaks past the moving train; screen-space (scroll factor 0
+            // is drawn in the x∈[240,720] band under the zoomed camera)
+            this.add
+                .particles(0, 0, AssetKeys.Pixel, {
+                    x: 740,
+                    y: { min: 140, max: 400 },
+                    speedX: { min: -460, max: -300 },
+                    speedY: 0,
+                    lifespan: 1100,
+                    frequency: 70,
+                    scaleX: { start: 3.5, end: 1 },
+                    scaleY: 0.25,
+                    alpha: { start: 0.3, end: 0 },
+                })
+                .setScrollFactor(0);
+        }
 
         this.player.on(PlayerEvents.Flip, () => {
             this.sound.play(AssetKeys.SfxFlip, { volume: 0.4 });
