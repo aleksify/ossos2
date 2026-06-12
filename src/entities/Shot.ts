@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { AssetKeys } from '../assets/keys';
+import { AssetKeys, ItemFrames } from '../assets/keys';
 
 /** Lobbed enemy projectile (Karen's coffee, Lindy's rolling pins). */
 export class Shot extends Phaser.Physics.Arcade.Sprite {
@@ -12,6 +12,17 @@ export class Shot extends Phaser.Physics.Arcade.Sprite {
         body.setCircle(5, 3, 3);
         body.setGravityY(700);
         body.setVelocity(vx, vy);
+
+        const trail = scene.add.particles(0, 0, AssetKeys.Pixel, {
+            follow: this,
+            frequency: 45,
+            lifespan: 220,
+            speed: { min: 0, max: 10 },
+            scale: { start: 0.8, end: 0 },
+            alpha: { start: 0.8, end: 0 },
+            tint: frame === ItemFrames.Coffee ? [0x8a6244, 0x6b4a32] : [0xd9b285, 0x9aa3b2],
+        });
+        this.once(Phaser.GameObjects.Events.DESTROY, () => trail.destroy());
     }
 
     preUpdate(time: number, delta: number): void {

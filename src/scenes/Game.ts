@@ -5,7 +5,7 @@ import vocab from '../assets/level-vocab.json';
 import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
 import { Player, PlayerEvents } from '../entities/Player';
-import { Walker } from '../entities/Walker';
+import { Walker, WalkerEvents } from '../entities/Walker';
 import { Saw } from '../entities/Saw';
 import { Bat } from '../entities/Bat';
 import { Karen, KarenEvents } from '../entities/Karen';
@@ -168,7 +168,7 @@ export class Game extends Phaser.Scene {
                     this.addSoft(new Walker(this, x, y, this.walkerConfig(spec, true)));
                     break;
                 case vocab.objects.customer:
-                    this.addSoft(Walker.customer(this, x, y, this.ground, this.hazards));
+                    this.addSoft(Walker.customer(this, x, y, this.ground, this.hazards, this.player));
                     break;
                 case vocab.objects.karen: {
                     const karen = new Karen(this, x, y, this.player);
@@ -182,7 +182,7 @@ export class Game extends Phaser.Scene {
                     this.enemies.add(new Saw(this, x, y));
                     break;
                 case vocab.objects.bat:
-                    this.addSoft(new Bat(this, x, y));
+                    this.addSoft(new Bat(this, x, y, this.player));
                     break;
                 case vocab.objects.lindy:
                     this.spawnLindy(x, y);
@@ -340,13 +340,14 @@ export class Game extends Phaser.Scene {
     }
 
     private walkerConfig(spec: LevelSpec, ceiling: boolean) {
-        const base = { ceiling, ground: this.ground, hazards: this.hazards };
+        const base = { ceiling, ground: this.ground, hazards: this.hazards, player: this.player };
         if (spec.theme !== 'paris') return base;
         return {
             ...base,
             texture: AssetKeys.Npcs,
             frame: NpcFrames.Pigeon1,
             anim: AnimKeys.PigeonWalk,
+            startle: !ceiling,
         };
     }
 
@@ -401,6 +402,8 @@ export class Game extends Phaser.Scene {
 
     private addSoft(enemy: Phaser.Physics.Arcade.Sprite): void {
         enemy.setData('soft', true);
+        enemy.on(WalkerEvents.Turned, (x: number, y: number) => this.puff(0xb89a6a, 3, x, y));
+        enemy.on(WalkerEvents.Startled, (x: number, y: number) => this.puff(0xe8ecf2, 8, x, y));
         this.enemies.add(enemy);
     }
 
