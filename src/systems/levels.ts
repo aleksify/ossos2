@@ -10,7 +10,7 @@ export interface LevelSpec {
     flip: boolean;
     collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro';
     boss?: boolean;
-    theme?: 'paris' | 'rio';
+    theme?: 'paris' | 'brasil';
     // camera scrolls right at this speed (px/s); falling off the left edge kills
     autoScroll?: number;
 }
@@ -101,14 +101,14 @@ export const LEVELS: LevelSpec[] = [
     },
     {
         key: 'level9',
-        name: 'Copacabana Express',
-        intro: 'Vacation! Stinky is already running ahead…',
-        hint: 'The city rolls on — don’t fall behind!',
+        name: 'Ubatuba Express',
+        intro: 'Férias! São Paulo → Ubatuba. Stinky is already ahead…',
+        hint: 'They call it Ubachuva — outrun the rain, don’t fall behind!',
         sky: 0xf2a65e,
         bgFrames: [0, 2, 1, 0, 3, 1],
         flip: true,
         collectible: 'brigadeiro',
-        theme: 'rio',
+        theme: 'brasil',
         autoScroll: 88,
     },
 ];

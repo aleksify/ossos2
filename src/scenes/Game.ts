@@ -214,7 +214,7 @@ export class Game extends Phaser.Scene {
         }
 
         // Stinky waits for Sosso at the end of the vacation level
-        if (spec.theme === 'rio' && doorAt) {
+        if (spec.theme === 'brasil' && doorAt) {
             this.add.sprite(doorAt.x - 22, doorAt.y - 3, AssetKeys.Stinky, StinkyFrames.Sit)
                 .anims.play(AnimKeys.StinkyHappy);
         }
@@ -413,12 +413,12 @@ export class Game extends Phaser.Scene {
                 startle: !ceiling,
             };
         }
-        if (spec.theme === 'rio') {
+        if (spec.theme === 'brasil') {
             return {
                 ...base,
                 texture: AssetKeys.Npcs,
-                frame: NpcFrames.Toucan1,
-                anim: AnimKeys.ToucanWalk,
+                frame: NpcFrames.Maritaca1,
+                anim: AnimKeys.MaritacaWalk,
                 startle: !ceiling,
             };
         }
@@ -747,20 +747,38 @@ export class Game extends Phaser.Scene {
     }
 
     private addParallax(spec: LevelSpec, mapWidth: number, mapHeight: number): void {
-        if (spec.theme === 'rio') {
-            // Corcovado and Sugarloaf drifting far behind the boardwalk
-            for (const fx of [0.18, 0.52, 0.86]) {
+        if (spec.theme === 'brasil') {
+            // the drive to the coast: São Paulo skyline (MASP, Banespa, Copan,
+            // Ponte Estaiada) gives way to the Serra do Mar. Parallax compresses
+            // placement: an element with scroll factor s is on screen at camera
+            // progress p when x ≈ ride·p·s + 240·(1−s), NOT at p·mapWidth.
+            const ride = mapWidth - 480;
+            const seenAt = (p: number, sf: number, off: number) => ride * p * sf + 240 * (1 - sf) + off;
+            for (const off of [90, 350]) {
                 this.add
-                    .image(mapWidth * fx, mapHeight - 18, AssetKeys.RioHills)
+                    .image(seenAt(0, 0.3, off), mapHeight - 64, AssetKeys.Sampa)
                     .setOrigin(0.5, 1)
-                    .setScrollFactor(0.12, 1)
-                    .setScale(1.7)
-                    .setAlpha(0.55);
+                    .setScrollFactor(0.3, 1)
+                    .setScale(2.4)
+                    .setAlpha(0.6);
             }
-            for (let x = 0; x < mapWidth + 480; x += 24) {
-                const frame = spec.bgFrames[(x / 24) % spec.bgFrames.length];
+            for (const off of [40, 210, 380]) {
                 this.add
-                    .image(x, mapHeight - 18, AssetKeys.Rio, frame)
+                    .image(seenAt(1, 0.3, off), mapHeight - 18, AssetKeys.Serra)
+                    .setOrigin(0.5, 1)
+                    .setScrollFactor(0.3, 1)
+                    .setScale(2.4)
+                    .setAlpha(0.6);
+            }
+            const city = [4, 0, 5, 1]; // cityA, favela, cityB, favela
+            const outskirts = [1, 2, 5, 0];
+            const coast = [2, 3, 0, 2]; // palms and beach kiosks
+            const stripSpan = ride * 0.35 + 720;
+            for (let x = 0; x < stripSpan; x += 24) {
+                const p = (x - 396) / (ride * 0.35); // progress when this column is on screen
+                const set = p < 0.42 ? city : p < 0.62 ? outskirts : coast;
+                this.add
+                    .image(x, mapHeight - 18, AssetKeys.Brasil, set[(x / 24) % set.length])
                     .setOrigin(0, 1)
                     .setScrollFactor(0.35, 1)
                     .setScale(1.4)

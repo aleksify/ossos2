@@ -11,7 +11,7 @@
 //   B  bat                 .  empty
 //   C  customer            K  karen (coffee thrower)
 //   L  lindy (boss)        F  checkpoint flag
-//   G  stinky cage         t  palm tree (2x2 deco, rio)
+//   G  stinky cage         t  palm tree (2x2 deco, brasil)
 //   a/b iron arch halves (2x2 deco, tower)
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -46,8 +46,8 @@ const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
 // levels built from the riveted-iron tileset (second tileset, firstgid 181)
 const TOWER = new Set(['level8']);
 const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 193 };
-// rio beach levels: copacabana boardwalk tileset (third tileset, firstgid 197)
-const RIO = new Set(['level9']);
+// brasil beach levels: ubatuba boardwalk tileset (third tileset, firstgid 197)
+const BRASIL = new Set(['level9']);
 const BRAZIL = { capSingle: 197, capL: 198, capM: 199, capR: 200, fillSingle: 201, fillL: 202, fillM: 203, fillR: 204, palm: 205, umbrella: 209, bunting: 210, ball: 211 };
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
@@ -65,7 +65,7 @@ function mulberry32(seed) {
 function build(name, text, seed) {
   const paris = PARIS.has(name);
   const tower = TOWER.has(name);
-  const rio = RIO.has(name);
+  const rio = BRASIL.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
