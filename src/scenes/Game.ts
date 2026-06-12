@@ -410,8 +410,13 @@ export class Game extends Phaser.Scene {
             bagel.destroy();
             if (this.lindy.hit(this.time.now)) this.sound.play(AssetKeys.SfxHit, { volume: 0.5 });
         });
-        this.lindy.on(LindyEvents.Shoot, (sx: number, sy: number, dir: number) => {
-            this.shots.add(new Shot(this, sx, sy, ItemFrames.Pin, 140 * dir, -220));
+        this.lindy.on(LindyEvents.Shoot, (sx: number, sy: number, dir: number, low: boolean) => {
+            // low pins skim the floor (jump them), lobs arc overhead (walk under)
+            this.shots.add(
+                low
+                    ? new Shot(this, sx, sy + 6, ItemFrames.Pin, 200 * dir, -40)
+                    : new Shot(this, sx, sy, ItemFrames.Pin, 110 * dir, -250),
+            );
         });
         this.lindy.on(LindyEvents.Hp, (hp: number) => {
             this.game.events.emit(GameEvents.BossHp, hp, LINDY_MAX_HP);
