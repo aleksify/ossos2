@@ -60,6 +60,12 @@ export class Preload extends Phaser.Scene {
         });
         this.load.image(AssetKeys.Eiffel, 'assets/tiles/eiffel.png');
         this.load.image(AssetKeys.Iron, 'assets/tiles/iron.png');
+        this.load.spritesheet(AssetKeys.Rio, 'assets/tiles/rio.png', {
+            frameWidth: 24,
+            frameHeight: 48,
+        });
+        this.load.image(AssetKeys.RioHills, 'assets/tiles/riohills.png');
+        this.load.image(AssetKeys.Brazil, 'assets/tiles/brazil.png');
 
         for (const level of LEVELS) {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);
@@ -110,6 +116,14 @@ export class Preload extends Phaser.Scene {
             key: AnimKeys.PigeonWalk,
             frames: this.anims.generateFrameNumbers(AssetKeys.Npcs, {
                 frames: [NpcFrames.Pigeon1, NpcFrames.Pigeon2],
+            }),
+            frameRate: 6,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.ToucanWalk,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Npcs, {
+                frames: [NpcFrames.Toucan1, NpcFrames.Toucan2],
             }),
             frameRate: 6,
             repeat: -1,

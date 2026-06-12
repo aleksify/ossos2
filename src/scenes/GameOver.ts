@@ -41,10 +41,10 @@ export class GameOver extends Phaser.Scene {
         this.add.sprite(630, 362, AssetKeys.Sosso, 0).setScale(3);
 
         this.add
-            .text(480, 170, 'STINKY IS SAFE!', {
+            .text(480, 170, 'HAPPILY EVER AFTER!', {
                 fontFamily: '"Courier New", monospace',
                 fontStyle: 'bold',
-                fontSize: 64,
+                fontSize: 56,
                 color: '#ffffff',
                 stroke: '#7df0ff',
                 strokeThickness: 8,

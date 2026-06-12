@@ -29,7 +29,12 @@ export class UI extends Phaser.Scene {
         if (spec.collectible === 'gem') {
             this.add.image(24, 24, AssetKeys.Tiles, TileFrames.Gem).setScale(1.6);
         } else {
-            const frame = spec.collectible === 'bagel' ? ItemFrames.Bagel : ItemFrames.Croissant;
+            const frame =
+                spec.collectible === 'bagel'
+                    ? ItemFrames.Bagel
+                    : spec.collectible === 'brigadeiro'
+                      ? ItemFrames.Brigadeiro
+                      : ItemFrames.Croissant;
             this.add.image(24, 24, AssetKeys.Items, frame).setScale(1.8);
         }
         this.gemText = this.add.text(40, 13, '', TEXT_STYLE);

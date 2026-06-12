@@ -10,6 +10,9 @@ export const AssetKeys = {
     Eiffel: 'eiffel',
     Stinky: 'stinky',
     Iron: 'iron',
+    Rio: 'rio',
+    RioHills: 'riohills',
+    Brazil: 'brazil',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',
@@ -34,6 +37,7 @@ export const AnimKeys = {
     KarenWave: 'karen-wave',
     LindyStride: 'lindy-stride',
     PigeonWalk: 'pigeon-walk',
+    ToucanWalk: 'toucan-walk',
     StinkyHappy: 'stinky-happy',
     WalkerMove: 'walker-move',
     BatFly: 'bat-fly',
@@ -72,6 +76,8 @@ export const NpcFrames = {
     Karen2: 3,
     Pigeon1: 4,
     Pigeon2: 5,
+    Toucan1: 6,
+    Toucan2: 7,
 } as const;
 
 export const LindyFrames = {
@@ -87,6 +93,7 @@ export const ItemFrames = {
     Coffee: 2,
     GoldenBagel: 3,
     Croissant: 4,
+    Brigadeiro: 5,
 } as const;
 
 export const StinkyFrames = {

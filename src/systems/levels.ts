@@ -8,9 +8,11 @@ export interface LevelSpec {
     bgFrames: number[];
     // gravity flip available from the start (otherwise Sosso jumps)
     flip: boolean;
-    collectible: 'bagel' | 'gem' | 'croissant';
+    collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro';
     boss?: boolean;
-    theme?: 'paris';
+    theme?: 'paris' | 'rio';
+    // camera scrolls right at this speed (px/s); falling off the left edge kills
+    autoScroll?: number;
 }
 
 export const LEVELS: LevelSpec[] = [
@@ -96,5 +98,17 @@ export const LEVELS: LevelSpec[] = [
         flip: true,
         collectible: 'croissant',
         theme: 'paris',
+    },
+    {
+        key: 'level9',
+        name: 'Copacabana Express',
+        intro: 'Vacation! Stinky is already running ahead…',
+        hint: 'The city rolls on — don’t fall behind!',
+        sky: 0xf2a65e,
+        bgFrames: [0, 2, 1, 0, 3, 1],
+        flip: true,
+        collectible: 'brigadeiro',
+        theme: 'rio',
+        autoScroll: 88,
     },
 ];

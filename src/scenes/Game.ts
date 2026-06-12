@@ -56,6 +56,7 @@ export class Game extends Phaser.Scene {
     private dust!: Phaser.GameObjects.Particles.ParticleEmitter;
     private attemptGems = 0;
     private skyFade?: { from: Phaser.Display.Color; to: Phaser.Display.Color; range: number };
+    private autoScroll = 0;
 
     constructor() {
         super(SceneKeys.Game);
@@ -83,7 +84,9 @@ export class Game extends Phaser.Scene {
         const tilesets = [
             map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!,
             map.addTilesetImage('iron', AssetKeys.Iron)!,
+            map.addTilesetImage('brazil', AssetKeys.Brazil)!,
         ];
+        this.autoScroll = spec.autoScroll ?? 0;
 
         this.cameras.main.setBackgroundColor(spec.sky);
         this.addParallax(spec, map.widthInPixels, map.heightInPixels);
@@ -146,7 +149,10 @@ export class Game extends Phaser.Scene {
                 ? TileFrames.Gem
                 : spec.collectible === 'bagel'
                   ? ItemFrames.Bagel
-                  : ItemFrames.Croissant;
+                  : spec.collectible === 'brigadeiro'
+                    ? ItemFrames.Brigadeiro
+                    : ItemFrames.Croissant;
+        let doorAt: { x: number; y: number } | undefined;
 
         for (const [oid, obj] of objects.entries()) {
             const x = obj.x ?? 0;
@@ -201,9 +207,16 @@ export class Game extends Phaser.Scene {
                     this.createStinkyCage(x, y);
                     break;
                 case vocab.objects.door:
+                    doorAt = { x, y };
                     this.createDoorSensor(x, y, spec.boss === true);
                     break;
             }
+        }
+
+        // Stinky waits for Sosso at the end of the vacation level
+        if (spec.theme === 'rio' && doorAt) {
+            this.add.sprite(doorAt.x - 22, doorAt.y - 3, AssetKeys.Stinky, StinkyFrames.Sit)
+                .anims.play(AnimKeys.StinkyHappy);
         }
 
         this.physics.add.collider(this.player, this.ground);
@@ -288,7 +301,13 @@ export class Game extends Phaser.Scene {
         const cam = this.cameras.main;
         cam.setZoom(VIEW_ZOOM);
         cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-        cam.startFollow(this.player, true, 0.12, 0.12);
+        if (this.autoScroll > 0) {
+            // the camera drives itself; spawn with a comfortable lead
+            const view = cam.width / VIEW_ZOOM;
+            cam.centerOn(spawnAt.x - 140 + view / 2, map.heightInPixels / 2);
+        } else {
+            cam.startFollow(this.player, true, 0.12, 0.12);
+        }
         cam.fadeIn(300, 0, 0, 0);
 
         const keyboard = this.input.keyboard!;
@@ -308,6 +327,9 @@ export class Game extends Phaser.Scene {
         if (this.fromDeath) {
             this.graceUntil = this.time.now + 900;
             this.tweens.add({ targets: this.player, alpha: 0.35, duration: 110, yoyo: true, repeat: 3 });
+        } else if (this.autoScroll > 0) {
+            // a beat to read the intro before the screen starts rolling
+            this.graceUntil = this.time.now + 1500;
         }
         // re-light shimmer on flags armed before this respawn
         for (const flag of this.flags) {
@@ -317,7 +339,7 @@ export class Game extends Phaser.Scene {
         this.scene.launch(SceneKeys.UI, { level: this.levelIndex, died: this.fromDeath });
     }
 
-    update(time: number): void {
+    update(time: number, delta: number): void {
         if (this.skyFade) {
             const t = Phaser.Math.Clamp(1 - this.cameras.main.scrollY / this.skyFade.range, 0, 1);
             const c = Phaser.Display.Color.Interpolate.ColorWithColor(this.skyFade.from, this.skyFade.to, 100, t * 100);
@@ -352,20 +374,55 @@ export class Game extends Phaser.Scene {
         const body = this.player.body as Phaser.Physics.Arcade.Body;
         this.dust.emitting = this.player.grounded && Math.abs(body.velocity.x) > 60;
 
+        if (this.autoScroll > 0) this.updateAutoScroll(delta);
         this.updateCheckpoints();
         if (this.touchingSpike()) this.die();
     }
 
+    private updateAutoScroll(delta: number): void {
+        const cam = this.cameras.main;
+        // worldView is empty until the camera's first render pass
+        if (cam.worldView.width === 0) return;
+        // the screen waits out the respawn grace — no spawn-kills by scenery.
+        // scrollX is offset from the visible edge under zoom, so all edge math
+        // below uses worldView instead; the camera clamps itself to its bounds.
+        if (this.time.now >= this.graceUntil) {
+            cam.scrollX += (this.autoScroll * delta) / 1000;
+        }
+
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        const left = cam.worldView.x;
+        const right = left + cam.worldView.width;
+        // can't outrun the screen…
+        if (body.right > right - 6) {
+            body.x = right - 6 - body.width;
+            if (body.velocity.x > 0) body.setVelocityX(0);
+        }
+        // …and falling behind it is fatal
+        if (body.right < left) this.die();
+    }
+
     private walkerConfig(spec: LevelSpec, ceiling: boolean) {
         const base = { ceiling, ground: this.ground, hazards: this.hazards, player: this.player };
-        if (spec.theme !== 'paris') return base;
-        return {
-            ...base,
-            texture: AssetKeys.Npcs,
-            frame: NpcFrames.Pigeon1,
-            anim: AnimKeys.PigeonWalk,
-            startle: !ceiling,
-        };
+        if (spec.theme === 'paris') {
+            return {
+                ...base,
+                texture: AssetKeys.Npcs,
+                frame: NpcFrames.Pigeon1,
+                anim: AnimKeys.PigeonWalk,
+                startle: !ceiling,
+            };
+        }
+        if (spec.theme === 'rio') {
+            return {
+                ...base,
+                texture: AssetKeys.Npcs,
+                frame: NpcFrames.Toucan1,
+                anim: AnimKeys.ToucanWalk,
+                startle: !ceiling,
+            };
+        }
+        return base;
     }
 
     private createStinkyCage(x: number, y: number): void {
@@ -403,17 +460,22 @@ export class Game extends Phaser.Scene {
             });
             this.time.delayedCall(3000, () => {
                 hearts.destroy();
-                this.enterEnding();
+                this.advanceLevel(600);
             });
         });
     }
 
-    private enterEnding(): void {
+    private advanceLevel(fadeMs = 450): void {
         this.phase = 'won';
-        this.cameras.main.fadeOut(600, 0, 0, 0);
+        const lastLevel = this.levelIndex === LEVELS.length - 1;
+        this.cameras.main.fadeOut(fadeMs, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
             this.scene.stop(SceneKeys.UI);
-            this.scene.start(SceneKeys.GameOver);
+            if (lastLevel) {
+                this.scene.start(SceneKeys.GameOver);
+            } else {
+                this.scene.start(SceneKeys.Game, { level: this.levelIndex + 1 });
+            }
         });
     }
 
@@ -629,21 +691,12 @@ export class Game extends Phaser.Scene {
 
     private enterDoor(): void {
         if (this.phase !== 'play') return;
-        this.phase = 'won';
         const lastLevel = this.levelIndex === LEVELS.length - 1;
         this.sound.play(lastLevel ? AssetKeys.SfxWin : AssetKeys.SfxDoor, { volume: 0.6 });
         this.dust.emitting = false;
         (this.player.body as Phaser.Physics.Arcade.Body).stop();
         this.tweens.add({ targets: this.player, alpha: 0, scale: 0.4, duration: 350 });
-        this.cameras.main.fadeOut(450, 0, 0, 0);
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-            this.scene.stop(SceneKeys.UI);
-            if (lastLevel) {
-                this.scene.start(SceneKeys.GameOver);
-            } else {
-                this.scene.start(SceneKeys.Game, { level: this.levelIndex + 1 });
-            }
-        });
+        this.advanceLevel();
     }
 
     private die(): void {
@@ -694,6 +747,27 @@ export class Game extends Phaser.Scene {
     }
 
     private addParallax(spec: LevelSpec, mapWidth: number, mapHeight: number): void {
+        if (spec.theme === 'rio') {
+            // Corcovado and Sugarloaf drifting far behind the boardwalk
+            for (const fx of [0.18, 0.52, 0.86]) {
+                this.add
+                    .image(mapWidth * fx, mapHeight - 18, AssetKeys.RioHills)
+                    .setOrigin(0.5, 1)
+                    .setScrollFactor(0.12, 1)
+                    .setScale(1.7)
+                    .setAlpha(0.55);
+            }
+            for (let x = 0; x < mapWidth + 480; x += 24) {
+                const frame = spec.bgFrames[(x / 24) % spec.bgFrames.length];
+                this.add
+                    .image(x, mapHeight - 18, AssetKeys.Rio, frame)
+                    .setOrigin(0, 1)
+                    .setScrollFactor(0.35, 1)
+                    .setScale(1.4)
+                    .setAlpha(0.9);
+            }
+            return;
+        }
         if (spec.theme === 'paris') {
             // tall maps are climbed from inside the tower — no exterior Eiffel
             if (mapHeight <= 540) {

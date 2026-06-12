@@ -11,6 +11,8 @@
 //   B  bat                 .  empty
 //   C  customer            K  karen (coffee thrower)
 //   L  lindy (boss)        F  checkpoint flag
+//   G  stinky cage         t  palm tree (2x2 deco, rio)
+//   a/b iron arch halves (2x2 deco, tower)
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,6 +46,9 @@ const PARIS = new Set(['level4', 'level5', 'level6', 'level7', 'level8']);
 // levels built from the riveted-iron tileset (second tileset, firstgid 181)
 const TOWER = new Set(['level8']);
 const IRON = { capSingle: 181, capL: 182, capM: 183, capR: 184, fillSingle: 185, fillL: 186, fillM: 187, fillR: 188, archL: 189, archR: 193 };
+// rio beach levels: copacabana boardwalk tileset (third tileset, firstgid 197)
+const RIO = new Set(['level9']);
+const BRAZIL = { capSingle: 197, capL: 198, capM: 199, capR: 200, fillSingle: 201, fillL: 202, fillM: 203, fillR: 204, palm: 205, umbrella: 209, bunting: 210, ball: 211 };
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
 
@@ -60,6 +65,7 @@ function mulberry32(seed) {
 function build(name, text, seed) {
   const paris = PARIS.has(name);
   const tower = TOWER.has(name);
+  const rio = RIO.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
@@ -90,6 +96,11 @@ function build(name, text, seed) {
             ? [IRON.capSingle, IRON.capL, IRON.capM, IRON.capR]
             : [IRON.fillSingle, IRON.fillL, IRON.fillM, IRON.fillR];
           ground[i] = ironSet[variant];
+        } else if (rio) {
+          const beachSet = top
+            ? [BRAZIL.capSingle, BRAZIL.capL, BRAZIL.capM, BRAZIL.capR]
+            : [BRAZIL.fillSingle, BRAZIL.fillL, BRAZIL.fillM, BRAZIL.fillR];
+          ground[i] = beachSet[variant];
         } else {
           const set = top
             ? (paris
@@ -132,6 +143,13 @@ function build(name, text, seed) {
         deco[i + w] = base + 2;
         deco[i + w + 1] = base + 3;
       }
+      else if (c === 't') {
+        // 2x2 palm, anchor at top-left
+        deco[i] = BRAZIL.palm;
+        deco[i + 1] = BRAZIL.palm + 1;
+        deco[i + w] = BRAZIL.palm + 2;
+        deco[i + w + 1] = BRAZIL.palm + 3;
+      }
       else if (c !== '.' && c !== ' ') throw new Error(`${name}: unknown char '${c}' at ${x},${y}`);
     }
   }
@@ -150,13 +168,21 @@ function build(name, text, seed) {
           } else if (roll < 0.75) {
             deco[i] = gid(T.rail);
           }
+        } else if (rio) {
+          if (roll < 0.4) deco[i] = BRAZIL.umbrella;
+          else if (roll < 0.6) deco[i] = BRAZIL.ball;
         } else {
           deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
         }
       }
+      // festa bunting strung under rio ceilings
+      if (rio && solid(x, y - 1) && !solid(x, y) && at(x, y) === '.' && deco[y * w + x] === 0 && rng() < 0.12) {
+        deco[y * w + x] = BRAZIL.bunting;
+      }
     }
   }
-  for (let n = 0; n < Math.floor(Math.max(w, h) / 6); n++) {
+  // no clouds on rio: mid-sky shapes read as platforms in a flip level
+  for (let n = 0; n < (rio ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
     const x = 1 + Math.floor(rng() * (w - 5));
     const y = 2 + Math.floor(rng() * (h - 8));
     const clear = [0, 1, 2].every((d) => at(x + d, y) === '.' && deco[y * w + x + d] === 0);
@@ -183,6 +209,9 @@ function build(name, text, seed) {
     }, {
       columns: 16, firstgid: 181, image: '../tiles/iron.png', imageheight: 18, imagewidth: 288,
       margin: 0, name: 'iron', spacing: 0, tilecount: 16, tileheight: 18, tilewidth: 18,
+    }, {
+      columns: 16, firstgid: 197, image: '../tiles/brazil.png', imageheight: 18, imagewidth: 288,
+      margin: 0, name: 'brazil', spacing: 0, tilecount: 16, tileheight: 18, tilewidth: 18,
     }],
   };
 

@@ -1,0 +1,323 @@
+@sheet brazil 18 18
+@palette
+. _
+W #f3efe4
+w #d9d2c0
+B #34303a
+s #ecd2a0
+S #dcbe8a
+d #c8a86e
+t #8a6a48
+T #6b5036
+g #4fae66
+G #2f8a4c
+k #5e4030
+r #e05a6d
+R #c04458
+y #f3d27e
+c #58b8c8
+o #453a4e
+@frame capSingle
+wWWWWWWWWWWWWWWWWw
+wWWWWWWWWWWWWWWWWw
+wBBBWWWWBWBBBWWWWw
+wBWWBBBBWBBWWBBBBw
+wWWWWWWWWWWWWWWWWw
+wWWWWWWWWWWWWWWWWw
+wWWWBWBBBWWWWBWBBw
+wBBBWBBWWBBBBWBBWw
+wWWWWWWWWWWWWWWWWw
+wwwwwwwwwwwwwwwwww
+dSSSSSSSSSSSSSSSSd
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+@frame capL
+wWWWWWWWWWWWWWWWWW
+wWWWWWWWWWWWWWWWWW
+wBBBWWWWBWBBBWWWWB
+wBWWBBBBWBBWWBBBBW
+wWWWWWWWWWWWWWWWWW
+wWWWWWWWWWWWWWWWWW
+wWWWBWBBBWWWWBWBBB
+wBBBWBBWWBBBBWBBWW
+wWWWWWWWWWWWWWWWWW
+wwwwwwwwwwwwwwwwww
+dSSSSSSSSSSSSSSSSS
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+@frame capM
+WWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWW
+WBBBWWWWBWBBBWWWWB
+BBWWBBBBWBBWWBBBBW
+WWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWW
+WWWWBWBBBWWWWBWBBB
+BBBBWBBWWBBBBWBBWW
+WWWWWWWWWWWWWWWWWW
+wwwwwwwwwwwwwwwwww
+SSSSSSSSSSSSSSSSSS
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+@frame capR
+WWWWWWWWWWWWWWWWWw
+WWWWWWWWWWWWWWWWWw
+WBBBWWWWBWBBBWWWWw
+BBWWBBBBWBBWWBBBBw
+WWWWWWWWWWWWWWWWWw
+WWWWWWWWWWWWWWWWWw
+WWWWBWBBBWWWWBWBBw
+BBBBWBBWWBBBBWBBWw
+WWWWWWWWWWWWWWWWWw
+wwwwwwwwwwwwwwwwww
+SSSSSSSSSSSSSSSSSd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+@frame fillSingle
+dSSSSSSSSSSSSSSSSd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdsd
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+@frame fillL
+dSSSSSSSSSSSSSSSSS
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+dsSdssssSdssssSdss
+dsssssssssssssssss
+dssssdsssssdsssssd
+dsssssssssssssssss
+@frame fillM
+SSSSSSSSSSSSSSSSSS
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+ssSdssssSdssssSdss
+ssssssssssssssssss
+sssssdsssssdsssssd
+ssssssssssssssssss
+@frame fillR
+SSSSSSSSSSSSSSSSSd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+ssSdssssSdssssSdsd
+sssssssssssssssssd
+sssssdsssssdsssssd
+sssssssssssssssssd
+@frame palmTL
+..............gggg
+..........gggggggg
+.......ggggggggGGG
+....gggggg..ggGGGG
+..ggggg....ggGGGGG
+..gggg.....gGGGG..
+.ggg......gGGg....
+.gg.......gGg.....
+.g........gG......
+..........kk..tttt
+..........kk.ttttt
+..............tttt
+..............tTtt
+..............tTtt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+@frame palmTR
+gggg..............
+gggggggg..........
+GGGgggggggg.......
+GGGGgg..gggggg....
+GGGGGgg....ggggg..
+..GGGGg.....gggg..
+....gGGg......ggg.
+.....gGg.......gg.
+......Gg........g.
+..kk..............
+t.kk..............
+..................
+..................
+..................
+t.................
+t.................
+t.................
+t.................
+@frame palmBL
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+...............tTt
+..............ttTt
+..............ttTt
+@frame palmBR
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+t.................
+tt................
+tt................
+@frame umbrella
+..................
+......oooooo......
+....oorrrrrroo....
+...orrrWWrrrrro...
+..orrrrWWrrrrrro..
+..orrrrWWrrrrrro..
+..oRRRRWWRRRRRRo..
+...o..o.WW.o..o...
+........tt........
+........tt........
+........tt........
+........tt........
+........tt........
+........tt........
+........tt........
+.......ttt........
+..................
+..................
+@frame bunting
+oooooooooooooooooo
+..rrr....yyy...ccc
+..rrr....yyy...ccc
+...r......y.....c.
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+@frame ball
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+......oooooo......
+....orrrrWWWWo....
+...orrrrrWWWWWo...
+..orrrrrWWWWWWWo..
+..occcccyyyyyyyo..
+..occcccyyyyyyyo..
+...occccyyyyyo....
+....occcyyyoo.....
+......ooooo.......
+..................
+@frame blank
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
