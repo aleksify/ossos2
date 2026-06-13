@@ -1,148 +1,80 @@
-// Builds tools/sprites/lindy.txt — a meaner angry-Karen boss. Reuses the
-// original (proven) apron/legs body and swaps in a new severe-bob, angry-brow,
-// scowling head. Run: node tools/sprites/_lindy.mjs   then  npm run sprites
-import { writeFileSync } from 'node:fs';
+// Assembles the Lindy boss sheet from the Margery sprite frames (CC0 / Public
+// Domain, opengameart.org/content/margery-limited) in tools/lindy-src/.
+// Output frame order matches LindyFrames: stride1, stride2, throw, hurt, enraged.
+// Run: node tools/sprites/_lindy.mjs   (NOT via npm run sprites — no lindy.txt)
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-const DIR = dirname(fileURLToPath(import.meta.url));
+import { inflateSync, deflateSync } from 'node:zlib';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const SRC = join(ROOT, 'tools/lindy-src');
+const OUT = join(ROOT, 'public/assets/tiles/lindy.png');
 
-const W = 24, FRAME_H = 32, HEAD_H = 12, BODY_H = 20;
-const pad = (s) => { if (s.length > W) throw new Error(`row too wide (${s.length}): ${s}`); return s + '.'.repeat(W - s.length); };
-function frame(name, head, body) {
-    if (head.length !== HEAD_H) throw new Error(`${name}: head ${head.length} rows`);
-    if (body.length !== BODY_H) throw new Error(`${name}: body ${body.length} rows`);
-    return `@frame ${name}\n` + [...head, ...body].map(pad).join('\n');
+function decode(buf) {
+    let o = 8, w = 0, h = 0, ct = 6, idat = [];
+    while (o < buf.length) {
+        const len = buf.readUInt32BE(o);
+        const t = buf.toString('ascii', o + 4, o + 8);
+        const d = buf.subarray(o + 8, o + 8 + len);
+        if (t === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ct = d[9]; }
+        else if (t === 'IDAT') idat.push(d);
+        else if (t === 'IEND') break;
+        o += 12 + len;
+    }
+    const ch = ct === 6 ? 4 : ct === 2 ? 3 : ct === 0 ? 1 : 4;
+    const raw = inflateSync(Buffer.concat(idat));
+    const st = w * ch, px = Buffer.alloc(h * st);
+    let p = 0;
+    for (let y = 0; y < h; y++) {
+        const f = raw[p++];
+        for (let x = 0; x < st; x++) {
+            const v = raw[p++];
+            const a = x >= ch ? px[y * st + x - ch] : 0;
+            const b = y > 0 ? px[(y - 1) * st + x] : 0;
+            const c = x >= ch && y > 0 ? px[(y - 1) * st + x - ch] : 0;
+            let r;
+            switch (f) {
+                case 0: r = v; break; case 1: r = v + a; break; case 2: r = v + b; break;
+                case 3: r = v + ((a + b) >> 1); break;
+                case 4: { const pa = Math.abs(b - c), pb = Math.abs(a - c), pc = Math.abs(a + b - 2 * c); r = v + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c); break; }
+                default: r = v;
+            }
+            px[y * st + x] = r & 0xff;
+        }
+    }
+    // normalise to RGBA
+    const rgba = Buffer.alloc(w * h * 4);
+    for (let i = 0; i < w * h; i++) {
+        const s = i * ch, d = i * 4;
+        if (ch === 4) { rgba[d] = px[s]; rgba[d + 1] = px[s + 1]; rgba[d + 2] = px[s + 2]; rgba[d + 3] = px[s + 3]; }
+        else if (ch === 3) { rgba[d] = px[s]; rgba[d + 1] = px[s + 1]; rgba[d + 2] = px[s + 2]; rgba[d + 3] = 255; }
+        else { rgba[d] = rgba[d + 1] = rgba[d + 2] = px[s]; rgba[d + 3] = 255; }
+    }
+    return { w, h, rgba };
 }
 
-// voluminous blonde bob w/ highlight band (Y) + edge shadow (h/H), shaded skin
-// (S on the right), thick angry brows (v), narrowed eyes, OPEN shouting mouth
-const headAngry = [
-    '.....hHhhhhhhHh',
-    '...hHyyyyyyyyyyHh',
-    '..hyyYYYYYYYYyyyyh',
-    '..hyYYYyyyyyyyyyyH',
-    '..hyyssssssssssSyH',
-    '..hoysssssssssSSyo',
-    '...oyvvvsssvvvsSyo',
-    '...oyseessseessSyo',
-    '...oysssssssssSSyo',
-    '...oyssoooooosSSyo',
-    '....osslllllsSSo',
-    '.......o.ss.o',
-];
-// flushed crimson face + furious brows, hair flaring
-const headRage = [
-    '.....hHhhhhhhHh',
-    '...hHyyyyyyyyyyHh.rr',
-    '..hyyYYYYYYYYyyyyh.r',
-    '..hyYYYyyyyyyyyyyH',
-    '..hyyrrssssssrrSyH',
-    '..hoyrrssssssrrSyo',
-    '...oyvvvsssvvvsSyo',
-    '...oyrseesssesrSyo',
-    '...oyrrsssssssrSyo',
-    '...oyssoooooosSSyo',
-    '....orsllllllsSro',
-    '.......o.ss.o',
-];
-// dazed: scrunched X eyes, slack mouth
-const headHurt = [
-    '.....hHhhhhhhHh',
-    '...hHyyyyyyyyyyHh',
-    '..hyyYYYYYYYYyyyyh',
-    '..hyYYYyyyyyyyyyyH',
-    '..hyyssssssssssSyH',
-    '..hoysssssssssSSyo',
-    '...oysvsssssvssSyo',
-    '...oysvsssssvssSyo',
-    '...oysssssssssSSyo',
-    '...oyssoooooosSSyo',
-    '....ossssssssSSo',
-    '.......o.ss.o',
-];
-// arm punched up brandishing the rolling pin (right of the head)
-const headThrow = headAngry.map((r, i) => {
-    const pin = { 4: '...wWWw', 5: '..wWWw', 6: '..ww' };
-    return pin[i] ? pad(r).slice(0, 24 - pin[i].length) + pin[i] : r;
+const crcT = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc = (b) => { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = crcT[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+const chunk = (t, d) => { const o = Buffer.alloc(12 + d.length); o.writeUInt32BE(d.length, 0); o.write(t, 4); d.copy(o, 8); o.writeUInt32BE(crc(o.subarray(4, 8 + d.length)), 8 + d.length); return o; };
+function encode(w, h, rgba) {
+    const ih = Buffer.alloc(13); ih.writeUInt32BE(w, 0); ih.writeUInt32BE(h, 4); ih[8] = 8; ih[9] = 6;
+    const raw = Buffer.alloc(h * (1 + w * 4));
+    for (let y = 0; y < h; y++) { raw[y * (1 + w * 4)] = 0; rgba.copy(raw, y * (1 + w * 4) + 1, y * w * 4, (y + 1) * w * 4); }
+    return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ih), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
+}
+
+// LindyFrames: stride1, stride2, throw, hurt, enraged
+const order = ['run0', 'run3', 'jump0', 'idle1', 'idle0'];
+const frames = order.map((n) => decode(readFileSync(join(SRC, `${n}.png`))));
+const FW = frames[0].w, FH = frames[0].h;
+const sheet = Buffer.alloc(FW * frames.length * FH * 4);
+const SW = FW * frames.length;
+frames.forEach((f, fi) => {
+    if (f.w !== FW || f.h !== FH) throw new Error(`${order[fi]} is ${f.w}x${f.h}, want ${FW}x${FH}`);
+    for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) {
+        const s = (y * FW + x) * 4, d = (y * SW + fi * FW + x) * 4;
+        sheet[d] = f.rgba[s]; sheet[d + 1] = f.rgba[s + 1]; sheet[d + 2] = f.rgba[s + 2]; sheet[d + 3] = f.rgba[s + 3];
+    }
 });
-
-const bodyWide = [ // stride1 — stance apart
-    '........oooooooo',
-    '.......otaaaaaato',
-    '......sotallaaatos',
-    '......sotaaaaaatos',
-    '......sotaaaaaatos',
-    '......sotaaaaaatos',
-    '.......oaaaaaaaao',
-    '.......oaAAAAAAao',
-    '.......oaaaaaaaao',
-    '.......oooooooooo',
-    '........ojjjjjjo',
-    '.......ojj....jjo',
-    '.......ojj....jjo',
-    '.......ojj....jjo',
-    '.......ojj....jjo',
-    '.......ojj....jjo',
-    '.......ojj....jjo',
-    '.......ojj....jjo',
-    '......obbb....bbbo',
-    '......oooo....oooo',
-];
-const bodyNarrow = [ // stride2 / throw / hurt — stance together
-    '........oooooooo',
-    '.......otaaaaaato',
-    '......sotallaaatos',
-    '......sotaaaaaatos',
-    '......sotaaaaaatos',
-    '......sotaaaaaatos',
-    '.......oaaaaaaaao',
-    '.......oaAAAAAAao',
-    '.......oaaaaaaaao',
-    '.......oooooooooo',
-    '........ojjjjjjo',
-    '........ojj..jjo',
-    '........ojj..jjo',
-    '........ojj..jjo',
-    '........ojj..jjo',
-    '........ojj..jjo',
-    '........ojj..jjo',
-    '........ojj..jjo',
-    '.......obbb..bbbo',
-    '.......oooo..oooo',
-];
-
-const palette = [
-    '@palette',
-    '. _',
-    'o #2b2433',
-    'y #e3b554',
-    'Y #f7da86',
-    'h #b8923a',
-    'H #8f6f2a',
-    's #f4d6c0',
-    'S #dcb89c',
-    'e #2b2433',
-    'l #b14a52',
-    'a #f3efe4',
-    'A #d8d2c0',
-    't #8a3b46',
-    'j #3d5575',
-    'J #4f6e94',
-    'b #3c3744',
-    'v #5a3a22',
-    'r #d8584f',
-    'w #c89b5e',
-    'W #e7c58c',
-].join('\n');
-
-const out = [
-    `@sheet lindy ${W} ${FRAME_H}`,
-    palette,
-    frame('stride1', headAngry, bodyWide),
-    frame('stride2', headAngry, bodyNarrow),
-    frame('throw', headThrow, bodyNarrow),
-    frame('hurt', headHurt, bodyNarrow),
-    frame('enraged', headRage, bodyWide),
-].join('\n');
-writeFileSync(join(DIR, 'lindy.txt'), out + '\n');
-console.log('wrote lindy.txt (5 frames)');
+writeFileSync(OUT, encode(SW, FH, sheet));
+console.log(`lindy.png ${SW}x${FH} (${frames.length} frames ${FW}x${FH})`);

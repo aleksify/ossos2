@@ -52,8 +52,8 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);
 
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setSize(14, 28);
-        body.setOffset(5, 4);
+        body.setSize(12, 22);
+        body.setOffset(6, 3);
         body.setGravityY(900);
         body.setCollideWorldBounds(true);
 
@@ -81,6 +81,7 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
         this.hp -= 1;
         this.invulnUntil = now + INVULN_MS;
         this.emit(LindyEvents.Hp, this.hp);
+        if (this.enraged) this.setTint(0xff6a5a); // no angry frame — rage reads as a red flush
         this.setFrame(LindyFrames.Hurt);
         this.scene.tweens.add({ targets: this, alpha: 0.3, duration: 80, yoyo: true, repeat: 2 });
         this.scene.tweens.add({ targets: this, scaleX: 1.25, duration: 70, yoyo: true });
