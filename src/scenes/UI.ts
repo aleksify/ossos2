@@ -34,7 +34,9 @@ export class UI extends Phaser.Scene {
                     ? ItemFrames.Bagel
                     : spec.collectible === 'brigadeiro'
                       ? ItemFrames.Brigadeiro
-                      : ItemFrames.Croissant;
+                      : spec.collectible === 'nata'
+                        ? ItemFrames.Nata
+                        : ItemFrames.Croissant;
             this.add.image(24, 24, AssetKeys.Items, frame).setScale(1.8);
         }
         this.gemText = this.add.text(40, 13, '', TEXT_STYLE);
@@ -89,16 +91,29 @@ export class UI extends Phaser.Scene {
                 .setAlpha(0);
             this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2400 });
         };
+        const onAlex = () => {
+            const big = this.add
+                .text(480, 230, 'ALEX!', { ...TEXT_STYLE, fontSize: 48, color: '#7df0ff' })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            const small = this.add
+                .text(480, 276, 'all the way to Lisbon, and there he is', { ...TEXT_STYLE, fontSize: 17 })
+                .setOrigin(0.5)
+                .setAlpha(0);
+            this.tweens.add({ targets: [big, small], alpha: 1, duration: 300, yoyo: true, hold: 2400 });
+        };
         this.game.events.on(GameEvents.BossHp, onBossHp);
         this.game.events.on(GameEvents.FlipUnlocked, onUnlock);
         this.game.events.on(GameEvents.StinkyRescued, onRescue);
         this.game.events.on(GameEvents.ParentsReunited, onReunion);
+        this.game.events.on(GameEvents.AlexReunited, onAlex);
         this.registry.events.on('changedata', this.refresh, this);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.game.events.off(GameEvents.BossHp, onBossHp);
             this.game.events.off(GameEvents.FlipUnlocked, onUnlock);
             this.game.events.off(GameEvents.StinkyRescued, onRescue);
             this.game.events.off(GameEvents.ParentsReunited, onReunion);
+            this.game.events.off(GameEvents.AlexReunited, onAlex);
             this.registry.events.off('changedata', this.refresh, this);
         });
 

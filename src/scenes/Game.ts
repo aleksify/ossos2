@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, StinkyFrames, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, SossoFrames, StinkyFrames, TileFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
@@ -14,6 +14,20 @@ import { Bagel } from '../entities/Bagel';
 import { Shot } from '../entities/Shot';
 
 const VIEW_ZOOM = 2;
+
+// clothesline swing (lisbon): a faked pendulum — no Matter joints needed
+const SWING_W2 = 15; // pendulum stiffness (≈ g/L), tuned for a ~1.6s period
+const SWING_PUMP = 17; // rad/s² added while pumping with the swing
+const SWING_DAMP = 0.999;
+const SWING_OMEGA_MAX = 7.5;
+const SWING_RELEASE = 1.15; // launch boost on let-go
+// tram 28 (lisbon): immovable bodies that shuttle and carry their rider by friction
+const TRAM_SPEED = 46;
+const TRAM_AMP = 82;
+// festa awning trampolines (lisbon)
+const AWNING_BOUNCE_MIN = 300;
+const AWNING_BOUNCE_MAX = 720;
+const AWNING_BOUNCE_GAIN = 1.18; // >1 so chained bounces climb the altitude bands
 
 type Phase = 'play' | 'dead' | 'won' | 'cinematic';
 
@@ -57,6 +71,13 @@ export class Game extends Phaser.Scene {
     private attemptGems = 0;
     private skyFade?: { from: Phaser.Display.Color; to: Phaser.Display.Color; range: number };
     private autoScroll = 0;
+    // clothesline anchors and the active swing
+    private anchors: { x: number; y: number }[] = [];
+    private swing?: { ax: number; ay: number; len: number; theta: number; omega: number };
+    private rope?: Phaser.GameObjects.Graphics;
+    private relatchAt = 0;
+    private trams: { sprite: Phaser.Physics.Arcade.Sprite; min: number; max: number; dir: 1 | -1 }[] = [];
+    private prevPlayerVy = 0;
 
     constructor() {
         super(SceneKeys.Game);
@@ -76,6 +97,11 @@ export class Game extends Phaser.Scene {
         this.bossDefeated = false;
         this.lindy = undefined;
         this.attemptGems = 0;
+        this.anchors = [];
+        this.swing = undefined;
+        this.relatchAt = 0;
+        this.trams = [];
+        this.prevPlayerVy = 0;
     }
 
     create(): void {
@@ -85,6 +111,7 @@ export class Game extends Phaser.Scene {
             map.addTilesetImage(vocab.tileset, AssetKeys.Tiles)!,
             map.addTilesetImage('iron', AssetKeys.Iron)!,
             map.addTilesetImage('brazil', AssetKeys.Brazil)!,
+            map.addTilesetImage('lisbon', AssetKeys.Lisbon)!,
         ];
         this.autoScroll = spec.autoScroll ?? 0;
 
@@ -135,6 +162,8 @@ export class Game extends Phaser.Scene {
         const spawn = objects.find((o) => o.type === vocab.objects.spawn);
         const spawnAt = this.checkpoint ?? { x: spawn?.x ?? 32, y: spawn?.y ?? 32 };
         this.player = new Player(this, spawnAt.x, spawnAt.y);
+        this.player.setDepth(5); // ride on top of trams (created later in the object loop)
+        this.rope = this.add.graphics().setDepth(4);
         if (this.checkpoint && this.checkpoint.grav === -1) this.player.setGravityDir(-1);
         this.player.canFlip = spec.flip || (this.registry.get(RegKeys.FlipUnlocked) as boolean);
         this.player.canJump = !this.player.canFlip;
@@ -151,7 +180,9 @@ export class Game extends Phaser.Scene {
                   ? ItemFrames.Bagel
                   : spec.collectible === 'brigadeiro'
                     ? ItemFrames.Brigadeiro
-                    : ItemFrames.Croissant;
+                    : spec.collectible === 'nata'
+                      ? ItemFrames.Nata
+                      : ItemFrames.Croissant;
         let doorAt: { x: number; y: number } | undefined;
 
         for (const [oid, obj] of objects.entries()) {
@@ -195,7 +226,13 @@ export class Game extends Phaser.Scene {
                     this.enemies.add(new Saw(this, x, y));
                     break;
                 case vocab.objects.bat:
-                    if (!slain) this.addSoft(new Bat(this, x, y, this.player), oid);
+                    if (!slain) {
+                        const skin =
+                            spec.theme === 'lisbon'
+                                ? { texture: AssetKeys.Npcs, frame: NpcFrames.Gaivota1, anim: AnimKeys.GaivotaFly }
+                                : undefined;
+                        this.addSoft(new Bat(this, x, y, this.player, skin), oid);
+                    }
                     break;
                 case vocab.objects.lindy:
                     this.spawnLindy(x, y);
@@ -209,6 +246,16 @@ export class Game extends Phaser.Scene {
                 case vocab.objects.parents:
                     this.createParents(x, y);
                     break;
+                case vocab.objects.alex:
+                    this.createAlex(x, y);
+                    break;
+                case vocab.objects.line:
+                    // hang point sits near the pole's crossbar, just below the tile top
+                    this.anchors.push({ x, y: y - 8 });
+                    break;
+                case vocab.objects.tram:
+                    this.createTram(x, y);
+                    break;
                 case vocab.objects.door:
                     doorAt = { x, y };
                     this.createDoorSensor(x, y, spec.boss === true);
@@ -216,13 +263,18 @@ export class Game extends Phaser.Scene {
             }
         }
 
-        // Stinky waits for Sosso at the end of the vacation level
-        if (spec.theme === 'brasil' && doorAt) {
+        // Stinky tags along through the vacation: she waits by each exit door
+        if ((spec.theme === 'brasil' || spec.theme === 'lisbon') && doorAt) {
             this.add.sprite(doorAt.x - 22, doorAt.y - 3, AssetKeys.Stinky, StinkyFrames.Sit)
                 .anims.play(AnimKeys.StinkyHappy);
         }
 
-        this.physics.add.collider(this.player, this.ground);
+        const awningBounce = spec.theme === 'lisbon';
+        this.physics.add.collider(
+            this.player,
+            this.ground,
+            awningBounce ? (_p, tile) => this.onAwning(tile as Phaser.Tilemaps.Tile) : undefined,
+        );
         this.physics.add.collider(this.enemies, this.ground);
         this.physics.add.overlap(this.player, gems, (_p, gemObj) => {
             this.collectGem(gemObj as Phaser.Physics.Arcade.Sprite);
@@ -234,7 +286,14 @@ export class Game extends Phaser.Scene {
                 this.die();
             }
         });
-        this.physics.add.collider(this.shots, this.ground, (shot) => {
+        this.physics.add.collider(this.shots, this.ground, (shot, tile) => {
+            const t = tile as Phaser.Tilemaps.Tile;
+            if (t.index === vocab.tiles.awningA || t.index === vocab.tiles.awningB) {
+                // coffee bounces off the festa awnings into slow mortar arcs
+                const sb = (shot as Shot).body as Phaser.Physics.Arcade.Body;
+                sb.setVelocityY(-Math.abs(sb.velocity.y) * 0.85 - 110);
+                return;
+            }
             this.puff(0x8a6244, 6, (shot as Shot).x, (shot as Shot).y);
             shot.destroy();
         });
@@ -373,30 +432,147 @@ export class Game extends Phaser.Scene {
 
         const left = this.cursors.left.isDown || this.keyA.isDown;
         const right = this.cursors.right.isDown || this.keyD.isDown;
-        this.player.move(left === right ? 0 : left ? -1 : 1, time);
-
         const ascendPressed =
             Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
             Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
             Phaser.Input.Keyboard.JustDown(this.keyW);
+        const throwPressed =
+            Phaser.Input.Keyboard.JustDown(this.keyX) || Phaser.Input.Keyboard.JustDown(this.keyJ);
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+
+        if (this.swing) {
+            // SPACE releases; ←/→ pump the pendulum
+            if (ascendPressed) this.releaseSwing();
+            else this.updateSwing(delta, left, right);
+            if (throwPressed) this.player.tryThrow(time);
+            this.updateTrams();
+            if (this.touchingSpike()) this.die();
+            return;
+        }
+
+        this.player.move(left === right ? 0 : left ? -1 : 1, time);
         if (ascendPressed) this.player.tryAscend(time);
         const ascendReleased =
             Phaser.Input.Keyboard.JustUp(this.cursors.space) ||
             Phaser.Input.Keyboard.JustUp(this.cursors.up) ||
             Phaser.Input.Keyboard.JustUp(this.keyW);
         if (ascendReleased) this.player.cutJump();
-
-        if (Phaser.Input.Keyboard.JustDown(this.keyX) || Phaser.Input.Keyboard.JustDown(this.keyJ)) {
-            this.player.tryThrow(time);
-        }
+        if (throwPressed) this.player.tryThrow(time);
+        if (this.anchors.length) this.tryLatch(time);
 
         this.dust.setPosition(this.player.x, this.player.feetY);
-        const body = this.player.body as Phaser.Physics.Arcade.Body;
         this.dust.emitting = this.player.grounded && Math.abs(body.velocity.x) > 60;
 
         if (this.autoScroll > 0) this.updateAutoScroll(delta);
+        if (this.trams.length) this.updateTrams();
         this.updateCheckpoints();
         if (this.touchingSpike()) this.die();
+        // remembered for the awning collide callback (post-separation vy reads ~0)
+        this.prevPlayerVy = body.velocity.y;
+    }
+
+    private tryLatch(time: number): void {
+        if (this.swing || time < this.relatchAt || this.player.grounded) return;
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        const g = this.player.gravityDir;
+        for (const a of this.anchors) {
+            const dx = this.player.x - a.x;
+            const dyRaw = this.player.y - a.y;
+            const along = g * dyRaw; // distance down the rope (positive on the hanging side)
+            if (Math.abs(dx) > 22 || along < -12 || along > 86) continue;
+            const len = Phaser.Math.Clamp(Math.hypot(dx, dyRaw), 22, 64);
+            const theta = Math.atan2(dx, along); // dx = len·sinθ, along = len·cosθ
+            const omega = (body.velocity.x * Math.cos(theta) - g * body.velocity.y * Math.sin(theta)) / len;
+            this.swing = {
+                ax: a.x,
+                ay: a.y,
+                len,
+                theta,
+                omega: Phaser.Math.Clamp(omega, -SWING_OMEGA_MAX, SWING_OMEGA_MAX),
+            };
+            body.setAllowGravity(false);
+            this.sound.play(AssetKeys.SfxJump, { volume: 0.25 });
+            this.dust.emitting = false;
+            return;
+        }
+    }
+
+    private updateSwing(delta: number, left: boolean, right: boolean): void {
+        const s = this.swing!;
+        const dt = Math.min(delta, 32) / 1000;
+        const g = this.player.gravityDir;
+        s.omega += -SWING_W2 * Math.sin(s.theta) * dt;
+        if (right && s.omega >= -0.2) s.omega += SWING_PUMP * dt;
+        if (left && s.omega <= 0.2) s.omega -= SWING_PUMP * dt;
+        s.omega = Phaser.Math.Clamp(s.omega * SWING_DAMP, -SWING_OMEGA_MAX, SWING_OMEGA_MAX);
+        s.theta += s.omega * dt;
+
+        const px = s.ax + s.len * Math.sin(s.theta);
+        const py = s.ay + g * s.len * Math.cos(s.theta);
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        body.reset(px, py);
+        this.player.setFrame(SossoFrames.Jump);
+        this.player.setFlipX(s.omega < 0);
+
+        this.rope!.clear();
+        this.rope!.lineStyle(1.5, 0xf0e9d8, 0.9);
+        this.rope!.lineBetween(s.ax, s.ay, px, py);
+    }
+
+    private releaseSwing(): void {
+        const s = this.swing!;
+        const g = this.player.gravityDir;
+        const vx = s.len * s.omega * Math.cos(s.theta);
+        const vy = -g * s.len * s.omega * Math.sin(s.theta);
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        body.setAllowGravity(true);
+        body.setVelocity(vx * SWING_RELEASE, vy * SWING_RELEASE);
+        this.swing = undefined;
+        this.relatchAt = this.time.now + 320;
+        this.rope!.clear();
+        this.sound.play(AssetKeys.SfxFlip, { volume: 0.28 });
+        this.burst.setParticleTint(0xf0e9d8);
+        this.burst.explode(6, this.player.x, this.player.y);
+    }
+
+    private updateTrams(): void {
+        for (const t of this.trams) {
+            const b = t.sprite.body as Phaser.Physics.Arcade.Body;
+            if (t.dir > 0 && t.sprite.x >= t.max) {
+                t.dir = -1;
+                b.setVelocityX(-TRAM_SPEED);
+            } else if (t.dir < 0 && t.sprite.x <= t.min) {
+                t.dir = 1;
+                b.setVelocityX(TRAM_SPEED);
+            }
+        }
+    }
+
+    private onAwning(tile: Phaser.Tilemaps.Tile): void {
+        if (tile.index !== vocab.tiles.awningA && tile.index !== vocab.tiles.awningB) return;
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        const g = this.player.gravityDir;
+        const landed = g === 1 ? body.blocked.down : body.blocked.up;
+        if (!landed) return;
+        if (this.cursors.down.isDown) return; // hold ↓ to kill the bounce and stop
+        const impact = Math.abs(this.prevPlayerVy);
+        const v = Phaser.Math.Clamp(impact * AWNING_BOUNCE_GAIN, AWNING_BOUNCE_MIN, AWNING_BOUNCE_MAX);
+        body.setVelocityY(-g * v);
+        this.sound.play(AssetKeys.SfxJump, { volume: 0.3 });
+        this.puff(0xd9534f, 5, this.player.x, this.player.feetY);
+    }
+
+    private createTram(x: number, y: number): void {
+        const tram = this.physics.add.sprite(x, y, AssetKeys.Tram);
+        const body = tram.body as Phaser.Physics.Arcade.Body;
+        body.setAllowGravity(false);
+        body.setImmovable(true);
+        body.setFriction(1, 0); // carries the rider along its roof
+        body.setSize(68, 26);
+        body.setVelocityX(TRAM_SPEED);
+        this.trams.push({ sprite: tram, min: x - TRAM_AMP, max: x + TRAM_AMP, dir: 1 });
+        this.physics.add.collider(this.player, tram);
+        this.physics.add.collider(this.enemies, tram);
     }
 
     private updateAutoScroll(delta: number): void {
@@ -439,6 +615,16 @@ export class Game extends Phaser.Scene {
                 texture: AssetKeys.Npcs,
                 frame: NpcFrames.Maritaca1,
                 anim: AnimKeys.MaritacaWalk,
+                startle: !ceiling,
+            };
+        }
+        if (spec.theme === 'lisbon') {
+            // Lisbon's streets are full of pigeons too — reuse the Paris flock
+            return {
+                ...base,
+                texture: AssetKeys.Npcs,
+                frame: NpcFrames.Pigeon1,
+                anim: AnimKeys.PigeonWalk,
                 startle: !ceiling,
             };
         }
@@ -519,6 +705,48 @@ export class Game extends Phaser.Scene {
                 lifespan: 1300,
                 scale: { start: 1.3, end: 0 },
                 tint: [0xf08a9e, 0xf3d27e],
+                frequency: 70,
+            });
+            this.time.delayedCall(3200, () => {
+                hearts.destroy();
+                this.advanceLevel(600);
+            });
+        });
+    }
+
+    // Alex waits at the miradouro; reaching him ends the journey
+    private createAlex(x: number, y: number): void {
+        const alex = this.add.sprite(x, y - 3, AssetKeys.Alex, 0);
+        const cat = this.add.sprite(x + 20, y - 1, AssetKeys.Stinky, StinkyFrames.Sit);
+        cat.anims.play(AnimKeys.StinkyHappy);
+        this.tweens.add({
+            targets: alex,
+            y: y - 5,
+            duration: 950,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut',
+        });
+
+        const zone = this.add.zone(x, y - 9, 40, 36);
+        this.physics.add.existing(zone, true);
+        this.physics.add.overlap(this.player, zone, () => {
+            if (this.phase !== 'play') return;
+            this.phase = 'cinematic';
+            (this.player.body as Phaser.Physics.Arcade.Body).stop();
+            this.dust.emitting = false;
+            this.sound.play(AssetKeys.SfxWin, { volume: 0.6 });
+            this.game.events.emit(GameEvents.AlexReunited);
+            this.cameras.main.flash(400, 255, 230, 180);
+            this.tweens.add({ targets: alex, scale: 1.1, duration: 250, yoyo: true, repeat: 3 });
+
+            const hearts = this.add.particles(0, 0, AssetKeys.Pixel, {
+                x: { min: x - 30, max: x + 30 },
+                y: y - 14,
+                speedY: { min: -55, max: -25 },
+                lifespan: 1300,
+                scale: { start: 1.3, end: 0 },
+                tint: [0xf08a9e, 0xf3d27e, 0x7df0ff],
                 frequency: 70,
             });
             this.time.delayedCall(3200, () => {
@@ -765,6 +993,11 @@ export class Game extends Phaser.Scene {
     private die(): void {
         if (this.phase !== 'play' || this.time.now < this.graceUntil) return;
         this.phase = 'dead';
+        if (this.swing) {
+            this.swing = undefined;
+            this.rope?.clear();
+            (this.player.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
+        }
         this.sound.play(AssetKeys.SfxDeath, { volume: 0.5 });
         this.burst.setParticleTint(0xff5a5a);
         this.burst.explode(26, this.player.x, this.player.y);
@@ -867,6 +1100,28 @@ export class Game extends Phaser.Scene {
                     .setScrollFactor(0.35, 1)
                     .setScale(1.4)
                     .setAlpha(0.9);
+            }
+            return;
+        }
+        if (spec.theme === 'lisbon') {
+            // a sea of red roofs behind everything: Sé, the bridge, the castelo
+            const span = mapWidth * 0.3 + 720;
+            for (let x = 0; x < span; x += 220) {
+                this.add
+                    .image(x, mapHeight - 18, AssetKeys.Lisboa)
+                    .setOrigin(0, 1)
+                    .setScrollFactor(0.3, 1)
+                    .setScale(2.4)
+                    .setAlpha(0.6);
+            }
+            const frames = spec.bgFrames;
+            for (let x = 0; x < mapWidth + 480; x += 24) {
+                this.add
+                    .image(x, mapHeight - 18, AssetKeys.LisboaStrip, frames[(x / 24) % frames.length])
+                    .setOrigin(0, 1)
+                    .setScrollFactor(0.35, 1)
+                    .setScale(1.4)
+                    .setAlpha(0.92);
             }
             return;
         }

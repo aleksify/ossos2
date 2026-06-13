@@ -15,6 +15,11 @@ export const AssetKeys = {
     Sampa: 'sampa',
     Brazil: 'brazil',
     Parents: 'parents',
+    Lisboa: 'lisboa',
+    LisboaStrip: 'lisboa-strip',
+    Lisbon: 'lisbon',
+    Alex: 'alex',
+    Tram: 'tram',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',
@@ -32,6 +37,7 @@ export const GameEvents = {
     FlipUnlocked: 'flip-unlocked',
     StinkyRescued: 'stinky-rescued',
     ParentsReunited: 'parents-reunited',
+    AlexReunited: 'alex-reunited',
 } as const;
 
 export const AnimKeys = {
@@ -44,6 +50,7 @@ export const AnimKeys = {
     StinkyHappy: 'stinky-happy',
     WalkerMove: 'walker-move',
     BatFly: 'bat-fly',
+    GaivotaFly: 'gaivota-fly',
 } as const;
 
 // frame indices in tiles.png (18px sheet, 20 columns)
@@ -81,6 +88,8 @@ export const NpcFrames = {
     Pigeon2: 5,
     Maritaca1: 6,
     Maritaca2: 7,
+    Gaivota1: 8,
+    Gaivota2: 9,
 } as const;
 
 export const LindyFrames = {
@@ -97,6 +106,7 @@ export const ItemFrames = {
     GoldenBagel: 3,
     Croissant: 4,
     Brigadeiro: 5,
+    Nata: 6,
 } as const;
 
 export const StinkyFrames = {

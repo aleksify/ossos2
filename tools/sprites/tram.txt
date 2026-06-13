@@ -1,0 +1,44 @@
+@sheet tram 72 30
+@palette
+. _
+o #2e2c33
+W #f0ede2
+w #d8d2c0
+y #f2c014
+Y #d4a004
+r #c0392b
+g #3b4754
+s #7fa8d9
+n #4a4f58
+u #6b7484
+@frame tram
+...oWWWWWWWwWWWWWWWwWWWWWWWwWWWWWWWwWWWWWWWwWWWWWWWwWWWWWWWwWWWWWWWWo...
+..oWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWo..
+.owwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwo.
+.oWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWo.
+.oWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWoooooooooooWWWWWo.
+.oWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWooyoyoyooooWWWWWo.
+.oWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWoooooooooooWWWWWo.
+.oWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWo.
+.owwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwo.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.oyyooooooooyyyooooooooyyyooooooooyyyooooooooyyyooooooooyyyooooooooyyyo.
+.oyyogssgggoyyyogssgggoyyyogssgggoyyyogssgggoyyyogssgggoyyyogssgggoyyyo.
+.oyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyo.
+.oyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyo.
+.oyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyoggggggoyyyo.
+.oyyooooooooyyyooooooooyyyooooooooyyyooooooooyyyooooooooyyyooooooooyyyo.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.orrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrro.
+.oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo.
+.oYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYo.
+.oYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYo.
+...oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo...
+...ooooooooonnnnnooooonnnnnooooooooooooooooonnnnnooooonnnnnoooooooooo...
+...........nnuuunn...nnuuunn...............nnuuunn...nnuuunn............
+...........nnnunnn...nnnunnn...............nnnunnn...nnnunnn............
+............nnnnn.....nnnnn.................nnnnn.....nnnnn.............

@@ -1,0 +1,64 @@
+@sheet lisboa 96 48
+@palette
+. _
+W #e9ddc4
+w #c9b896
+r #c96f4a
+R #e08a5e
+M #a85538
+T #c0392b
+c #8a4030
+S #d8d2c0
+s #b8a888
+p #2f7a3c
+b #3e6fae
+k #6b7484
+@frame skyline
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+................................................................................................
+..........................................................................S.S.......S.S.....S.S.
+..........................................................................SSSS......SSSS....SSSS
+.................................................S.S....S.S...............sSSs......sSSs....sSSs
+.................................................SSSS...SSSS..............SSSS......SSSS....SSSS
+.................................................sSSS...SSSs..............SSSS......SSSS....SSSS
+.....TTTT..........TTTT..........................sSSS...SSSs.M............SSSS......SSSS....SSSS
+.....TTTT..........TTTT.........................MsSSS...SSSs.M........S.S.SSSSS.S.S.SSSSS.S.SSSS
+......TT............TT..........................MsSSSSSSSSSsRRRRRRRR..ssssSSSSssssssSSSSssssSSSS
+......TT............TT.....................M..RRRsSSSSsSSSSsrrrrrrrM..sSSSSSSSSSSSSSSSSSSSSSSSSS
+......TT............TT....c.........M......M..MrrsSSSsksSSSswWWWWWwM..SSSSSSSSSSSSSSSSSSSSSSSSSS
+......TT............TT...c..........M....RRRRRRwWsSSSSsSSSSsWwWWWRRRRRSSSSSSSSSSSSSSSSSSSSSSSSSS
+..cc..TT............TT.cc......M..RRRRRRRMrrrrrWwsSSSSSSSSSsWWkWWMrrrrsSSSSSSSSSSSSSSSSSSSSSSSSS
+....c.TT............TTc........M..MrrrrrrrwWWWWWWsSSSSSSSSSsWwWWWWwWWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.....ccc.c.c.c.c.c.ccc...M...RRRRRRwWWWWWWWwWWWWwsSSSSSSSSSsWWWWWWWwWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+......Tccc.......cccTT...M...MrrrrrWwWWWWWWWkWWWWsSSSSSSSSSsWwWWWWWWkWsSSSSSSSSSSSSSSSSSSSSSSSSS
+......TT..ccccccc...TT.RRRRRRRwWWWWWWkWWkWWwWWWWwsSSSSSSSSSsWWkWWkWwWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+......TT............TT.MrrrrrrWwWWWWwWWWWWWWWWWWWsSSSSSSSSSsWwWWWWWWWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+......TT............TT..wWWWWWWWkWWWWWWWWWWwWWWWwsSSSSSSSSSsWWWWWWWwWWsSSSSSSSSSSSSSSSSSSSSSSSSS
+.S....TT............TT..WwWWWWWwWWWWwWWWWWWWkWWWWsSSSSSSSSSsWwWWWWWWkWSSSSSSSSSSSSSSSSSSSSSSSSSS
+SSS...TT............TT..WWkWWkWWWWWWWkWWkWWwWWWWwsSSSSSSSSSsWWkWWkWwWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.S....TT............TT..WwWWWWWwWWWWwWWWWWWWWWWWWsSSSSSSSSSsWwWWWWWWWWsSSSSSSSSSSSSSSSSSSSSSSSSS
+......TT............TT..WWWWWWWWkWWWWWWWWWWwWWWWwsSSSSSSSSSsWWWWWWWwWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WwWWWWWwWWWWwWWWWWWWkWWWWsSSSSSSSSSsWwWWWWWWkWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WWkWWkWWWWWWWkWWkWWwWWWWwsSSSSSSSSSsWWkWWkWwWWsSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WwWWWWWwWWWWwWWWWWWWWWWWWsSSSSSSSSSsWwWWWWWWWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WWWWWWWWkWWWWWWWWWWwWWWWwsSSSSSSSSSsWWWWWWWwWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WwWWWWWwWWWWwWWWWWWWkWWWWsSSSSSSSSSsWwWWWWWWkWsSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WWkWWkWWWWWWWkWWkWWwWWWWwsSSSSSSSSSsWWkWWkWwWWSSSSSSSSSSSSSSSSSSSSSSSSSS
+.SS...TT............TT..WwWWWWWwWWWWwWWWWWWWWWWWWsSSSSSSSSSsWwWWWWWWWpSSSSSSSSSSpSSSSSSSpSSSSSSp
+..TcTcTcTcTcTcTcTcTcTcTcWWWWWWWWkWWWWWWWWWWwWWWWwsSSSSSSSSSsWWWWWWWwppsSSSSSSSSpppSSSSSpppSSSSpp
+bbbbbbTTbbbbbbbbbbbbTTbbWwWWWWWwWWWWwWWWWWWWkWWWWsSSSSSSSSSsWwWWWWWWpppSSSSSSSSpppSSSSSpppSSSSpp
+bbbbbbbbbbbbbbbbbbbbbbbbWWWWWWWWWWWWWWWWWWWwWWWWwsSSSSSSSSSsWWWWWWWwpppSSSSSSSSpppSSSSSpppSSSSpp
+bbbbbbbbbbbbbbbbbbbbbbbbWwWWWWWwWWWWwWWWWWWWWWWWWsSSSSSSSSSsWwWWWWWWppsSSSSSSSSpppSSSSSpppSSSSpp

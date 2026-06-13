@@ -7,6 +7,12 @@ const SWOOP_RANGE = 64;
 const SWOOP_COOLDOWN_MS = 2600;
 const SWOOP_MS = 450;
 
+export interface BatSkin {
+    texture: string;
+    frame: number;
+    anim: string;
+}
+
 export class Bat extends Phaser.Physics.Arcade.Sprite {
     private readonly phaseOffset: number;
     private readonly target?: Phaser.GameObjects.Sprite;
@@ -15,8 +21,8 @@ export class Bat extends Phaser.Physics.Arcade.Sprite {
     private swoopReadyAt = 0;
     private swoopVy = 0;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, target?: Phaser.GameObjects.Sprite) {
-        super(scene, x, y, AssetKeys.Characters, CharFrames.BatA);
+    constructor(scene: Phaser.Scene, x: number, y: number, target?: Phaser.GameObjects.Sprite, skin?: BatSkin) {
+        super(scene, x, y, skin?.texture ?? AssetKeys.Characters, skin?.frame ?? CharFrames.BatA);
         // desync bats so pairs don't bob in lockstep
         this.phaseOffset = (x * 13) % PERIOD_MS;
         this.target = target;
@@ -29,7 +35,7 @@ export class Bat extends Phaser.Physics.Arcade.Sprite {
         body.setImmovable(true);
         body.setSize(16, 12);
         body.setOffset(4, 6);
-        this.anims.play(AnimKeys.BatFly);
+        this.anims.play(skin?.anim ?? AnimKeys.BatFly);
     }
 
     preUpdate(time: number, delta: number): void {

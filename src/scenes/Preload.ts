@@ -71,6 +71,17 @@ export class Preload extends Phaser.Scene {
             frameHeight: 24,
         });
         this.load.image(AssetKeys.Brazil, 'assets/tiles/brazil.png');
+        this.load.image(AssetKeys.Lisbon, 'assets/tiles/lisbon.png');
+        this.load.image(AssetKeys.Lisboa, 'assets/tiles/lisboa.png');
+        this.load.spritesheet(AssetKeys.LisboaStrip, 'assets/tiles/lisboa-strip.png', {
+            frameWidth: 24,
+            frameHeight: 48,
+        });
+        this.load.spritesheet(AssetKeys.Alex, 'assets/tiles/alex.png', {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
+        this.load.image(AssetKeys.Tram, 'assets/tiles/tram.png');
 
         for (const level of LEVELS) {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);
@@ -155,6 +166,14 @@ export class Preload extends Phaser.Scene {
                 frames: [CharFrames.BatA, CharFrames.BatB],
             }),
             frameRate: 8,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.GaivotaFly,
+            frames: this.anims.generateFrameNumbers(AssetKeys.Npcs, {
+                frames: [NpcFrames.Gaivota1, NpcFrames.Gaivota2],
+            }),
+            frameRate: 5,
             repeat: -1,
         });
 

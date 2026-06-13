@@ -1,0 +1,402 @@
+@sheet lisbon 18 18
+@palette
+. _
+o #453a4e
+W #e8e4da
+K #2e2c33
+p #e3d4b4
+q #cdbb96
+B #3e6fae
+b #7fa8d9
+r #c96f4a
+R #a85538
+h #e08a5e
+g #7e3f2a
+D #d9534f
+c #f5f0e6
+G #4f9e5f
+E #2f7a3c
+y #f3d27e
+i #4a4f58
+x #3c3744
+s #aab2bc
+@frame capSingle
+oWWWWWWWWWWWWWWWWo
+oWKWWWWWKWWWWWKWWo
+oWWWKWWWWWKWWWWWKo
+oKWWWWWKWWWWWKWWWo
+oooooooooooooooooo
+oppppppppppppppppo
+oppppppppppppppppo
+oqppppppqppppppqpo
+oppppppppppppppppo
+oppppppppppppppppo
+opppqppppppqpppppo
+oppppppppppppppppo
+oppppppppppppppppo
+oqppppppqppppppqpo
+oppppppppppppppppo
+oppppppppppppppppo
+opppqppppppqpppppo
+oppppppppppppppppo
+@frame capL
+oWWWWWWWWWWWWWWWWW
+oWKWWWWWKWWWWWKWWW
+oWWWKWWWWWKWWWWWKW
+oKWWWWWKWWWWWKWWWW
+oooooooooooooooooo
+oppppppppppppppppp
+oppppppppppppppppp
+oqppppppqppppppqpp
+oppppppppppppppppp
+oppppppppppppppppp
+opppqppppppqpppppp
+oppppppppppppppppp
+oppppppppppppppppp
+oqppppppqppppppqpp
+oppppppppppppppppp
+oppppppppppppppppp
+opppqppppppqpppppp
+oppppppppppppppppp
+@frame capM
+WWWWWWWWWWWWWWWWWW
+WWKWWWWWKWWWWWKWWW
+WWWWKWWWWWKWWWWWKW
+WKWWWWWKWWWWWKWWWW
+oooooooooooooooooo
+pppppppppppppppppp
+pppppppppppppppppp
+pqppppppqppppppqpp
+pppppppppppppppppp
+pppppppppppppppppp
+ppppqppppppqpppppp
+pppppppppppppppppp
+pppppppppppppppppp
+pqppppppqppppppqpp
+pppppppppppppppppp
+pppppppppppppppppp
+ppppqppppppqpppppp
+pppppppppppppppppp
+@frame capR
+WWWWWWWWWWWWWWWWWo
+WWKWWWWWKWWWWWKWWo
+WWWWKWWWWWKWWWWWKo
+WKWWWWWKWWWWWKWWWo
+oooooooooooooooooo
+pppppppppppppppppo
+pppppppppppppppppo
+pqppppppqppppppqpo
+pppppppppppppppppo
+pppppppppppppppppo
+ppppqppppppqpppppo
+pppppppppppppppppo
+pppppppppppppppppo
+pqppppppqppppppqpo
+pppppppppppppppppo
+pppppppppppppppppo
+ppppqppppppqpppppo
+pppppppppppppppppo
+@frame fillSingle
+oppppppppppppppppo
+opqppppppppqpppppo
+oppppppppppppppppo
+oppppppppppppppppo
+oqqqqqqqqqqqqqqqqo
+oppppppppppppppppo
+oppppppppppppppppo
+oppppppppppppppppo
+oBBbbbBBBbbbBBBbbo
+obbBBBbbbBBBbbbBBo
+oppppppppppppppppo
+oppppppppppppppppo
+oppppppppppppppppo
+oqqqqqqqqqqqqqqqqo
+oppppppppppppppppo
+oppppppqppppppppqo
+oppppppppppppppppo
+oppppppppppppppppo
+@frame fillL
+oppppppppppppppppp
+opqppppppppqpppppp
+oppppppppppppppppp
+oppppppppppppppppp
+oqqqqqqqqqqqqqqqqq
+oppppppppppppppppp
+oppppppppppppppppp
+oppppppppppppppppp
+oBBbbbBBBbbbBBBbbb
+obbBBBbbbBBBbbbBBB
+oppppppppppppppppp
+oppppppppppppppppp
+oppppppppppppppppp
+oqqqqqqqqqqqqqqqqq
+oppppppppppppppppp
+oppppppqppppppppqp
+oppppppppppppppppp
+oppppppppppppppppp
+@frame fillM
+pppppppppppppppppp
+ppqppppppppqpppppp
+pppppppppppppppppp
+pppppppppppppppppp
+qqqqqqqqqqqqqqqqqq
+pppppppppppppppppp
+pppppppppppppppppp
+pppppppppppppppppp
+BBBbbbBBBbbbBBBbbb
+bbbBBBbbbBBBbbbBBB
+pppppppppppppppppp
+pppppppppppppppppp
+pppppppppppppppppp
+qqqqqqqqqqqqqqqqqq
+pppppppppppppppppp
+pppppppqppppppppqp
+pppppppppppppppppp
+pppppppppppppppppp
+@frame fillR
+pppppppppppppppppo
+ppqppppppppqpppppo
+pppppppppppppppppo
+pppppppppppppppppo
+qqqqqqqqqqqqqqqqqo
+pppppppppppppppppo
+pppppppppppppppppo
+pppppppppppppppppo
+BBBbbbBBBbbbBBBbbo
+bbbBBBbbbBBBbbbBBo
+pppppppppppppppppo
+pppppppppppppppppo
+pppppppppppppppppo
+qqqqqqqqqqqqqqqqqo
+pppppppppppppppppo
+pppppppqppppppppqo
+pppppppppppppppppo
+pppppppppppppppppo
+@frame roofSingle
+ohrrRghhrrRghhrrRo
+orrRRghrrRRghrrRRo
+oggggggggggggggggo
+oRghhrrRghhrrRghho
+oRghrrRRghrrRRghro
+oggggggggggggggggo
+ohrrRghhrrRghhrrRo
+orrRRghrrRRghrrRRo
+oggggggggggggggggo
+oRghhrrRghhrrRghho
+oRghrrRRghrrRRghro
+oggggggggggggggggo
+ohrrRghhrrRghhrrRo
+orrRRghrrRRghrrRRo
+oggggggggggggggggo
+oRghhrrRghhrrRghho
+oRghrrRRghrrRRghro
+oggggggggggggggggo
+@frame roofL
+ohrrRghhrrRghhrrRg
+orrRRghrrRRghrrRRg
+oggggggggggggggggg
+oRghhrrRghhrrRghhr
+oRghrrRRghrrRRghrr
+oggggggggggggggggg
+ohrrRghhrrRghhrrRg
+orrRRghrrRRghrrRRg
+oggggggggggggggggg
+oRghhrrRghhrrRghhr
+oRghrrRRghrrRRghrr
+oggggggggggggggggg
+ohrrRghhrrRghhrrRg
+orrRRghrrRRghrrRRg
+oggggggggggggggggg
+oRghhrrRghhrrRghhr
+oRghrrRRghrrRRghrr
+oggggggggggggggggg
+@frame roofM
+hhrrRghhrrRghhrrRg
+hrrRRghrrRRghrrRRg
+gggggggggggggggggg
+rRghhrrRghhrrRghhr
+RRghrrRRghrrRRghrr
+gggggggggggggggggg
+hhrrRghhrrRghhrrRg
+hrrRRghrrRRghrrRRg
+gggggggggggggggggg
+rRghhrrRghhrrRghhr
+RRghrrRRghrrRRghrr
+gggggggggggggggggg
+hhrrRghhrrRghhrrRg
+hrrRRghrrRRghrrRRg
+gggggggggggggggggg
+rRghhrrRghhrrRghhr
+RRghrrRRghrrRRghrr
+gggggggggggggggggg
+@frame roofR
+hhrrRghhrrRghhrrRo
+hrrRRghrrRRghrrRRo
+gggggggggggggggggo
+rRghhrrRghhrrRghho
+RRghrrRRghrrRRghro
+gggggggggggggggggo
+hhrrRghhrrRghhrrRo
+hrrRRghrrRRghrrRRo
+gggggggggggggggggo
+rRghhrrRghhrrRghho
+RRghrrRRghrrRRghro
+gggggggggggggggggo
+hhrrRghhrrRghhrrRo
+hrrRRghrrRRghrrRRo
+gggggggggggggggggo
+rRghhrrRghhrrRghho
+RRghrrRRghrrRRghro
+gggggggggggggggggo
+@frame awningA
+oo..............oo
+DDoo..........oocc
+DDDcooooooooooDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+DDDcccDDDcccDDDccc
+.D..c..D..c..D..c.
+..................
+..................
+..................
+..................
+@frame awningB
+oo..............oo
+GGoo..........oocc
+GGGcooooooooooGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+GGGcccGGGcccGGGccc
+.G..c..G..c..G..c.
+..................
+..................
+..................
+..................
+@frame chimney
+..................
+..................
+....oooooooooo....
+....rrrrrrrrrr....
+....rorrorrorr....
+....RRRRRRRRRR....
+.....oppppppo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....opppppqo.....
+.....oqqqqqqo.....
+@frame bandeirinha
+oooooooooooooooooo
+.DDDD..yyyy..GGGG.
+.DDDD..yyyy..GGGG.
+..DDD...yyy...GGG.
+..DD....yy....GG..
+...D.....y.....G..
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+..................
+@frame manjerico
+..................
+..................
+...........occ....
+...........occ....
+...........o......
+...........o......
+......GGGGGG......
+....GGGGGGGGGG....
+...GGGGGGGGGGEE...
+...GGGGEGGGGGEE...
+...GGGGGGGGEEEE...
+....GGGEEEEEEE....
+......EEEEEE......
+.....orrrrrro.....
+......orrrro......
+......orrrro......
+......oRRRRo......
+......oooooo......
+@frame pole
+..................
+...iiiiiiiiiiii...
+...i....ii....i...
+...i....ii....i...
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+........ii........
+.......iiii.......
+@frame balloon
+..................
+......hhyyhh......
+.....hyyyyyyh.....
+....DhyyyyyyhD....
+....DhyyyyyyhD....
+....DhyyyyyyhD....
+....DhhyyyyhhD....
+.....DhyyyyhD.....
+.....DhhyyhhD.....
+......DhyyhD......
+.......DhhD.......
+........yy........
+.......o..o.......
+.......oooo.......
+.......oooo.......
+..................
+..................
+..................
+@frame grill
+..................
+..................
+..................
+..................
+..................
+..................
+...sssso...sssso..
+..sssssss.sssssss.
+.xxxxxxxxxxxxxxxx.
+.xhhxhhxhhxhhxhhx.
+.xxxxxxxxxxxxxxxx.
+.xxxxxxxxxxxxxxxx.
+.xxxxxxxxxxxxxxxx.
+.xxxxxxxxxxxxxxxx.
+..xx..h..h....xx..
+..xx..........xx..
+..xx..........xx..
+..xx..........xx..

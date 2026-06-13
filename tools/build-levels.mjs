@@ -14,6 +14,8 @@
 //   G  stinky cage         t  palm tree (2x2 deco, brasil)
 //   H  sosso's parents (beach finale exit)
 //   a/b iron arch halves (2x2 deco, tower)
+//   Y  clothesline anchor  n  awning (bouncy tile, lisbon)
+//   T  tram platform       A  alex (miradouro finale exit)
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -61,6 +63,21 @@ const BRAZIL = {
   sandFillSingle: 221, sandFillL: 222, sandFillM: 223, sandFillR: 224,
   umbrella: 225, ball: 226,
 };
+// lisbon levels (fourth tileset, firstgid 227). ROOFTOP levels walk on
+// terracotta roofs; the rest stand on calçada over azulejo-trimmed walls.
+const LISBON = new Set(['level11', 'level12', 'level13']);
+const ROOFTOP = new Set(['level11']);
+const FESTA = new Set(['level12']);
+const LIS = {
+  capSingle: 227, capL: 228, capM: 229, capR: 230,
+  fillSingle: 231, fillL: 232, fillM: 233, fillR: 234,
+  roofSingle: 235, roofL: 236, roofM: 237, roofR: 238,
+  awningA: 239, awningB: 240,
+  chimney: 241, bandeirinha: 242, manjerico: 243, pole: 244, balloon: 245, grill: 246,
+};
+if (LIS.awningA !== VOCAB.tiles.awningA || LIS.awningB !== VOCAB.tiles.awningB) {
+  throw new Error('awning gids drifted from level-vocab.json');
+}
 
 const gid = (index, flipV = false) => (index + 1) | (flipV ? FLIP_V : 0);
 
@@ -79,6 +96,9 @@ function build(name, text, seed) {
   const tower = TOWER.has(name);
   const train = TRAIN.has(name);
   const beach = BEACH.has(name);
+  const lisbon = LISBON.has(name);
+  const rooftop = ROOFTOP.has(name);
+  const festa = FESTA.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
@@ -124,6 +144,13 @@ function build(name, text, seed) {
             ? [BRAZIL.sandSingle, BRAZIL.sandL, BRAZIL.sandM, BRAZIL.sandR]
             : [BRAZIL.sandFillSingle, BRAZIL.sandFillL, BRAZIL.sandFillM, BRAZIL.sandFillR];
           ground[i] = set[variant];
+        } else if (lisbon) {
+          const set = top
+            ? (rooftop
+                ? [LIS.roofSingle, LIS.roofL, LIS.roofM, LIS.roofR]
+                : [LIS.capSingle, LIS.capL, LIS.capM, LIS.capR])
+            : [LIS.fillSingle, LIS.fillL, LIS.fillM, LIS.fillR];
+          ground[i] = set[variant];
         } else {
           const set = top
             ? (paris
@@ -159,6 +186,16 @@ function build(name, text, seed) {
       }
       else if (c === 'G') obj(VOCAB.objects.stinky, x, y);
       else if (c === 'H') obj(VOCAB.objects.parents, x, y);
+      else if (c === 'A') obj(VOCAB.objects.alex, x, y);
+      else if (c === 'T') obj(VOCAB.objects.tram, x, y);
+      else if (c === 'Y') {
+        deco[i] = LIS.pole;
+        obj(VOCAB.objects.line, x, y);
+      }
+      else if (c === 'n') {
+        // bouncy festa awning; alternate stripe colors per stall
+        ground[i] = x % 6 < 3 ? LIS.awningA : LIS.awningB;
+      }
       else if (c === 'a' || c === 'b') {
         // 2x2 arch, anchor at top-left
         const base = c === 'a' ? IRON.archL : IRON.archR;
@@ -198,6 +235,15 @@ function build(name, text, seed) {
         } else if (beach) {
           if (roll < 0.3) deco[i] = BRAZIL.umbrella;
           else if (roll < 0.45) deco[i] = BRAZIL.ball;
+        } else if (lisbon) {
+          if (rooftop) {
+            if (roll < 0.4) deco[i] = LIS.chimney;
+          } else if (festa) {
+            if (roll < 0.25) deco[i] = LIS.manjerico;
+            else if (roll < 0.45) deco[i] = LIS.grill;
+          } else if (roll < 0.2) {
+            deco[i] = LIS.manjerico;
+          }
         } else {
           deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
         }
@@ -205,6 +251,12 @@ function build(name, text, seed) {
       // festa bunting strung under viaduct ceilings
       if (train && solid(x, y - 1) && !solid(x, y) && at(x, y) === '.' && deco[y * w + x] === 0 && rng() < 0.12) {
         deco[y * w + x] = BRAZIL.bunting;
+      }
+      // santos populares: bandeirinhas and balões hang from every ceiling
+      if (festa && solid(x, y - 1) && !solid(x, y) && at(x, y) === '.' && deco[y * w + x] === 0) {
+        const r = rng();
+        if (r < 0.3) deco[y * w + x] = LIS.bandeirinha;
+        else if (r < 0.38) deco[y * w + x] = LIS.balloon;
       }
     }
   }
@@ -219,8 +271,8 @@ function build(name, text, seed) {
       deco[(h - 2) * w + x] = BRAZIL.poleShaft;
     }
   }
-  // no clouds on brasil levels: mid-sky shapes read as platforms in a flip level
-  for (let n = 0; n < (train || beach ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
+  // no clouds on brasil/lisbon levels: mid-sky shapes read as platforms in a flip level
+  for (let n = 0; n < (train || beach || lisbon ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
     const x = 1 + Math.floor(rng() * (w - 5));
     const y = 2 + Math.floor(rng() * (h - 8));
     const clear = [0, 1, 2].every((d) => at(x + d, y) === '.' && deco[y * w + x + d] === 0);
@@ -250,6 +302,9 @@ function build(name, text, seed) {
     }, {
       columns: 30, firstgid: 197, image: '../tiles/brazil.png', imageheight: 18, imagewidth: 540,
       margin: 0, name: 'brazil', spacing: 0, tilecount: 30, tileheight: 18, tilewidth: 18,
+    }, {
+      columns: 20, firstgid: 227, image: '../tiles/lisbon.png', imageheight: 18, imagewidth: 360,
+      margin: 0, name: 'lisbon', spacing: 0, tilecount: 20, tileheight: 18, tilewidth: 18,
     }],
   };
 
@@ -258,9 +313,10 @@ function build(name, text, seed) {
     (o) =>
       o.type === VOCAB.objects.door ||
       o.type === VOCAB.objects.stinky ||
-      o.type === VOCAB.objects.parents,
+      o.type === VOCAB.objects.parents ||
+      o.type === VOCAB.objects.alex,
   );
-  if (!hasExit) throw new Error(`${name}: no door, stinky, or parents`);
+  if (!hasExit) throw new Error(`${name}: no door, stinky, parents, or alex`);
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify(map));
   console.log(`${name}: ${w}x${h}, ${objects.length} objects`);
 }

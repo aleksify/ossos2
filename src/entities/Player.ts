@@ -2,10 +2,10 @@ import * as Phaser from 'phaser';
 import { AnimKeys, AssetKeys, SossoFrames } from '../assets/keys';
 
 const GRAVITY = 1500;
-const MAX_RUN = 170;
+export const MAX_RUN = 170;
 const ACCEL = 1400;
 const DRAG = 1600;
-const MAX_FALL = 460;
+export const MAX_FALL = 460;
 const JUMP_VELOCITY = 390;
 const THROW_COOLDOWN_MS = 350;
 const THROW_POSE_MS = 220;

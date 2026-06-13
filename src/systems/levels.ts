@@ -8,9 +8,9 @@ export interface LevelSpec {
     bgFrames: number[];
     // gravity flip available from the start (otherwise Sosso jumps)
     flip: boolean;
-    collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro';
+    collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro' | 'nata';
     boss?: boolean;
-    theme?: 'paris' | 'brasil';
+    theme?: 'paris' | 'brasil' | 'lisbon';
     // camera scrolls right at this speed (px/s); falling off the left edge kills
     autoScroll?: number;
 }
@@ -121,5 +121,38 @@ export const LEVELS: LevelSpec[] = [
         flip: true,
         collectible: 'brigadeiro',
         theme: 'brasil',
+    },
+    {
+        key: 'level11',
+        name: 'Telhados de Alfama',
+        intro: 'Lisboa! Someone is waiting at the top of the city…',
+        hint: 'Grab a clothesline — ←/→ to swing, SPACE to let go',
+        sky: 0xaed4e8,
+        bgFrames: [0, 2, 0, 3],
+        flip: true,
+        collectible: 'nata',
+        theme: 'lisbon',
+    },
+    {
+        key: 'level12',
+        name: 'Santos Populares',
+        intro: 'Festa de Santo António — sardinhas, manjericos, marchas!',
+        hint: 'Striped awnings bounce — hold ↓ to stay put',
+        sky: 0x232043,
+        bgFrames: [1, 0, 1, 2],
+        flip: true,
+        collectible: 'nata',
+        theme: 'lisbon',
+    },
+    {
+        key: 'level13',
+        name: 'Subida ao Miradouro',
+        intro: 'Almost there. He said he’d wait at the miradouro…',
+        hint: 'Ride the 28 — mind the gap',
+        sky: 0xf2a65e,
+        bgFrames: [0, 3, 2, 1],
+        flip: true,
+        collectible: 'nata',
+        theme: 'lisbon',
     },
 ];

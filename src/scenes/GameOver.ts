@@ -36,11 +36,12 @@ export class GameOver extends Phaser.Scene {
             frequency: 120,
         });
 
-        const cat = this.add.sprite(560, 360, AssetKeys.Stinky, StinkyFrames.Sit).setScale(3);
+        const cat = this.add.sprite(530, 360, AssetKeys.Stinky, StinkyFrames.Sit).setScale(3);
         cat.anims.play(AnimKeys.StinkyHappy);
-        this.add.sprite(630, 362, AssetKeys.Sosso, 0).setScale(3);
-        this.add.sprite(700, 360, AssetKeys.Parents, ParentFrames.Mom).setScale(3);
-        this.add.sprite(770, 360, AssetKeys.Parents, ParentFrames.Dad).setScale(3);
+        this.add.sprite(595, 362, AssetKeys.Sosso, 0).setScale(3);
+        this.add.sprite(660, 362, AssetKeys.Alex, 0).setScale(3);
+        this.add.sprite(725, 360, AssetKeys.Parents, ParentFrames.Mom).setScale(3);
+        this.add.sprite(790, 360, AssetKeys.Parents, ParentFrames.Dad).setScale(3);
 
         this.add
             .text(480, 170, 'HAPPILY EVER AFTER!', {
@@ -72,7 +73,7 @@ export class GameOver extends Phaser.Scene {
             })
             .setOrigin(0.5);
         this.add
-            .text(480, 450, 'Beijos from Ubatuba — Mamãe & Papai', {
+            .text(480, 450, 'Bagels to Ubatuba to a rooftop in Lisbon — and Lisbon was home.', {
                 fontFamily: '"Courier New", monospace',
                 fontSize: 16,
                 color: '#7d8aa3',

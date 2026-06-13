@@ -19,6 +19,13 @@
         "lindy": "lindy",
         "checkpoint": "checkpoint",
         "stinky": "stinky",
-        "parents": "parents"
+        "parents": "parents",
+        "line": "line",
+        "tram": "tram",
+        "alex": "alex"
+    },
+    "tiles": {
+        "awningA": 239,
+        "awningB": 240
     }
 }
