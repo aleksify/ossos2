@@ -97,6 +97,7 @@ export const LindyFrames = {
     Stride2: 1,
     Throw: 2,
     Hurt: 3,
+    Enraged: 4,
 } as const;
 
 export const ItemFrames = {

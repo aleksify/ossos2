@@ -874,6 +874,13 @@ export class Game extends Phaser.Scene {
                     : new Shot(this, sx, sy, ItemFrames.Pin, 110 * dir, -250),
             );
         });
+        this.lindy.on(LindyEvents.Slam, (lx: number, ly: number) => {
+            // rolling-pin shockwave skimming the floor both ways — jump it
+            this.cameras.main.shake(220, 0.013);
+            this.puff(0xcf9a5e, 12, lx, ly + 12);
+            this.shots.add(new Shot(this, lx, ly + 8, ItemFrames.Pin, 240, -40));
+            this.shots.add(new Shot(this, lx, ly + 8, ItemFrames.Pin, -240, -40));
+        });
         this.lindy.on(LindyEvents.Hp, (hp: number) => {
             this.game.events.emit(GameEvents.BossHp, hp, LINDY_MAX_HP);
         });

@@ -4,10 +4,11 @@ import { AnimKeys, AssetKeys, LindyFrames } from '../assets/keys';
 export const LindyEvents = {
     Hp: 'hp',
     Shoot: 'shoot',
+    Slam: 'slam',
     Defeated: 'defeated',
 } as const;
 
-export const LINDY_MAX_HP = 6;
+export const LINDY_MAX_HP = 8;
 
 const AGGRO_RANGE = 240;
 const DASH_SPEED = 90;
@@ -20,8 +21,11 @@ const TIRED_MS = 1150;
 const INVULN_MS = 400;
 // clears the 1-tile crates (apex ~29px), not the 2-tile arena wall
 const HOP_VELOCITY = 230;
+// enrage-only slam: a high telegraphed leap that ends in a ground shockwave
+const SLAM_RISE = 330;
+const SLAM_STEER = 60;
 
-type State = 'waiting' | 'alert' | 'dash' | 'aim' | 'volley' | 'tired' | 'dying';
+type State = 'waiting' | 'alert' | 'dash' | 'aim' | 'volley' | 'slam' | 'tired' | 'dying';
 
 /**
  * The boss. Readable rhythm: alert (!) → dash (jump over her; she vaults
@@ -35,6 +39,8 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
     private nextPinAt = 0;
     private invulnUntil = 0;
     private dashDir: 1 | -1 = -1;
+    private slamToggle = false;
+    private slamAirborne = false;
     private readonly target: Phaser.GameObjects.Sprite;
     private readonly mark: Phaser.GameObjects.Text;
 
@@ -108,11 +114,20 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
                 break;
             case 'alert':
                 this.setFlipX(dx < 0);
+                if (this.enraged) this.setFrame(LindyFrames.Enraged);
                 if (time > this.stateUntil) {
-                    this.mode = 'dash';
-                    this.stateUntil = time + DASH_MS;
-                    this.dashDir = dx < 0 ? -1 : 1;
                     this.mark.setVisible(false);
+                    // enraged: alternate the dash with a slam that shockwaves
+                    if (this.enraged && this.slamToggle) {
+                        this.mode = 'slam';
+                        this.slamAirborne = false;
+                        this.setFrame(LindyFrames.Throw);
+                    } else {
+                        this.mode = 'dash';
+                        this.stateUntil = time + DASH_MS;
+                        this.dashDir = dx < 0 ? -1 : 1;
+                    }
+                    this.slamToggle = !this.slamToggle;
                 }
                 break;
             case 'dash': {
@@ -138,8 +153,27 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
                 }
                 break;
             }
+            case 'slam': {
+                // a big telegraphed leap toward the player that ends in a
+                // floor-skimming shockwave (jump it). enrage-only.
+                if (!this.slamAirborne) {
+                    body.setVelocityY(-SLAM_RISE);
+                    this.slamAirborne = true;
+                }
+                body.setVelocityX(Math.sign(dx) * SLAM_STEER);
+                this.setFlipX(dx < 0);
+                if (body.velocity.y > 0 && body.blocked.down) {
+                    body.setVelocity(0, 0);
+                    this.emit(LindyEvents.Slam, this.x, this.y);
+                    this.setFrame(LindyFrames.Hurt);
+                    this.mode = 'tired';
+                    this.stateUntil = time + TIRED_MS * 0.75;
+                }
+                break;
+            }
             case 'aim':
                 this.setFlipX(dx < 0);
+                if (this.enraged) this.setFrame(LindyFrames.Throw);
                 if (time > this.stateUntil) {
                     this.mode = 'volley';
                     this.pinsLeft = this.enraged ? 3 : 2;
