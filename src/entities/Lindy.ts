@@ -8,7 +8,7 @@ export const LindyEvents = {
     Defeated: 'defeated',
 } as const;
 
-export const LINDY_MAX_HP = 8;
+export const LINDY_MAX_HP = 6;
 
 const AGGRO_RANGE = 240;
 const DASH_SPEED = 90;
