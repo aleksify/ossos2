@@ -8,6 +8,9 @@ export interface LevelSpec {
     bgFrames: number[];
     // gravity flip available from the start (otherwise Sosso jumps)
     flip: boolean;
+    // force normal jump control even after the flip is story-unlocked (jump-built
+    // levels that would otherwise inherit flip from the FlipUnlocked run flag)
+    forceJump?: boolean;
     collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro' | 'nata';
     boss?: boolean;
     theme?: 'paris' | 'brasil' | 'lisbon';
@@ -129,7 +132,8 @@ export const LEVELS: LevelSpec[] = [
         hint: 'Grab a clothesline — ←/→ to swing, SPACE to let go',
         sky: 0xaed4e8,
         bgFrames: [0, 2, 0, 3],
-        flip: true,
+        flip: false,
+        forceJump: true,
         collectible: 'nata',
         theme: 'lisbon',
     },
@@ -140,7 +144,8 @@ export const LEVELS: LevelSpec[] = [
         hint: 'Striped awnings bounce — hold ↓ to stay put',
         sky: 0x232043,
         bgFrames: [1, 0, 1, 2],
-        flip: true,
+        flip: false,
+        forceJump: true,
         collectible: 'nata',
         theme: 'lisbon',
     },
@@ -151,7 +156,8 @@ export const LEVELS: LevelSpec[] = [
         hint: 'Ride the 28 — mind the gap',
         sky: 0xf2a65e,
         bgFrames: [0, 3, 2, 1],
-        flip: true,
+        flip: false,
+        forceJump: true,
         collectible: 'nata',
         theme: 'lisbon',
     },

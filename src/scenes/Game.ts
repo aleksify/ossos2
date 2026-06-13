@@ -176,7 +176,8 @@ export class Game extends Phaser.Scene {
         this.player.setDepth(5); // ride on top of trams (created later in the object loop)
         this.rope = this.add.graphics().setDepth(4);
         if (this.checkpoint && this.checkpoint.grav === -1) this.player.setGravityDir(-1);
-        this.player.canFlip = spec.flip || (this.registry.get(RegKeys.FlipUnlocked) as boolean);
+        this.player.canFlip =
+            !spec.forceJump && (spec.flip || (this.registry.get(RegKeys.FlipUnlocked) as boolean));
         this.player.canJump = !this.player.canFlip;
 
         this.enemies = this.add.group();
