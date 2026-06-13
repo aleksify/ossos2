@@ -41,6 +41,7 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
     private dashDir: 1 | -1 = -1;
     private slamToggle = false;
     private slamAirborne = false;
+    private slamLaunched = false;
     private readonly target: Phaser.GameObjects.Sprite;
     private readonly mark: Phaser.GameObjects.Text;
 
@@ -121,6 +122,8 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
                     if (this.enraged && this.slamToggle) {
                         this.mode = 'slam';
                         this.slamAirborne = false;
+                        this.slamLaunched = false;
+                        this.stateUntil = time + 2200; // safety: never get stuck airborne
                         this.setFrame(LindyFrames.Throw);
                     } else {
                         this.mode = 'dash';
@@ -156,15 +159,19 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
             case 'slam': {
                 // a big telegraphed leap toward the player that ends in a
                 // floor-skimming shockwave (jump it). enrage-only.
-                if (!this.slamAirborne) {
+                if (!this.slamLaunched) {
                     body.setVelocityY(-SLAM_RISE);
-                    this.slamAirborne = true;
+                    this.slamLaunched = true;
                 }
                 body.setVelocityX(Math.sign(dx) * SLAM_STEER);
                 this.setFlipX(dx < 0);
-                if (body.velocity.y > 0 && body.blocked.down) {
+                // she's truly airborne once she leaves the floor; the slam ends
+                // when she lands again (or the safety timer expires)
+                if (!body.blocked.down) this.slamAirborne = true;
+                const landed = this.slamAirborne && body.blocked.down;
+                if (landed || time > this.stateUntil) {
                     body.setVelocity(0, 0);
-                    this.emit(LindyEvents.Slam, this.x, this.y);
+                    if (landed) this.emit(LindyEvents.Slam, this.x, this.y);
                     this.setFrame(LindyFrames.Hurt);
                     this.mode = 'tired';
                     this.stateUntil = time + TIRED_MS * 0.75;
