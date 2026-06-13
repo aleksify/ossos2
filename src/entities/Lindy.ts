@@ -51,9 +51,10 @@ export class Lindy extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
+        this.setScale(0.55); // 64x72 source -> ~40px tall boss (bigger than the NPCs)
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setSize(12, 22);
-        body.setOffset(6, 3);
+        body.setSize(26, 58);
+        body.setOffset(19, 12);
         body.setGravityY(900);
         body.setCollideWorldBounds(true);
 

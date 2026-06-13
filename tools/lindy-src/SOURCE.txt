@@ -1,1 +1,3 @@
-MARGERY by 'Antifarea'/OGA — CC0 / Public Domain (opengameart.org/content/margery-limited)
+Lindy boss = "Vampire_Girl" (human form) from CraftPix "Free Vampire Pixel Art
+Sprite Sheets" (pack 506778). Free license: https://craftpix.net/file-licenses/
+Strips are 128x128 frames; tools/sprites/_lindy.mjs extracts + auto-crops them.

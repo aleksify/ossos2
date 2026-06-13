@@ -47,8 +47,8 @@ export class Preload extends Phaser.Scene {
             frameHeight: 24,
         });
         this.load.spritesheet(AssetKeys.Lindy, 'assets/tiles/lindy.png', {
-            frameWidth: 24,
-            frameHeight: 26,
+            frameWidth: 64,
+            frameHeight: 72,
         });
         this.load.spritesheet(AssetKeys.Items, 'assets/tiles/items.png', {
             frameWidth: 16,
