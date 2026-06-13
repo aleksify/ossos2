@@ -7,6 +7,12 @@ const ACCEL = 1400;
 const DRAG = 1600;
 export const MAX_FALL = 460;
 const JUMP_VELOCITY = 390;
+// a swing release or awning bounce launches faster than running and should
+// coast through the air; these caps/drag are lifted for the flight and
+// restored the moment Sosso lands (so levels 1–10 feel identical)
+const LAUNCH_MAX = 390;
+const LAUNCH_FALL = 760;
+const LAUNCH_DRAG = 200;
 const THROW_COOLDOWN_MS = 350;
 const THROW_POSE_MS = 220;
 // flip/jump allowed shortly after leaving a surface, VVVVVV-style
@@ -23,6 +29,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     gravityDir: 1 | -1 = 1;
     canJump = false;
     canFlip = false;
+    private launched = false;
     private coyoteUntil = 0;
     private wasGrounded = false;
     private throwReadyAt = 0;
@@ -74,6 +81,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (body.velocity.y * this.gravityDir < 0) body.setVelocityY(body.velocity.y * 0.45);
     }
 
+    /** Fling Sosso with a speed that can exceed running — for swing releases
+     * and awning bounces. The lifted caps/drag restore automatically on landing. */
+    launch(vx: number, vy: number): void {
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        body.setMaxVelocity(LAUNCH_MAX, LAUNCH_FALL);
+        body.setDragX(LAUNCH_DRAG);
+        body.setVelocity(vx, vy);
+        this.launched = true;
+    }
+
     tryThrow(now: number): boolean {
         if (now < this.throwReadyAt) return false;
         this.throwReadyAt = now + THROW_COOLDOWN_MS;
@@ -84,10 +101,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     move(direction: -1 | 0 | 1, now: number): void {
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setAccelerationX(direction * ACCEL);
-        if (direction !== 0) this.setFlipX(direction === -1);
 
         const grounded = this.grounded;
+        // landing ends a launch: restore normal run cap and ground drag
+        if (grounded && this.launched) {
+            this.launched = false;
+            body.setMaxVelocity(MAX_RUN, MAX_FALL);
+            body.setDragX(DRAG);
+        }
+        // mid-launch, don't pump the held direction past the fling speed —
+        // air control may steer/brake but not re-accelerate beyond running
+        const coasting = this.launched && Math.abs(body.velocity.x) > MAX_RUN;
+        if (coasting && direction !== 0 && Math.sign(direction) === Math.sign(body.velocity.x)) {
+            body.setAccelerationX(0);
+        } else {
+            body.setAccelerationX(direction * ACCEL);
+        }
+        if (direction !== 0) this.setFlipX(direction === -1);
+
         if (grounded) this.coyoteUntil = now + COYOTE_MS;
         if (grounded && !this.wasGrounded) this.emit(PlayerEvents.Land);
         this.wasGrounded = grounded;

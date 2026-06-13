@@ -17,10 +17,13 @@ const VIEW_ZOOM = 2;
 
 // clothesline swing (lisbon): a faked pendulum — no Matter joints needed
 const SWING_W2 = 15; // pendulum stiffness (≈ g/L), tuned for a ~1.6s period
-const SWING_PUMP = 17; // rad/s² added while pumping with the swing
+const SWING_PUMP = 14; // rad/s² added while pumping with the swing
 const SWING_DAMP = 0.999;
-const SWING_OMEGA_MAX = 7.5;
+const SWING_OMEGA_MAX = 6;
+const SWING_THETA_MAX = 1.3; // the rope can't swing past ~75° — never over the top
 const SWING_RELEASE = 1.15; // launch boost on let-go
+const SWING_MIN_LAUNCH = 265; // forgiving floor so a mistimed release still carries forward
+const SWING_POP = 110; // small upward hop on release to help clear the gap
 // tram 28 (lisbon): immovable bodies that shuttle and carry their rider by friction
 const TRAM_SPEED = 46;
 const TRAM_AMP = 82;
@@ -78,6 +81,9 @@ export class Game extends Phaser.Scene {
     private relatchAt = 0;
     private trams: { sprite: Phaser.Physics.Arcade.Sprite; min: number; max: number; dir: 1 | -1 }[] = [];
     private prevPlayerVy = 0;
+    // rooftop levels have open death-pits: world bounds park the player at the
+    // map floor instead of killing, so a kill-plane finishes the job
+    private killPlane = Infinity;
 
     constructor() {
         super(SceneKeys.Game);
@@ -125,6 +131,7 @@ export class Game extends Phaser.Scene {
         this.hazards.setCollisionByExclusion([-1]);
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+        this.killPlane = spec.theme === 'lisbon' ? map.heightInPixels - 1 : Infinity;
 
         // the tower sparkles at twilight, a beacon blinks on top,
         // and the sky deepens into night as you climb
@@ -442,7 +449,7 @@ export class Game extends Phaser.Scene {
 
         if (this.swing) {
             // SPACE releases; ←/→ pump the pendulum
-            if (ascendPressed) this.releaseSwing();
+            if (ascendPressed) this.releaseSwing(left === right ? 0 : left ? -1 : 1);
             else this.updateSwing(delta, left, right);
             if (throwPressed) this.player.tryThrow(time);
             this.updateTrams();
@@ -467,6 +474,7 @@ export class Game extends Phaser.Scene {
         if (this.trams.length) this.updateTrams();
         this.updateCheckpoints();
         if (this.touchingSpike()) this.die();
+        if (body.bottom >= this.killPlane) this.die(); // fell off the rooftops
         // remembered for the awning collide callback (post-separation vy reads ~0)
         this.prevPlayerVy = body.velocity.y;
     }
@@ -506,6 +514,9 @@ export class Game extends Phaser.Scene {
         if (left && s.omega <= 0.2) s.omega -= SWING_PUMP * dt;
         s.omega = Phaser.Math.Clamp(s.omega * SWING_DAMP, -SWING_OMEGA_MAX, SWING_OMEGA_MAX);
         s.theta += s.omega * dt;
+        // the rope goes taut at the top of the arc — clamp, don't spin over
+        if (s.theta > SWING_THETA_MAX && s.omega > 0) { s.theta = SWING_THETA_MAX; s.omega = 0; }
+        if (s.theta < -SWING_THETA_MAX && s.omega < 0) { s.theta = -SWING_THETA_MAX; s.omega = 0; }
 
         const px = s.ax + s.len * Math.sin(s.theta);
         const py = s.ay + g * s.len * Math.cos(s.theta);
@@ -519,14 +530,20 @@ export class Game extends Phaser.Scene {
         this.rope!.lineBetween(s.ax, s.ay, px, py);
     }
 
-    private releaseSwing(): void {
+    private releaseSwing(inputDir: -1 | 0 | 1): void {
         const s = this.swing!;
         const g = this.player.gravityDir;
-        const vx = s.len * s.omega * Math.cos(s.theta);
-        const vy = -g * s.len * s.omega * Math.sin(s.theta);
+        const rawVx = s.len * s.omega * Math.cos(s.theta) * SWING_RELEASE;
+        let vy = -g * s.len * s.omega * Math.sin(s.theta) * SWING_RELEASE;
+        // forgiving: launch the way the player is holding (or the way they're
+        // already going), never below a usable speed, with a small upward hop —
+        // so letting go anywhere in the arc still carries Sosso across the gap
+        const dir = inputDir !== 0 ? inputDir : Math.sign(rawVx) || (this.player.flipX ? -1 : 1);
+        const vx = dir * Math.max(Math.abs(rawVx), SWING_MIN_LAUNCH);
+        vy -= g * SWING_POP;
         const body = this.player.body as Phaser.Physics.Arcade.Body;
         body.setAllowGravity(true);
-        body.setVelocity(vx * SWING_RELEASE, vy * SWING_RELEASE);
+        this.player.launch(vx, vy);
         this.swing = undefined;
         this.relatchAt = this.time.now + 320;
         this.rope!.clear();
@@ -557,7 +574,7 @@ export class Game extends Phaser.Scene {
         if (this.cursors.down.isDown) return; // hold ↓ to kill the bounce and stop
         const impact = Math.abs(this.prevPlayerVy);
         const v = Phaser.Math.Clamp(impact * AWNING_BOUNCE_GAIN, AWNING_BOUNCE_MIN, AWNING_BOUNCE_MAX);
-        body.setVelocityY(-g * v);
+        this.player.launch(body.velocity.x, -g * v);
         this.sound.play(AssetKeys.SfxJump, { volume: 0.3 });
         this.puff(0xd9534f, 5, this.player.x, this.player.feetY);
     }
