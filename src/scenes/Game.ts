@@ -1,9 +1,10 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, SossoFrames, StinkyFrames, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, StinkyFrames, TileFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
+import { touch } from '../systems/touch';
 import { Player, PlayerEvents } from '../entities/Player';
 import { Walker, WalkerEvents } from '../entities/Walker';
 import { Saw } from '../entities/Saw';
@@ -14,6 +15,7 @@ import { Bagel } from '../entities/Bagel';
 import { Shot } from '../entities/Shot';
 
 const VIEW_ZOOM = 2;
+const STOMP_BOUNCE = 300; // upward pop after squashing an enemy (vs jump 390)
 
 // clothesline swing (lisbon): a faked pendulum — no Matter joints needed
 const SWING_W2 = 15; // pendulum stiffness (≈ g/L), tuned for a ~1.6s period
@@ -69,6 +71,8 @@ export class Game extends Phaser.Scene {
     private keyW!: Phaser.Input.Keyboard.Key;
     private keyX!: Phaser.Input.Keyboard.Key;
     private keyJ!: Phaser.Input.Keyboard.Key;
+    private prevTouchJump = false;
+    private prevTouchThrow = false;
     private burst!: Phaser.GameObjects.Particles.ParticleEmitter;
     private dust!: Phaser.GameObjects.Particles.ParticleEmitter;
     private attemptGems = 0;
@@ -238,7 +242,9 @@ export class Game extends Phaser.Scene {
                             spec.theme === 'lisbon'
                                 ? { texture: AssetKeys.Npcs, frame: NpcFrames.Gaivota1, anim: AnimKeys.GaivotaFly }
                                 : undefined;
-                        this.addSoft(new Bat(this, x, y, this.player, skin), oid);
+                        const bat = new Bat(this, x, y, this.player, skin);
+                        bat.setData('flying', true); // can't be stomped — only bagels reach them
+                        this.addSoft(bat, oid);
                     }
                     break;
                 case vocab.objects.lindy:
@@ -286,7 +292,11 @@ export class Game extends Phaser.Scene {
         this.physics.add.overlap(this.player, gems, (_p, gemObj) => {
             this.collectGem(gemObj as Phaser.Physics.Arcade.Sprite);
         });
-        this.physics.add.overlap(this.player, this.enemies, () => this.die());
+        this.physics.add.overlap(this.player, this.enemies, (_p, enemyObj) => {
+            if (this.phase !== 'play' || this.time.now < this.graceUntil) return;
+            if (this.tryStomp(enemyObj as Phaser.Physics.Arcade.Sprite)) return;
+            this.die();
+        });
         this.physics.add.overlap(this.player, this.shots, (_p, shot) => {
             if (this.phase === 'play') {
                 shot.destroy();
@@ -366,22 +376,8 @@ export class Game extends Phaser.Scene {
             const by = this.player.y - 2;
             this.bagels.add(new Bagel(this, bx, by, dir));
             this.puff(0xf3e3c0, 4, bx, by);
-            this.tweens.add({
-                targets: this.player,
-                scaleX: 0.85,
-                duration: 60,
-                yoyo: true,
-                ease: 'sine.out',
-            });
-        });
-        this.player.on(PlayerEvents.Land, () => {
-            this.tweens.add({
-                targets: this.player,
-                scaleY: 0.82,
-                duration: 60,
-                yoyo: true,
-                ease: 'sine.out',
-            });
+            // no scale-squash here: Sosso's transform scale drives her Arcade body
+            // size, so the punch/run frames carry the juice instead
         });
 
         const cam = this.cameras.main;
@@ -404,6 +400,7 @@ export class Game extends Phaser.Scene {
         this.keyX = keyboard.addKey('X');
         this.keyJ = keyboard.addKey('J');
         keyboard.on('keydown-R', () => this.restart(false));
+        keyboard.on('keydown-P', () => this.pauseGame());
         keyboard.on('keydown-ESC', () => {
             this.scene.stop(SceneKeys.UI);
             this.scene.start(SceneKeys.Menu);
@@ -425,6 +422,15 @@ export class Game extends Phaser.Scene {
         this.scene.launch(SceneKeys.UI, { level: this.levelIndex, died: this.fromDeath });
     }
 
+    private pauseGame(): void {
+        if (this.scene.isPaused() || this.phase !== 'play') return;
+        // disable this scene's input so its ESC/P/R handlers stay quiet while the
+        // Pause overlay owns the keyboard; Pause re-enables it on resume
+        this.input.enabled = false;
+        this.scene.pause();
+        this.scene.launch(SceneKeys.Pause);
+    }
+
     update(time: number, delta: number): void {
         if (this.skyFade) {
             const t = Phaser.Math.Clamp(1 - this.cameras.main.scrollY / this.skyFade.range, 0, 1);
@@ -437,14 +443,27 @@ export class Game extends Phaser.Scene {
         }
         if (this.phase !== 'play') return;
 
-        const left = this.cursors.left.isDown || this.keyA.isDown;
-        const right = this.cursors.right.isDown || this.keyD.isDown;
+        if (touch.pause) {
+            touch.pause = false;
+            this.pauseGame();
+            return;
+        }
+        // rising edges for the on-screen jump/attack buttons (held flags)
+        const touchJump = touch.jump && !this.prevTouchJump;
+        const touchJumpUp = !touch.jump && this.prevTouchJump;
+        const touchThrow = touch.attack && !this.prevTouchThrow;
+        this.prevTouchJump = touch.jump;
+        this.prevTouchThrow = touch.attack;
+
+        const left = this.cursors.left.isDown || this.keyA.isDown || touch.left;
+        const right = this.cursors.right.isDown || this.keyD.isDown || touch.right;
         const ascendPressed =
             Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
             Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
-            Phaser.Input.Keyboard.JustDown(this.keyW);
+            Phaser.Input.Keyboard.JustDown(this.keyW) ||
+            touchJump;
         const throwPressed =
-            Phaser.Input.Keyboard.JustDown(this.keyX) || Phaser.Input.Keyboard.JustDown(this.keyJ);
+            Phaser.Input.Keyboard.JustDown(this.keyX) || Phaser.Input.Keyboard.JustDown(this.keyJ) || touchThrow;
         const body = this.player.body as Phaser.Physics.Arcade.Body;
 
         if (this.swing) {
@@ -462,7 +481,8 @@ export class Game extends Phaser.Scene {
         const ascendReleased =
             Phaser.Input.Keyboard.JustUp(this.cursors.space) ||
             Phaser.Input.Keyboard.JustUp(this.cursors.up) ||
-            Phaser.Input.Keyboard.JustUp(this.keyW);
+            Phaser.Input.Keyboard.JustUp(this.keyW) ||
+            touchJumpUp;
         if (ascendReleased) this.player.cutJump();
         if (throwPressed) this.player.tryThrow(time);
         if (this.anchors.length) this.tryLatch(time);
@@ -522,7 +542,7 @@ export class Game extends Phaser.Scene {
         const py = s.ay + g * s.len * Math.cos(s.theta);
         const body = this.player.body as Phaser.Physics.Arcade.Body;
         body.reset(px, py);
-        this.player.setFrame(SossoFrames.Jump);
+        this.player.setTexture(AssetKeys.SossoJump, 3);
         this.player.setFlipX(s.omega < 0);
 
         this.rope!.clear();
@@ -793,6 +813,23 @@ export class Game extends Phaser.Scene {
         enemy.on(WalkerEvents.Turned, (x: number, y: number) => this.puff(0xb89a6a, 3, x, y));
         enemy.on(WalkerEvents.Startled, (x: number, y: number) => this.puff(0xe8ecf2, 8, x, y));
         this.enemies.add(enemy);
+    }
+
+    // jumping onto a walking enemy from above squashes it and bounces Sosso.
+    // "above" follows her gravity so it also works while ceiling-walking. Saws
+    // (not soft), flying bats, and the boss (separate overlap) are immune.
+    private tryStomp(enemy: Phaser.Physics.Arcade.Sprite): boolean {
+        if (enemy.getData('soft') !== true || enemy.getData('flying') === true) return false;
+        const dir = this.player.gravityDir;
+        const pb = this.player.body as Phaser.Physics.Arcade.Body;
+        const eb = enemy.body as Phaser.Physics.Arcade.Body;
+        const falling = pb.velocity.y * dir > 4;
+        const fromFeetSide = (eb.center.y - pb.center.y) * dir > 0;
+        if (!falling || !fromFeetSide) return false;
+        this.squashEnemy(enemy);
+        pb.setVelocityY(-STOMP_BOUNCE * dir);
+        this.sound.play(AssetKeys.SfxJump, { volume: 0.3 });
+        return true;
     }
 
     private squashEnemy(enemy: Phaser.Physics.Arcade.Sprite): void {

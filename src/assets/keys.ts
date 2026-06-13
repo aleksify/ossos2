@@ -2,7 +2,11 @@ export const AssetKeys = {
     Tiles: 'tiles',
     Characters: 'characters',
     Backgrounds: 'backgrounds',
-    Sosso: 'sosso',
+    // hand-drawn Sosso (92px sheets, run/jump/punch/spin); run frame 0 is idle
+    SossoRun: 'sosso-run',
+    SossoJump: 'sosso-jump',
+    SossoPunch: 'sosso-punch',
+    SossoSpin: 'sosso-spin',
     Npcs: 'npcs',
     Lindy: 'lindy',
     Items: 'items',
@@ -29,6 +33,7 @@ export const AssetKeys = {
     SfxThrow: 'sfx-throw',
     SfxHit: 'sfx-hit',
     SfxJump: 'sfx-jump',
+    Music: 'music',
 } as const;
 
 // cross-scene events on game.events (Game scene → UI scene)
@@ -42,6 +47,9 @@ export const GameEvents = {
 
 export const AnimKeys = {
     SossoWalk: 'sosso-walk',
+    SossoJump: 'sosso-jump',
+    SossoThrow: 'sosso-throw',
+    SossoSpin: 'sosso-spin',
     CustomerWalk: 'customer-walk',
     KarenWave: 'karen-wave',
     LindyStride: 'lindy-stride',
@@ -69,14 +77,6 @@ export const CharFrames = {
     Saw: 8,
     BatA: 24,
     BatB: 25,
-} as const;
-
-export const SossoFrames = {
-    Idle: 0,
-    Walk1: 1,
-    Walk2: 2,
-    Jump: 3,
-    Throw: 4,
 } as const;
 
 export const NpcFrames = {

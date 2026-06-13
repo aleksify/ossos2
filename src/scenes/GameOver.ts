@@ -38,7 +38,7 @@ export class GameOver extends Phaser.Scene {
 
         const cat = this.add.sprite(530, 360, AssetKeys.Stinky, StinkyFrames.Sit).setScale(3);
         cat.anims.play(AnimKeys.StinkyHappy);
-        this.add.sprite(595, 362, AssetKeys.Sosso, 0).setScale(3);
+        this.add.sprite(595, 360, AssetKeys.SossoRun, 0).setScale(1.3);
         this.add.sprite(660, 362, AssetKeys.Alex, 0).setScale(3);
         this.add.sprite(725, 360, AssetKeys.Parents, ParentFrames.Mom).setScale(3);
         this.add.sprite(790, 360, AssetKeys.Parents, ParentFrames.Dad).setScale(3);

@@ -28,8 +28,10 @@ export class Menu extends Phaser.Scene {
         }
 
         this.physics.world.setBounds(0, 36, 960, 422);
-        this.demo = this.physics.add.sprite(120, 400, AssetKeys.Sosso, 0).setScale(2);
+        this.demo = this.physics.add.sprite(120, 400, AssetKeys.SossoRun, 0).setScale(0.85);
         const body = this.demo.body as Phaser.Physics.Arcade.Body;
+        body.setSize(28, 38);
+        body.setOffset(33, 33);
         body.setCollideWorldBounds(true);
         body.setGravityY(1200);
         body.setVelocityX(130);

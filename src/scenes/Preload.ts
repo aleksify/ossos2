@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, CharFrames, LindyFrames, NpcFrames, SossoFrames, StinkyFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, CharFrames, LindyFrames, NpcFrames, StinkyFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS } from '../systems/levels';
 import { RegKeys } from '../systems/state';
@@ -34,10 +34,14 @@ export class Preload extends Phaser.Scene {
             frameWidth: 24,
             frameHeight: 24,
         });
-        this.load.spritesheet(AssetKeys.Sosso, 'assets/tiles/sosso.png', {
-            frameWidth: 24,
-            frameHeight: 24,
-        });
+        for (const [key, file] of [
+            [AssetKeys.SossoRun, 'sosso_run'],
+            [AssetKeys.SossoJump, 'sosso_jump'],
+            [AssetKeys.SossoPunch, 'sosso_punch'],
+            [AssetKeys.SossoSpin, 'sosso_spin'],
+        ] as const) {
+            this.load.spritesheet(key, `assets/sprites/${file}.png`, { frameWidth: 92, frameHeight: 92 });
+        }
         this.load.spritesheet(AssetKeys.Npcs, 'assets/tiles/npcs.png', {
             frameWidth: 24,
             frameHeight: 24,
@@ -95,6 +99,7 @@ export class Preload extends Phaser.Scene {
         this.load.audio(AssetKeys.SfxThrow, 'assets/audio/throw.ogg');
         this.load.audio(AssetKeys.SfxHit, 'assets/audio/hit.ogg');
         this.load.audio(AssetKeys.SfxJump, 'assets/audio/jump.ogg');
+        this.load.audio(AssetKeys.Music, 'assets/audio/music.mp3');
     }
 
     create(): void {
@@ -106,9 +111,25 @@ export class Preload extends Phaser.Scene {
 
         this.anims.create({
             key: AnimKeys.SossoWalk,
-            frames: this.anims.generateFrameNumbers(AssetKeys.Sosso, {
-                frames: [SossoFrames.Walk1, SossoFrames.Walk2],
-            }),
+            frames: this.anims.generateFrameNumbers(AssetKeys.SossoRun, { start: 0, end: 5 }),
+            frameRate: 12,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: AnimKeys.SossoJump,
+            frames: this.anims.generateFrameNumbers(AssetKeys.SossoJump, { start: 0, end: 6 }),
+            frameRate: 14,
+            repeat: 0,
+        });
+        this.anims.create({
+            key: AnimKeys.SossoThrow,
+            frames: this.anims.generateFrameNumbers(AssetKeys.SossoPunch, { start: 0, end: 2 }),
+            frameRate: 18,
+            repeat: 0,
+        });
+        this.anims.create({
+            key: AnimKeys.SossoSpin,
+            frames: this.anims.generateFrameNumbers(AssetKeys.SossoSpin, { start: 0, end: 7 }),
             frameRate: 10,
             repeat: -1,
         });
@@ -178,7 +199,7 @@ export class Preload extends Phaser.Scene {
         });
 
         this.registry.set(RegKeys.GemsTotal, this.countGems());
-        this.scene.start(SceneKeys.Menu);
+        this.scene.start(SceneKeys.Title);
     }
 
     private countGems(): number {

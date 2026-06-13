@@ -1,6 +1,15 @@
 import * as Phaser from 'phaser';
-import { AnimKeys, AssetKeys, SossoFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys } from '../assets/keys';
 
+// hand-drawn Sosso is a 92px frame; scale it down and pin a 14×19 world body
+// (28×38 source × 0.5 scale) over her lower torso→feet. SCALE/body keep the
+// classic physics feel; OFF_Y mirrors on flip so feet anchor on ceilings too.
+const SPRITE_SCALE = 0.5;
+const FRAME = 92;
+const BODY_W = 28;
+const BODY_H = 38;
+const OFF_X = 33;
+const OFF_Y = 33;
 const GRAVITY = 1500;
 export const MAX_RUN = 170;
 const ACCEL = 1400;
@@ -36,13 +45,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private throwPoseUntil = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, AssetKeys.Sosso, SossoFrames.Idle);
+        super(scene, x, y, AssetKeys.SossoRun, 0);
         scene.add.existing(this);
         scene.physics.add.existing(this);
+        this.setScale(SPRITE_SCALE);
 
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setSize(14, 19);
-        body.setOffset(5, 3);
+        body.setSize(BODY_W, BODY_H);
+        body.setOffset(OFF_X, OFF_Y);
         body.setMaxVelocity(MAX_RUN, MAX_FALL);
         body.setDragX(DRAG);
         body.setGravityY(GRAVITY);
@@ -56,8 +66,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     setGravityDir(dir: 1 | -1): void {
         this.gravityDir = dir;
-        (this.body as Phaser.Physics.Arcade.Body).setGravityY(GRAVITY * dir);
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        body.setGravityY(GRAVITY * dir);
         this.setFlipY(dir === -1);
+        // mirror the body offset so the collision box stays at her feet when she
+        // walks the ceiling (offset is from the unflipped frame top-left)
+        body.setOffset(OFF_X, dir === 1 ? OFF_Y : FRAME - BODY_H - OFF_Y);
     }
 
     /** SPACE/W/up — flips gravity once unlocked, jumps before that. */
@@ -124,16 +138,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.wasGrounded = grounded;
 
         if (now < this.throwPoseUntil) {
-            this.anims.stop();
-            this.setFrame(SossoFrames.Throw);
+            this.anims.play(AnimKeys.SossoThrow, true);
         } else if (!grounded) {
             this.anims.stop();
-            this.setFrame(SossoFrames.Jump);
+            this.setTexture(AssetKeys.SossoJump, 3);
         } else if (Math.abs(body.velocity.x) > 20) {
             this.anims.play(AnimKeys.SossoWalk, true);
         } else {
             this.anims.stop();
-            this.setFrame(SossoFrames.Idle);
+            this.setTexture(AssetKeys.SossoRun, 0);
         }
     }
 
