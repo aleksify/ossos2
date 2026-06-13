@@ -117,8 +117,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const body = this.body as Phaser.Physics.Arcade.Body;
 
         const grounded = this.grounded;
-        // landing ends a launch: restore normal run cap and ground drag
-        if (grounded && this.launched) {
+        // a launch ends when she settles on ground — NOT the instant she touches
+        // it. An awning bounce re-launches her upward on the same contact frame;
+        // restoring the cap there would clamp that fling down to MAX_FALL.
+        if (grounded && this.launched && Math.abs(body.velocity.y) < 60) {
             this.launched = false;
             body.setMaxVelocity(MAX_RUN, MAX_FALL);
             body.setDragX(DRAG);

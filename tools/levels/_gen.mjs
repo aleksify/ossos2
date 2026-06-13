@@ -37,29 +37,44 @@ function emit(name, g) {
 }
 
 // ===== LEVEL 12 — Santos Populares (awning trampolines) =====
+// Jump-based (no flip). Normal jumps clear the small festa gaps; the awning
+// trampoline is the gate — you PUMP it (each bounce climbs higher) to clear a
+// wall onto a high terrace, so going up is required, not optional.
 {
-  const W = 185, H = 15, g = makeGrid(W, H);
+  const W = 150, H = 15, g = makeGrid(W, H);
   const fillFloor = (x0, x1, top = 12) => { for (let x = x0; x <= x1; x++) for (let y = top; y < H; y++) g[y][x] = '#'; };
   const awn = (x0, x1, row) => { for (let x = x0; x <= x1; x++) g[row][x] = 'n'; };
+  const wall = (x0, x1, top) => { for (let x = x0; x <= x1; x++) for (let y = top; y < H; y++) g[y][x] = '#'; };
   const put = (x, y, c) => { g[y][x] = c; };
-  const wall = (x, top) => { for (let y = top; y < 12; y++) g[y][x] = '#'; };
-  // arraial street with two pits bridged by bouncy awnings
-  fillFloor(0, 58); fillFloor(66, 120); fillFloor(128, 184);
-  awn(59, 65, 12); awn(121, 127, 12);
-  // trampoline staircases up to the three nata bands
-  awn(14, 16, 11); awn(24, 26, 9); awn(34, 36, 7);
-  awn(78, 80, 11); awn(86, 88, 8); awn(94, 96, 5);
-  awn(140, 142, 11); awn(150, 152, 8); awn(160, 162, 5);
-  // a tall wall to clear with a bounce
-  wall(112, 6); awn(108, 110, 11);
+
+  // opening street — short jumpable gaps, hop the fogueiras
+  fillFloor(0, 26);
   put(3, 11, 'P');
-  for (const x of [52, 100, 150]) put(x, 11, 'F');
-  for (const x of [40, 90, 134, 170]) put(x, 11, 'K'); // sardinha vendors lob coffee
-  for (const x of [20, 46, 104, 144, 176]) put(x, 11, '^'); // fogueiras
-  for (const x of [14, 24, 78, 140]) put(x, 10, '*'); // low band
-  for (const x of [34, 86, 150]) put(x, 6, '*'); // mid band
-  for (const x of [36, 94, 160]) put(x, 3, '*'); // high band
-  put(181, 11, 'D');
+  for (const x of [9, 16]) put(x, 11, '*');
+  for (const x of [13, 21]) put(x, 11, '^');   // fogueiras
+  put(24, 11, 'K');                             // sardinha vendor lobs coffee
+  fillFloor(31, 52);                            // gap 27-30 (4 wide) — jump it
+  put(33, 11, 'F');
+  put(42, 11, '^'); put(46, 11, 'K');
+  for (const x of [38, 50]) put(x, 11, '*');
+
+  // --- TRAMPOLINE GATE: pump the awning to climb over the wall ---
+  awn(53, 60, 12);                              // bouncy pad at street level
+  wall(61, 63, 6);                              // 6-tile wall, top at row 6
+  fillFloor(64, 86, 6);                         // high terrace beyond the wall
+  for (const [x, r] of [[55, 9], [57, 7], [54, 5]]) put(x, r, '*'); // natas luring you up the bounce
+  for (const x of [69, 76, 83]) put(x, 5, '*'); // terrace reward
+  put(67, 5, 'F');                              // checkpoint up top
+
+  // descend back to the street (drop off the terrace at col 86)
+  fillFloor(88, 120);
+  put(98, 11, 'K'); for (const x of [104, 110]) put(x, 11, '^');
+  for (const x of [92, 114]) put(x, 11, '*');
+  put(116, 11, 'F');
+  fillFloor(125, 149);                          // gap 121-124 — jump it
+  put(132, 11, 'K'); put(138, 11, '^');
+  for (const x of [129, 143]) put(x, 11, '*');
+  put(146, 11, 'D');
   emit('level12', g);
 }
 

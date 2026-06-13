@@ -29,10 +29,12 @@ const SWING_POP = 110; // small upward hop on release to help clear the gap
 // tram 28 (lisbon): immovable bodies that shuttle and carry their rider by friction
 const TRAM_SPEED = 46;
 const TRAM_AMP = 82;
-// festa awning trampolines (lisbon)
-const AWNING_BOUNCE_MIN = 300;
-const AWNING_BOUNCE_MAX = 720;
-const AWNING_BOUNCE_GAIN = 1.18; // >1 so chained bounces climb the altitude bands
+// festa awning trampolines (lisbon): each consecutive bounce climbs by a fixed
+// step (a real trampoline you pump higher), reset when you land on solid ground
+const AWNING_BOUNCE_BASE = 380; // first bounce even from a standstill (~2.7 tiles)
+const AWNING_BOUNCE_STEP = 100; // every chained bounce adds this
+const AWNING_BOUNCE_MAX = 840; // ~11 tiles — clears the festa walls in ~3 bounces
+const AWNING_RESET_MS = 160; // grounded on real ground this long → chain resets
 
 type Phase = 'play' | 'dead' | 'won' | 'cinematic';
 
@@ -84,7 +86,8 @@ export class Game extends Phaser.Scene {
     private rope?: Phaser.GameObjects.Graphics;
     private relatchAt = 0;
     private trams: { sprite: Phaser.Physics.Arcade.Sprite; min: number; max: number; dir: 1 | -1 }[] = [];
-    private prevPlayerVy = 0;
+    private awningBounces = 0;
+    private lastAwningBounceAt = 0;
     // rooftop levels have open death-pits: world bounds park the player at the
     // map floor instead of killing, so a kill-plane finishes the job
     private killPlane = Infinity;
@@ -111,7 +114,8 @@ export class Game extends Phaser.Scene {
         this.swing = undefined;
         this.relatchAt = 0;
         this.trams = [];
-        this.prevPlayerVy = 0;
+        this.awningBounces = 0;
+        this.lastAwningBounceAt = 0;
     }
 
     create(): void {
@@ -493,11 +497,11 @@ export class Game extends Phaser.Scene {
 
         if (this.autoScroll > 0) this.updateAutoScroll(delta);
         if (this.trams.length) this.updateTrams();
+        // landing on real ground (not mid-chain in the air) resets the trampoline climb
+        if (this.player.grounded && time - this.lastAwningBounceAt > AWNING_RESET_MS) this.awningBounces = 0;
         this.updateCheckpoints();
         if (this.touchingSpike()) this.die();
         if (body.bottom >= this.killPlane) this.die(); // fell off the rooftops
-        // remembered for the awning collide callback (post-separation vy reads ~0)
-        this.prevPlayerVy = body.velocity.y;
     }
 
     private tryLatch(time: number): void {
@@ -593,10 +597,11 @@ export class Game extends Phaser.Scene {
         const landed = g === 1 ? body.blocked.down : body.blocked.up;
         if (!landed) return;
         if (this.cursors.down.isDown) return; // hold ↓ to kill the bounce and stop
-        const impact = Math.abs(this.prevPlayerVy);
-        const v = Phaser.Math.Clamp(impact * AWNING_BOUNCE_GAIN, AWNING_BOUNCE_MIN, AWNING_BOUNCE_MAX);
+        const v = Math.min(AWNING_BOUNCE_BASE + this.awningBounces * AWNING_BOUNCE_STEP, AWNING_BOUNCE_MAX);
+        this.awningBounces += 1;
+        this.lastAwningBounceAt = this.time.now;
         this.player.launch(body.velocity.x, -g * v);
-        this.sound.play(AssetKeys.SfxJump, { volume: 0.3 });
+        this.sound.play(AssetKeys.SfxJump, { volume: 0.3, detune: Math.min(this.awningBounces * 120, 600) });
         this.puff(0xd9534f, 5, this.player.x, this.player.feetY);
     }
 
