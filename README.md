@@ -1,6 +1,6 @@
-# Ossos2
+# World of Sosso
 
-Vibe coding a small Phaser.js 2D platformer for my partner's birthday using Claude Opus 4.8 / Fable 5.
+A gravity-flip 2D platformer built with Phaser 4, vibe-coded with Claude Code (Opus 4.8 / Fable 5) as a birthday gift for my partner (Sosso is the hero). Thirteen levels take her from a bagel shop through a trip abroad to a rooftop boss fight in Lisbon.
 
 ---
 
@@ -12,18 +12,36 @@ Vibe coding a small Phaser.js 2D platformer for my partner's birthday using Clau
 | Language | **TypeScript** | Catches scene-key typos and frame-name mistakes before runtime |
 | Bundler | **Vite** | Instant HMR — game feel iteration is the whole point |
 | Linting | **ESLint + `@typescript-eslint`** | Light rules, just enough to catch silly stuff |
-| Level editor | **[Tiled](https://www.mapeditor.org/)** | Exports JSON that Phaser loads natively via `load.tilemapTiledJSON()` |
+| Levels | **ASCII source + build script** | Levels authored as `.txt` art in `tools/levels/`, compiled to Tiled JSON via `npm run levels` |
 | Testing | **Playwright CLI** (`@playwright/cli`) | Ships its own Claude `SKILL.md`; ~4× more token-efficient than Playwright MCP because state goes to disk, not into context |
 
-## Scaffold
+---
+
+## Running it
 
 ```bash
-npm create @phaserjs/game@latest ossos2 
-# → Web Bundler → Vite → TypeScript → Minimal
+git clone <repo> ossos2
 cd ossos2
 npm install
-npm run dev   # localhost:5173
+
+npm run dev       # dev server with HMR → http://localhost:5173
+npm run build     # production build to dist/ (preview serves on :8080)
 ```
+
+The dev server binds all interfaces, so it's reachable from a phone on the same Wi‑Fi at `http://<your-LAN-ip>:5173` — handy for testing touch controls and fullscreen.
+
+### Asset pipelines
+
+Sprites and levels are generated from source files, not hand-edited binaries:
+
+```bash
+npm run sprites   # tools/sprites/*.txt + helpers → public/assets PNG sheets
+npm run levels    # tools/levels/*.txt ASCII maps → public/assets/tilemaps/*.json
+```
+
+Re-run these after editing anything under `tools/`.
+
+**Controls:** arrow keys / WASD to move and jump; flip gravity on the bound key (unlocked partway through the story); on-screen buttons + a fullscreen toggle appear automatically on touch devices.
 
 ---
 
@@ -69,46 +87,17 @@ Caveman ON for mechanical refactors. OFF when stuck on a weird bug and you need 
 
 ---
 
-## Asset resources
+## Assets
 
 ### 🎨 Sprite art
 
-Free pixel-art packs that drop straight into a Phaser project:
+- **[PixelLab](https://www.pixellab.ai/)** — AI pixel-art generator; used for the bespoke character and prop sprites
+- **[Kenney.nl](https://kenney.nl)** — CC0 platformer packs (tiles, props, UI bits)
+- **[CraftPix](https://craftpix.net/)** — free pixel-art sprite sheets (source of the vampire-girl sheets used for the Lindy boss)
 
-- **[Kenney.nl](https://kenney.nl)** — CC0, dozens of platformer packs (*Pixel Platformer*, *Platformer Art Deluxe*, *Abstract Platformer*)
-- **[Pixel Frog Studio](https://pixelfrog-assets.itch.io)** — gorgeous free pixel art. *Pixel Adventure 1 & 2*, *Kings and Pigs*, *Tiny Swords*
-- **[OpenGameArt](https://opengameart.org)** — enormous library, check individual licenses
-- **[itch.io free assets](https://itch.io/game-assets/free)** — browse by tag
+### 🔊 Sound & music
 
-**Sprite editors:**
-
-- **[Aseprite](https://www.aseprite.org/)** — $20, gold standard. Has an [MCP server](https://aseprite-mcp.abyo.net/) if you want Claude to drive it
-- **[Piskel](https://www.piskelapp.com/)** — free, browser-based
-- **[Pixelorama](https://orama-interactive.itch.io/pixelorama)** — free, open-source desktop
-- **[LibreSprite](https://libresprite.github.io/)** — free fork of older Aseprite
-
-### 🔊 Sound effects
-
-- **[Jsfxr](https://sfxr.me/)** — browser-based 8-bit SFX generator, instant gratification
-- **[ChipTone](https://sfbgames.itch.io/chiptone)** — more advanced retro SFX, CC0
-- **[Freesound](https://freesound.org)** — huge library, filter by CC0
-- **Kenney audio packs** — CC0 SFX bundles
-
-### 🎵 Music
-
-- **[Suno](https://suno.com)** / **[Udio](https://udio.com)** — AI-generated loops
-- **Kenney music packs** — CC0
-- **[Incompetech](https://incompetech.com/)** (Kevin MacLeod) — CC BY
-- **[FreePD](https://freepd.com/)** — public domain
-
-### 🔤 Fonts
-
-- **[Google Fonts](https://fonts.google.com)** — retro picks: *Press Start 2P*, *VT323*, *Silkscreen*, *Jersey 25*
-- **Bitmap fonts** — use [Hiero](https://libgdx.com/wiki/tools/hiero) or [BMFont](https://www.angelcode.com/products/bmfont/) for crisp `Phaser.BitmapText` rendering
-
-### 🗺️ Tilesets
-
-Pair with Tiled. Most of the platformer art packs above include tilesets.
+Custom SFX (coin, jump, hit, hurt, heal, death) and a background music loop, under `public/assets/audio/`.
 
 ---
 
@@ -122,15 +111,17 @@ Pair with Tiled. Most of the platformer art packs above include tilesets.
 │   │   └── playwright/       # SKILL.md from @playwright/cli
 │   └── settings.json
 ├── public/
-│   └── assets/               # Sprites, audio, tilemaps (Tiled JSON)
+│   └── assets/               # sprites, audio, tilemaps (Tiled JSON), tilesets
 ├── src/
-│   ├── scenes/               # Boot, Preload, Menu, Game, UI, GameOver
-│   ├── entities/             # Player, Enemy, Pickup (composition > inheritance)
-│   ├── systems/              # Input, save/load, physics helpers
-│   └── main.ts
-├── tests/                    # Playwright specs
-├── CLAUDE.md                 # Project context for Claude Code
-├── vite.config.ts
+│   ├── scenes/               # Boot, Preload, Title, Menu, Game, UI, Pause, GameOver
+│   ├── entities/             # Player, Bagel, Walker, Bat, Karen, Saw, Shot, Lindy
+│   ├── systems/              # audio, fullscreen, levels, state, touch
+│   ├── assets/               # asset + scene key constants
+│   └── main.ts               # game config, scene registration, exposes window.__game__
+├── tools/
+│   ├── sprites/              # ASCII sprite sources + build helpers (npm run sprites)
+│   └── levels/               # ASCII level maps + generator (npm run levels)
+├── vite/                     # dev + prod Vite configs
+├── CLAUDE.md                 # project context for Claude Code
 └── package.json
 ```
-
