@@ -91,14 +91,18 @@ export class Preload extends Phaser.Scene {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);
         }
 
+        // legacy mp3 SFX (ported from legacy-ported); flip/door/win/throw have
+        // no legacy equivalent so they keep their .ogg
         this.load.audio(AssetKeys.SfxFlip, 'assets/audio/flip.ogg');
-        this.load.audio(AssetKeys.SfxGem, 'assets/audio/gem.ogg');
-        this.load.audio(AssetKeys.SfxDeath, 'assets/audio/death.ogg');
+        this.load.audio(AssetKeys.SfxGem, 'assets/audio/coin.mp3');
+        this.load.audio(AssetKeys.SfxDeath, 'assets/audio/death.mp3');
         this.load.audio(AssetKeys.SfxDoor, 'assets/audio/door.ogg');
         this.load.audio(AssetKeys.SfxWin, 'assets/audio/win.ogg');
         this.load.audio(AssetKeys.SfxThrow, 'assets/audio/throw.ogg');
-        this.load.audio(AssetKeys.SfxHit, 'assets/audio/hit.ogg');
-        this.load.audio(AssetKeys.SfxJump, 'assets/audio/jump.ogg');
+        this.load.audio(AssetKeys.SfxHit, 'assets/audio/hit.mp3');
+        this.load.audio(AssetKeys.SfxJump, 'assets/audio/jump.mp3');
+        this.load.audio(AssetKeys.SfxHurt, 'assets/audio/hurt.mp3');
+        this.load.audio(AssetKeys.SfxHeal, 'assets/audio/heal.mp3');
         this.load.audio(AssetKeys.Music, 'assets/audio/music.mp3');
     }
 

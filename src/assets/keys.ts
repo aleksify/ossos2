@@ -33,6 +33,8 @@ export const AssetKeys = {
     SfxThrow: 'sfx-throw',
     SfxHit: 'sfx-hit',
     SfxJump: 'sfx-jump',
+    SfxHurt: 'sfx-hurt',
+    SfxHeal: 'sfx-heal',
     Music: 'music',
 } as const;
 

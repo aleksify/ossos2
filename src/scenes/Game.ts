@@ -841,7 +841,7 @@ export class Game extends Phaser.Scene {
     private squashEnemy(enemy: Phaser.Physics.Arcade.Sprite): void {
         const oid = enemy.getData('oid') as number | undefined;
         if (oid !== undefined) this.killedEnemies.add(oid);
-        this.sound.play(AssetKeys.SfxHit, { volume: 0.45 });
+        this.sound.play(AssetKeys.SfxHurt, { volume: 0.5 });
         (enemy.body as Phaser.Physics.Arcade.Body).enable = false;
         this.burst.setParticleTint(0xffffff);
         this.burst.explode(12, enemy.x, enemy.y);
@@ -864,7 +864,7 @@ export class Game extends Phaser.Scene {
             if (!this.lindy || this.phase !== 'play') return;
             this.puff(0xcf9a5e, 6, bagel.x, bagel.y);
             bagel.destroy();
-            if (this.lindy.hit(this.time.now)) this.sound.play(AssetKeys.SfxHit, { volume: 0.5 });
+            if (this.lindy.hit(this.time.now)) this.sound.play(AssetKeys.SfxHurt, { volume: 0.55 });
         });
         this.lindy.on(LindyEvents.Shoot, (sx: number, sy: number, dir: number, low: boolean) => {
             // low pins skim the floor (jump them), lobs arc overhead (walk under)
@@ -970,6 +970,7 @@ export class Game extends Phaser.Scene {
             if (!this.touchedFlags.has(flag.id)) {
                 this.touchedFlags.add(flag.id);
                 this.armFlagFx(flag.x, flag.y, true);
+                this.sound.play(AssetKeys.SfxHeal, { volume: 0.4 });
             }
         }
     }
