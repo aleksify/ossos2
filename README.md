@@ -1,6 +1,6 @@
 # Ossos2
 
-Vibe coding a small Phaser.js 2D platformer for my partner's birthday using Claude Opus 4.7.
+Vibe coding a small Phaser.js 2D platformer for my partner's birthday using Claude Opus 4.8 / Fable 5.
 
 ---
 
