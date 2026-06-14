@@ -46,6 +46,7 @@ interface GameData {
     spawnGrav?: 1 | -1;
     killed?: number[];
     flagsTouched?: number[];
+    collected?: number[];
 }
 
 export class Game extends Phaser.Scene {
@@ -56,6 +57,7 @@ export class Game extends Phaser.Scene {
     private flags: { id: number; x: number; y: number }[] = [];
     private touchedFlags = new Set<number>();
     private killedEnemies = new Set<number>();
+    private collectedGems = new Set<number>();
     private graceUntil = 0;
     private bossDefeated = false;
     private player!: Player;
@@ -106,6 +108,7 @@ export class Game extends Phaser.Scene {
         this.flags = [];
         this.touchedFlags = new Set(data.flagsTouched ?? []);
         this.killedEnemies = new Set(data.killed ?? []);
+        this.collectedGems = new Set(data.collected ?? []);
         this.phase = 'play';
         this.bossDefeated = false;
         this.lindy = undefined;
@@ -207,7 +210,9 @@ export class Game extends Phaser.Scene {
             const slain = this.killedEnemies.has(oid);
             switch (obj.type) {
                 case vocab.objects.gem: {
+                    if (this.collectedGems.has(oid)) break; // grabbed in an earlier attempt — stays banked
                     const gem = gems.create(x, y, collectibleTexture, collectibleFrame) as Phaser.Physics.Arcade.Sprite;
+                    gem.setData('oid', oid);
                     (gem.body as Phaser.Physics.Arcade.StaticBody).setSize(26, 26);
                     this.tweens.add({
                         targets: gem,
@@ -1026,6 +1031,8 @@ export class Game extends Phaser.Scene {
 
     private collectGem(gem: Phaser.Physics.Arcade.Sprite): void {
         gem.disableBody(true, false);
+        const oid = gem.getData('oid') as number | undefined;
+        if (oid !== undefined) this.collectedGems.add(oid); // survives a respawn
         this.attemptGems += 1;
         this.registry.inc(RegKeys.Gems, 1);
         this.sound.play(AssetKeys.SfxGem, { volume: 0.45 });
@@ -1080,8 +1087,12 @@ export class Game extends Phaser.Scene {
 
     private restart(fromDeath: boolean): void {
         if (!fromDeath && this.phase !== 'play') return;
-        // gems picked up this attempt come back with the level
-        this.registry.inc(RegKeys.Gems, -this.attemptGems);
+        // dying keeps the bagels you grabbed this level (banked + skipped on
+        // respawn); a manual restart (R) wipes the attempt for a fresh run
+        if (!fromDeath) {
+            this.registry.inc(RegKeys.Gems, -this.attemptGems);
+            this.collectedGems.clear();
+        }
         this.scene.restart({
             level: this.levelIndex,
             died: true,
@@ -1090,6 +1101,7 @@ export class Game extends Phaser.Scene {
             spawnGrav: this.checkpoint?.grav,
             killed: [...this.killedEnemies],
             flagsTouched: [...this.touchedFlags],
+            collected: [...this.collectedGems],
         } satisfies GameData);
     }
 
