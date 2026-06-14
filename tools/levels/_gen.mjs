@@ -48,34 +48,37 @@ function emit(name, g) {
   const plat = (x0, x1, row) => { for (let x = x0; x <= x1; x++) g[row][x] = '#'; }; // thin floating platform
   const put = (x, y, c) => { g[y][x] = c; };
 
-  // 1. opening street + a bounce-for-nata to teach the trampoline
-  fillFloor(0, 40);
+  // Every pad has OPEN SKY above it; the target it flings you to is higher AND
+  // offset to the side (or over a wall) — never capped by a platform.
+
+  // 1. opening street (jump the 4-tile gap at 31-34)
+  fillFloor(0, 30);
   put(3, 11, 'P');
-  awn(14, 17); plat(11, 19, 7); put(15, 6, '*');      // pump the pad up onto the roof
-  for (const x of [25, 31]) put(x, 11, '^');          // fogueiras
-  put(36, 11, 'K');
-  for (const x of [8, 21]) put(x, 11, '*');
-  put(39, 11, 'F');
+  for (const x of [13, 22]) put(x, 11, '^');          // fogueiras
+  put(26, 11, 'K');
+  for (const x of [8, 18]) put(x, 11, '*');
+  put(28, 11, 'F');
 
-  // 2. ascending barraca roofs (gap 41-44 jump in) — bounce + hop the platforms
-  fillFloor(45, 71);
-  awn(50, 53); plat(47, 55, 6); put(51, 5, '*');      // big bounce to a high roof
-  plat(60, 67, 8); put(64, 7, '*');                   // mid roof to hop to
-  put(58, 11, '^'); put(69, 11, 'K');
+  // 2. pad flings you up-and-RIGHT onto a high barraca roof (open sky over pad)
+  fillFloor(35, 63);
+  awn(38, 41);
+  plat(45, 53, 6); put(49, 5, '*');                   // roof sits just to the right of the pad
+  put(45, 11, '^'); put(58, 11, 'K');
+  for (const x of [36, 61]) put(x, 11, '*');
 
-  // 3. WALL GATE — pump the pad to clear the wall onto the terrace
-  awn(72, 79); wall(80, 82, 6); fillFloor(83, 103, 6);
-  put(86, 5, 'F'); for (const x of [91, 99]) put(x, 5, '*');
+  // 3. WALL GATE — pad beside a wall, bounce up the open side and over to terrace
+  awn(64, 71); wall(72, 74, 6); fillFloor(75, 96, 6);
+  put(78, 5, 'F'); for (const x of [83, 92]) put(x, 5, '*');
 
-  // 4. descend + a bounce-chain over the street
-  fillFloor(105, 135);
-  awn(112, 115); plat(117, 124, 7); put(121, 6, '*'); // bounce to a floating nata
-  put(128, 11, '^'); put(132, 11, 'K');
-  for (const x of [108, 134]) put(x, 11, '*');
+  // 4. drop to the street and run it
+  fillFloor(98, 159);
+  put(107, 11, '^'); put(113, 11, 'K'); put(140, 11, '^');
+  for (const x of [101, 124, 134] ) put(x, 11, '*');
+  put(126, 11, 'F');
 
-  // 5. finale: a big pump to the high exit (ground below = safe retries)
-  fillFloor(137, 161);
-  awn(141, 145); plat(149, 161, 5); put(155, 4, 'D'); put(152, 4, '*');
+  // 5. finale — pad lobs you up to the high exit ledge offset to the right
+  //    (the street stays under it, so a missed bounce is a safe retry)
+  awn(145, 148); plat(152, 159, 5); put(156, 4, 'D'); put(150, 6, '*');
   emit('level12', g);
 }
 
