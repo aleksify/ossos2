@@ -411,10 +411,7 @@ export class Game extends Phaser.Scene {
         this.keyJ = keyboard.addKey('J');
         keyboard.on('keydown-R', () => this.restart(false));
         keyboard.on('keydown-P', () => this.pauseGame());
-        keyboard.on('keydown-ESC', () => {
-            this.scene.stop(SceneKeys.UI);
-            this.scene.start(SceneKeys.Menu);
-        });
+        keyboard.on('keydown-ESC', () => this.pauseGame());
 
         // brief grace after a respawn so nothing can spawn-kill the player
         if (this.fromDeath) {
