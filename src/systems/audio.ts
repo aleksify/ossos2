@@ -20,3 +20,13 @@ export function toggleMute(game: Phaser.Game): boolean {
     game.sound.mute = !game.sound.mute;
     return game.sound.mute;
 }
+
+// Level 14 silences the looping BGM and plays a live cello synth instead; these
+// pause/resume the single global track without disturbing the SoundManager.
+export function pauseMusic(): void {
+    if (bgm && bgm.isPlaying) bgm.pause();
+}
+
+export function resumeMusic(): void {
+    if (bgm && bgm.isPaused) bgm.resume();
+}

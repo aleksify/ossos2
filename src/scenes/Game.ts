@@ -5,6 +5,8 @@ import vocab from '../assets/level-vocab.json';
 import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
 import { touch } from '../systems/touch';
+import { Cello } from '../systems/cello';
+import { pauseMusic, resumeMusic } from '../systems/audio';
 import { Player, PlayerEvents } from '../entities/Player';
 import { Walker, WalkerEvents } from '../entities/Walker';
 import { Saw } from '../entities/Saw';
@@ -99,6 +101,10 @@ export class Game extends Phaser.Scene {
     private beatBlocks: { sprite: Phaser.Physics.Arcade.Sprite; phase: 0 | 1 }[] = [];
     private beatMs = 0;
     private beatStart = 0;
+    private beatStep = -1;
+    // live cello synth (teatro only) — its notes fire off the same beat clock
+    // that toggles the platforms, so the music is the level
+    private cello?: Cello;
 
     constructor() {
         super(SceneKeys.Game);
@@ -128,6 +134,8 @@ export class Game extends Phaser.Scene {
         this.beatBlocks = [];
         this.beatMs = 0;
         this.beatStart = 0;
+        this.beatStep = -1;
+        this.cello = undefined;
     }
 
     create(): void {
@@ -415,6 +423,17 @@ export class Game extends Phaser.Scene {
 
         this.beatMs = spec.beat ?? 720;
         this.beatStart = this.time.now;
+        if (spec.theme === 'teatro') {
+            // mute the looping BGM and play a live cello synced to the platforms
+            pauseMusic();
+            const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context;
+            if (ctx) this.cello = new Cello(ctx, 0.3);
+            this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+                this.cello?.dispose();
+                this.cello = undefined;
+                resumeMusic();
+            });
+        }
 
         const cam = this.cameras.main;
         cam.setZoom(VIEW_ZOOM);
@@ -681,6 +700,26 @@ export class Game extends Phaser.Scene {
                 }
             }
             blk.sprite.setAlpha(solid ? 1 : 0.22);
+        }
+        // one cello note per beat (each phase hand-off), locked to the blocks
+        const step = Math.floor((time - this.beatStart) / this.beatMs);
+        if (step !== this.beatStep) {
+            this.beatStep = step;
+            this.playCelloBeat(step);
+        }
+    }
+
+    private playCelloBeat(step: number): void {
+        if (!this.cello || this.game.sound.mute) return;
+        const beatSec = this.beatMs / 1000;
+        // an A-minor recital line, one note per beat, looping
+        const melody = [57, 60, 64, 62, 60, 64, 59, 57];
+        const i = ((step % melody.length) + melody.length) % melody.length;
+        this.cello.note(melody[i], beatSec * 0.95, 0.7);
+        // a low pedal under every downbeat (gold beat), alternating i and v
+        if (step % 2 === 0) {
+            const roots = [45, 40]; // A2, E2
+            this.cello.note(roots[Math.floor(step / 2) % 2], beatSec * 1.9, 0.42);
         }
     }
 
