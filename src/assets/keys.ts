@@ -24,6 +24,7 @@ export const AssetKeys = {
     Lisbon: 'lisbon',
     Alex: 'alex',
     Tram: 'tram',
+    Teatro: 'teatro',
     Pixel: 'pixel',
     SfxFlip: 'sfx-flip',
     SfxGem: 'sfx-gem',
@@ -110,6 +111,13 @@ export const ItemFrames = {
     Croissant: 4,
     Brigadeiro: 5,
     Nata: 6,
+    Note: 7,
+} as const;
+
+// frame indices in teatro.png (18px sheet: cap, fill, beatA, beatB, …)
+export const TeatroFrames = {
+    BeatA: 2,
+    BeatB: 3,
 } as const;
 
 export const StinkyFrames = {

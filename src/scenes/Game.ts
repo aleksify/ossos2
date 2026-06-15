@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SceneKeys } from './keys';
-import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, StinkyFrames, TileFrames } from '../assets/keys';
+import { AnimKeys, AssetKeys, GameEvents, ItemFrames, NpcFrames, ParentFrames, StinkyFrames, TeatroFrames, TileFrames } from '../assets/keys';
 import vocab from '../assets/level-vocab.json';
 import { LEVELS, LevelSpec } from '../systems/levels';
 import { RegKeys } from '../systems/state';
@@ -93,6 +93,12 @@ export class Game extends Phaser.Scene {
     // rooftop levels have open death-pits: world bounds park the player at the
     // map floor instead of killing, so a kill-plane finishes the job
     private killPlane = Infinity;
+    // teatro rhythm platforms: gold (phase 0) and blue (phase 1) blocks toggle
+    // solid/ghost on the beat, overlapping briefly so a timed hop always lands
+    private beatGroup?: Phaser.Physics.Arcade.StaticGroup;
+    private beatBlocks: { sprite: Phaser.Physics.Arcade.Sprite; phase: 0 | 1 }[] = [];
+    private beatMs = 0;
+    private beatStart = 0;
 
     constructor() {
         super(SceneKeys.Game);
@@ -119,6 +125,9 @@ export class Game extends Phaser.Scene {
         this.trams = [];
         this.awningBounces = 0;
         this.lastAwningBounceAt = 0;
+        this.beatBlocks = [];
+        this.beatMs = 0;
+        this.beatStart = 0;
     }
 
     create(): void {
@@ -129,6 +138,7 @@ export class Game extends Phaser.Scene {
             map.addTilesetImage('iron', AssetKeys.Iron)!,
             map.addTilesetImage('brazil', AssetKeys.Brazil)!,
             map.addTilesetImage('lisbon', AssetKeys.Lisbon)!,
+            map.addTilesetImage('teatro', AssetKeys.Teatro)!,
         ];
         this.autoScroll = spec.autoScroll ?? 0;
 
@@ -142,7 +152,9 @@ export class Game extends Phaser.Scene {
         this.hazards.setCollisionByExclusion([-1]);
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-        this.killPlane = spec.theme === 'lisbon' ? map.heightInPixels - 1 : Infinity;
+        // open orchestra-pit gaps need the same kill-plane backstop as Lisbon's rooftops
+        this.killPlane =
+            spec.theme === 'lisbon' || spec.theme === 'teatro' ? map.heightInPixels - 1 : Infinity;
 
         // the tower sparkles at twilight, a beacon blinks on top,
         // and the sky deepens into night as you climb
@@ -191,6 +203,7 @@ export class Game extends Phaser.Scene {
         this.bagels = this.add.group();
         this.shots = this.add.group();
         const gems = this.physics.add.staticGroup();
+        this.beatGroup = this.physics.add.staticGroup();
         const collectibleTexture = spec.collectible === 'gem' ? AssetKeys.Tiles : AssetKeys.Items;
         const collectibleFrame =
             spec.collectible === 'gem'
@@ -201,7 +214,9 @@ export class Game extends Phaser.Scene {
                     ? ItemFrames.Brigadeiro
                     : spec.collectible === 'nata'
                       ? ItemFrames.Nata
-                      : ItemFrames.Croissant;
+                      : spec.collectible === 'note'
+                        ? ItemFrames.Note
+                        : ItemFrames.Croissant;
         let doorAt: { x: number; y: number } | undefined;
 
         for (const [oid, obj] of objects.entries()) {
@@ -279,6 +294,12 @@ export class Game extends Phaser.Scene {
                 case vocab.objects.tram:
                     this.createTram(x, y);
                     break;
+                case vocab.objects.beatA:
+                    this.createBeatBlock(x, y, 0);
+                    break;
+                case vocab.objects.beatB:
+                    this.createBeatBlock(x, y, 1);
+                    break;
                 case vocab.objects.door:
                     doorAt = { x, y };
                     this.createDoorSensor(x, y, spec.boss === true);
@@ -299,6 +320,8 @@ export class Game extends Phaser.Scene {
             awningBounce ? (_p, tile) => this.onAwning(tile as Phaser.Tilemaps.Tile) : undefined,
         );
         this.physics.add.collider(this.enemies, this.ground);
+        this.physics.add.collider(this.player, this.beatGroup);
+        this.physics.add.collider(this.enemies, this.beatGroup);
         this.physics.add.overlap(this.player, gems, (_p, gemObj) => {
             this.collectGem(gemObj as Phaser.Physics.Arcade.Sprite);
         });
@@ -389,6 +412,9 @@ export class Game extends Phaser.Scene {
             // no scale-squash here: Sosso's transform scale drives her Arcade body
             // size, so the punch/run frames carry the juice instead
         });
+
+        this.beatMs = spec.beat ?? 720;
+        this.beatStart = this.time.now;
 
         const cam = this.cameras.main;
         cam.setZoom(VIEW_ZOOM);
@@ -499,6 +525,7 @@ export class Game extends Phaser.Scene {
 
         if (this.autoScroll > 0) this.updateAutoScroll(delta);
         if (this.trams.length) this.updateTrams();
+        if (this.beatBlocks.length) this.updateBeat(time);
         // landing on real ground (not mid-chain in the air) resets the trampoline climb
         if (this.player.grounded && time - this.lastAwningBounceAt > AWNING_RESET_MS) this.awningBounces = 0;
         this.updateCheckpoints();
@@ -618,6 +645,43 @@ export class Game extends Phaser.Scene {
         this.trams.push({ sprite: tram, min: x - TRAM_AMP, max: x + TRAM_AMP, dir: 1 });
         this.physics.add.collider(this.player, tram);
         this.physics.add.collider(this.enemies, tram);
+    }
+
+    private createBeatBlock(x: number, y: number, phase: 0 | 1): void {
+        const frame = phase === 0 ? TeatroFrames.BeatA : TeatroFrames.BeatB;
+        const block = this.beatGroup!.create(x, y, AssetKeys.Teatro, frame) as Phaser.Physics.Arcade.Sprite;
+        block.setDepth(1);
+        this.beatBlocks.push({ sprite: block, phase });
+    }
+
+    // continuous, pause-safe beat: a bar is two beats (gold, then blue). Each
+    // phase stays solid a little past half the bar so the two overlap at every
+    // hand-off — a well-timed hop always finds a block underfoot. Solidity is
+    // physics; the ghost alpha just shows where the next block will be.
+    private updateBeat(time: number): void {
+        const period = this.beatMs * 2;
+        let m = (time - this.beatStart) % period;
+        if (m < 0) m += period;
+        const pos = m / period; // 0..1 through the bar
+        const overlap = 0.16;
+        const aSolid = pos <= 0.5 + overlap || pos >= 1 - overlap;
+        const bSolid = pos >= 0.5 - overlap || pos <= overlap;
+        for (const blk of this.beatBlocks) {
+            const solid = blk.phase === 0 ? aSolid : bSolid;
+            const body = blk.sprite.body as Phaser.Physics.Arcade.StaticBody;
+            if (body.enable !== solid) {
+                body.enable = solid;
+                if (solid) {
+                    this.tweens.add({
+                        targets: blk.sprite,
+                        scale: { from: 0.7, to: 1 },
+                        duration: 130,
+                        ease: 'back.out',
+                    });
+                }
+            }
+            blk.sprite.setAlpha(solid ? 1 : 0.22);
+        }
     }
 
     private updateAutoScroll(delta: number): void {
@@ -1120,6 +1184,73 @@ export class Game extends Phaser.Scene {
     }
 
     private addParallax(spec: LevelSpec, mapWidth: number, mapHeight: number): void {
+        if (spec.theme === 'teatro') {
+            // a grand concert hall: gilded boxes recede in tiers, a red valance
+            // swags across the top, chandeliers glow over the stalls
+            const drawBoxes = (
+                gfx: Phaser.GameObjects.Graphics,
+                span: number,
+                boxW: number,
+                gap: number,
+                top: number,
+                boxH: number,
+            ): void => {
+                for (let x = 12; x < span; x += boxW + gap) {
+                    gfx.fillStyle(0x140a14, 1);
+                    gfx.fillRect(x, top, boxW, boxH);
+                    gfx.fillStyle(0x6e1b28, 1);
+                    gfx.fillRect(x, top, boxW, 3); // drape over the box mouth
+                    gfx.fillStyle(0x2a1a22, 1);
+                    for (let i = 0; i < 3; i++) gfx.fillRect(x + 5 + i * 6, top + boxH - 8, 3, 4); // silhouetted heads
+                    gfx.lineStyle(2, 0xb8923a, 0.85);
+                    gfx.strokeRect(x, top, boxW, boxH); // gilt frame
+                    gfx.fillStyle(0xe8c45a, 0.9);
+                    gfx.fillRect(x, top + boxH - 3, boxW, 2); // gold rail
+                }
+            };
+            const far = this.add.graphics().setScrollFactor(0.25, 1).setDepth(-8);
+            const near = this.add.graphics().setScrollFactor(0.5, 1).setDepth(-6);
+            const farSpan = mapWidth * 0.25 + 960;
+            const nearSpan = mapWidth * 0.5 + 960;
+            drawBoxes(far, farSpan, 42, 16, mapHeight - 150, 34);
+            drawBoxes(far, farSpan, 42, 16, mapHeight - 108, 34);
+            drawBoxes(near, nearSpan, 56, 22, mapHeight - 76, 40);
+            const valance = this.add.graphics().setScrollFactor(0.25, 1).setDepth(-7);
+            valance.fillStyle(0x6e1b28, 1);
+            valance.fillRect(0, 0, farSpan, 16);
+            valance.fillStyle(0x8a2434, 1);
+            for (let x = 0; x < farSpan; x += 20) valance.fillTriangle(x, 16, x + 20, 16, x + 10, 28);
+            valance.lineStyle(2, 0xe8c45a, 0.8);
+            for (let x = 0; x < farSpan; x += 20) {
+                valance.lineBetween(x, 16, x + 10, 28);
+                valance.lineBetween(x + 10, 28, x + 20, 16);
+            }
+            const chSpan = mapWidth * 0.5 + 960;
+            for (let x = 160; x < chSpan; x += 260) {
+                const glow = this.add
+                    .image(x, mapHeight - 168, AssetKeys.Pixel)
+                    .setScrollFactor(0.5, 1)
+                    .setScale(11)
+                    .setTint(0xf7e08a)
+                    .setAlpha(0.16)
+                    .setDepth(-6);
+                this.add
+                    .image(x, mapHeight - 168, AssetKeys.Pixel)
+                    .setScrollFactor(0.5, 1)
+                    .setScale(3.2)
+                    .setTint(0xfff2c0)
+                    .setDepth(-5);
+                this.tweens.add({
+                    targets: glow,
+                    alpha: 0.07,
+                    duration: 1300 + (x % 4) * 140,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'sine.inOut',
+                });
+            }
+            return;
+        }
         if (spec.theme === 'brasil') {
             const ride = mapWidth - 480;
             const seenAt = (p: number, sf: number, off: number) => ride * p * sf + 240 * (1 - sf) + off;

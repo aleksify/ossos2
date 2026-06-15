@@ -11,11 +11,14 @@ export interface LevelSpec {
     // force normal jump control even after the flip is story-unlocked (jump-built
     // levels that would otherwise inherit flip from the FlipUnlocked run flag)
     forceJump?: boolean;
-    collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro' | 'nata';
+    collectible: 'bagel' | 'gem' | 'croissant' | 'brigadeiro' | 'nata' | 'note';
     boss?: boolean;
-    theme?: 'paris' | 'brasil' | 'lisbon';
+    theme?: 'paris' | 'brasil' | 'lisbon' | 'teatro';
     // camera scrolls right at this speed (px/s); falling off the left edge kills
     autoScroll?: number;
+    // teatro rhythm platforms: half-period (ms) of the beat that toggles the
+    // gold/blue blocks between solid and ghost
+    beat?: number;
 }
 
 export const LEVELS: LevelSpec[] = [
@@ -152,7 +155,7 @@ export const LEVELS: LevelSpec[] = [
     {
         key: 'level13',
         name: 'Subida ao Miradouro',
-        intro: 'Almost there. He said he’d wait at the miradouro…',
+        intro: 'One last climb before the big night.',
         hint: 'Ride the 28 — mind the gap',
         sky: 0xf2a65e,
         bgFrames: [0, 3, 2, 1],
@@ -160,5 +163,18 @@ export const LEVELS: LevelSpec[] = [
         forceJump: true,
         collectible: 'nata',
         theme: 'lisbon',
+    },
+    {
+        key: 'level14',
+        name: 'Concerto no Municipal',
+        intro: 'Sosso’s cello recital at the Municipal. Alex flew in to hear her play.',
+        hint: 'Stage blocks keep the beat — cross them while they glow',
+        sky: 0x2a1626,
+        bgFrames: [0, 1],
+        flip: false,
+        forceJump: true,
+        collectible: 'note',
+        theme: 'teatro',
+        beat: 1100,
     },
 ];

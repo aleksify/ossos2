@@ -1,0 +1,131 @@
+@sheet teatro 18 18
+@palette
+. _
+o #2a2030
+r #7c1f2e
+R #a8324a
+e #c44a5f
+d #b8923a
+D #e8c45a
+y #f7e08a
+k #6b4a32
+K #8a6244
+w #b98a5e
+c #efe6d2
+b #3e6fae
+B #7fa8d9
+l #bcd6f2
+@frame cap
+DDDDDDDDDDDDDDDDDD
+yDyDyDyDyDyDyDyDyD
+dddddddddddddddddd
+KKKKKKKKKKKKKKKKKK
+KKKwKKKKwKKKKwKKKK
+KKKKKKKKKKKKKKKKKK
+wKKKKwKKKKwKKKKwKK
+KKKKKKKKKKKKKKKKKK
+KKKwKKKKwKKKKwKKKK
+KKKKKKKKKKKKKKKKKK
+wKKKKwKKKKwKKKKwKK
+KKKKKKKKKKKKKKKKKK
+KKKwKKKKwKKKKwKKKK
+KKKKKKKKKKKKKKKKKK
+wKKKKwKKKKwKKKKwKK
+KKKKKKKKKKKKKKKKKK
+KKKwKKKKwKKKKwKKKK
+kkkkkkkkkkkkkkkkkk
+@frame fill
+rrrrrrrrrrrrrrrrrr
+rrrrrrrrddrrrrrrrr
+rrrrrrrdDDdrrrrrrr
+rrrrrrdDyyDdrrrrrr
+rrrrrdDyyyyDdrrrrr
+rrrrrrdDyyDdrrrrrr
+rrrrrrrdDDdrrrrrrr
+rrrrrrrrddrrrrrrrr
+rrrrrrrrrrrrrrrrrr
+RrrrrrrrrrrrrrrrrR
+rrrrrrrrddrrrrrrrr
+rrrrrrrdDDdrrrrrrr
+rrrrrrdDyyDdrrrrrr
+rrrrrrrdDDdrrrrrrr
+rrrrrrrrddrrrrrrrr
+rrrrrrrrrrrrrrrrrr
+RrrrrrrrrrrrrrrrrR
+rrrrrrrrrrrrrrrrrr
+@frame beatA
+oooooooooooooooooo
+oyyyyyyyyyyyyyyyyo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDooDDDDDDdo
+oyDDDDDDooDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oyDDDDDDDDDDDDDDdo
+oddddddddddddddddo
+okkkkkkkkkkkkkkkko
+oooooooooooooooooo
+@frame beatB
+oooooooooooooooooo
+ollllllllllllllllo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBooBBBBBBbo
+olBBBBBBooBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+olBBBBBBBBBBBBBBbo
+obbbbbbbbbbbbbbbbo
+okkkkkkkkkkkkkkkko
+oooooooooooooooooo
+@frame candelabra
+........dd........
+.......dDDd.......
+.......dyyd.......
+........DD........
+........dd........
+........dd........
+.......dDDd.......
+......dDDDDd......
+.....dD.DD.Dd.....
+....dD..DD..Dd....
+........DD........
+........DD........
+........DD........
+........DD........
+.......dDDd.......
+......dDDDDd......
+.....dDDDDDDd.....
+......oooooo......
+@frame musicStand
+......cccccc......
+.....cccccccc.....
+.....coooooc......
+.....cooooc.......
+.....cccccc.......
+........d.........
+........d.........
+........d.........
+........d.........
+........d.........
+........d.........
+.......ddd........
+......d.d.d.......
+.....d..d..d......
+....d...d...d.....
+..................
+..................
+..................

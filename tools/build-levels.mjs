@@ -15,7 +15,8 @@
 //   H  sosso's parents (beach finale exit)
 //   a/b iron arch halves (2x2 deco, tower)
 //   Y  clothesline anchor  n  awning (bouncy tile, lisbon)
-//   T  tram platform       A  alex (miradouro finale exit)
+//   T  tram platform       A  alex (finale exit)
+//   1  beat block A (gold) 2  beat block B (blue) — teatro rhythm platforms
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -68,6 +69,12 @@ const BRAZIL = {
 const LISBON = new Set(['level11', 'level12', 'level13']);
 const ROOFTOP = new Set(['level11']);
 const FESTA = new Set(['level12']);
+// teatro level (fifth tileset, firstgid 247). A São Paulo concert hall: a
+// parquet stage cap over a velvet/gold fill, with candelabra/music-stand deco.
+// Beat blocks ('1'/'2') are spawned as objects, not tiles, and toggled on the
+// beat by the Game scene.
+const TEATRO = new Set(['level14']);
+const TEA = { cap: 247, fill: 248, candelabra: 251, musicStand: 252 };
 const LIS = {
   capSingle: 227, capL: 228, capM: 229, capR: 230,
   fillSingle: 231, fillL: 232, fillM: 233, fillR: 234,
@@ -99,6 +106,7 @@ function build(name, text, seed) {
   const lisbon = LISBON.has(name);
   const rooftop = ROOFTOP.has(name);
   const festa = FESTA.has(name);
+  const teatro = TEATRO.has(name);
   const rows = text.replace(/\n+$/, '').split('\n');
   const h = rows.length;
   const w = Math.max(...rows.map((r) => r.length));
@@ -151,6 +159,9 @@ function build(name, text, seed) {
                 : [LIS.capSingle, LIS.capL, LIS.capM, LIS.capR])
             : [LIS.fillSingle, LIS.fillL, LIS.fillM, LIS.fillR];
           ground[i] = set[variant];
+        } else if (teatro) {
+          // seamless parquet stage over a velvet/gold under-stage
+          ground[i] = top ? TEA.cap : TEA.fill;
         } else {
           const set = top
             ? (paris
@@ -188,6 +199,8 @@ function build(name, text, seed) {
       else if (c === 'H') obj(VOCAB.objects.parents, x, y);
       else if (c === 'A') obj(VOCAB.objects.alex, x, y);
       else if (c === 'T') obj(VOCAB.objects.tram, x, y);
+      else if (c === '1') obj(VOCAB.objects.beatA, x, y);
+      else if (c === '2') obj(VOCAB.objects.beatB, x, y);
       else if (c === 'Y') {
         deco[i] = LIS.pole;
         obj(VOCAB.objects.line, x, y);
@@ -244,6 +257,9 @@ function build(name, text, seed) {
           } else if (roll < 0.2) {
             deco[i] = LIS.manjerico;
           }
+        } else if (teatro) {
+          if (roll < 0.18) deco[i] = TEA.candelabra;
+          else if (roll < 0.4) deco[i] = TEA.musicStand;
         } else {
           deco[i] = gid(T.tufts[roll < 0.4 ? 0 : roll < 0.7 ? 1 : roll < 0.85 ? 2 : 3]);
         }
@@ -271,8 +287,9 @@ function build(name, text, seed) {
       deco[(h - 2) * w + x] = BRAZIL.poleShaft;
     }
   }
-  // no clouds on brasil/lisbon levels: mid-sky shapes read as platforms in a flip level
-  for (let n = 0; n < (train || beach || lisbon ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
+  // no clouds on brasil/lisbon/teatro levels: mid-sky shapes read as platforms
+  // (or, indoors, as nonsense) in a flip/rhythm level
+  for (let n = 0; n < (train || beach || lisbon || teatro ? 0 : Math.floor(Math.max(w, h) / 6)); n++) {
     const x = 1 + Math.floor(rng() * (w - 5));
     const y = 2 + Math.floor(rng() * (h - 8));
     const clear = [0, 1, 2].every((d) => at(x + d, y) === '.' && deco[y * w + x + d] === 0);
@@ -305,6 +322,9 @@ function build(name, text, seed) {
     }, {
       columns: 20, firstgid: 227, image: '../tiles/lisbon.png', imageheight: 18, imagewidth: 360,
       margin: 0, name: 'lisbon', spacing: 0, tilecount: 20, tileheight: 18, tilewidth: 18,
+    }, {
+      columns: 6, firstgid: 247, image: '../tiles/teatro.png', imageheight: 18, imagewidth: 108,
+      margin: 0, name: 'teatro', spacing: 0, tilecount: 6, tileheight: 18, tilewidth: 18,
     }],
   };
 

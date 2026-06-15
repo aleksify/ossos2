@@ -22,7 +22,9 @@
         "parents": "parents",
         "line": "line",
         "tram": "tram",
-        "alex": "alex"
+        "alex": "alex",
+        "beatA": "beat-a",
+        "beatB": "beat-b"
     },
     "tiles": {
         "awningA": 239,

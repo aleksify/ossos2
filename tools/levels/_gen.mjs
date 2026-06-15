@@ -104,6 +104,62 @@ function emit(name, g) {
   for (const [x, r] of [[20, 10], [84, 9], [120, 8]]) put(x, r, 'F');
   put(48, 10, 'B'); put(82, 9, 'W'); put(118, 8, 'B'); // gaivotas + a pigeon
   for (const [x, r] of [[12, 10], [50, 10], [80, 9], [112, 8], [150, 8], [160, 8]]) put(x, r, '*');
-  put(165, 8, 'A'); // Alex waits at the miradouro
+  put(165, 8, 'D'); // miradouro tram stop — Alex moved on to the recital (level 14)
   emit('level13', g);
+}
+
+// ===== LEVEL 14 — Concerto no Municipal (rhythm beat platforms) =====
+// Sosso's cello recital at the Teatro Municipal de São Paulo. The orchestra
+// pit is crossed on beat blocks that pulse in and out of solidity: gold
+// (phase A, char '1') and blue (phase B, char '2') take turns, overlapping
+// briefly so a well-timed hop always finds footing. Jump-based (forceJump).
+// Alex flew in and waits on centre stage to hear her play — reaching him ends
+// the journey.
+{
+  const W = 168, H = 15, g = makeGrid(W, H);
+  const fill = (x0, x1, top = 12) => { for (let x = x0; x <= x1; x++) for (let y = top; y < H; y++) g[y][x] = '#'; };
+  const plat = (x0, x1, row) => { for (let x = x0; x <= x1; x++) g[row][x] = '#'; };
+  const spikes = (x0, x1, row = 14) => { for (let x = x0; x <= x1; x++) g[row][x] = '^'; };
+  // a beat platform is a wide run of same-phase blocks (gold '1' / blue '2') so
+  // there is a generous landing area; the whole run toggles together on the beat
+  const beat = (x0, ch, row = 11, w = 3) => { for (let i = 0; i < w; i++) g[row][x0 + i] = ch; };
+  const put = (x, y, c) => { g[y][x] = c; };
+
+  // 1. opening stage — a single 3-wide gold platform to learn the timing
+  fill(0, 28);
+  put(3, 11, 'P');
+  for (const x of [9, 16, 23]) put(x, 10, '*');
+  put(25, 11, 'C');
+  spikes(29, 35);
+  beat(31, '1');                                    // gold, 3-wide, centred in the pit
+  fill(36, 56);
+  for (const x of [44, 50]) put(x, 10, '*');
+  put(48, 11, 'C');
+  put(38, 11, 'F');
+
+  // 2. orchestra pit — wide platforms alternating gold/blue, 2-tile gaps
+  spikes(57, 88);
+  beat(59, '1'); beat(64, '2'); beat(69, '1'); beat(74, '2'); beat(79, '1'); beat(84, '2');
+  for (const x of [66, 76]) put(x, 7, '*');         // rewards floating over the pit
+  fill(89, 108);
+  for (const x of [98, 104]) put(x, 10, '*');
+  put(101, 11, 'C');
+  put(94, 11, 'F');
+
+  // 3. rising beat-staircase up to a balcony of notes, then down to the floor
+  spikes(109, 132);
+  beat(111, '1', 10); beat(116, '2', 9); beat(121, '1', 8); beat(126, '2', 7);
+  fill(133, 150);
+  plat(133, 150, 6);                                // balcony ledge above the floor
+  for (const x of [138, 144, 148]) put(x, 5, '*');
+  put(142, 5, 'C');
+  put(147, 11, 'K');                                // a critic heckling from the stalls
+  put(136, 11, 'F');
+
+  // 4. finale crossing to centre stage where Alex waits
+  spikes(151, 162);
+  beat(153, '1'); beat(158, '2');
+  fill(163, 167);
+  put(165, 11, 'A');                                // Alex — reaching him ends the recital
+  emit('level14', g);
 }

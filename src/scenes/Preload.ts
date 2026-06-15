@@ -86,6 +86,12 @@ export class Preload extends Phaser.Scene {
             frameHeight: 24,
         });
         this.load.image(AssetKeys.Tram, 'assets/tiles/tram.png');
+        // loaded as a spritesheet so the beat blocks can grab single frames; it
+        // doubles as the level's tilemap tileset image (cap/fill)
+        this.load.spritesheet(AssetKeys.Teatro, 'assets/tiles/teatro.png', {
+            frameWidth: 18,
+            frameHeight: 18,
+        });
 
         for (const level of LEVELS) {
             this.load.tilemapTiledJSON(level.key, `assets/tilemaps/${level.key}.json`);
